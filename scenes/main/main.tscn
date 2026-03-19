@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://c1rootsmain"]
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" unique_id=1161885219]
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=662125722]
 offset_right = 300.0
 offset_bottom = 40.0
 text = "RootsGame"

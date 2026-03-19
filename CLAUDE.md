@@ -4,7 +4,7 @@ A Cassette Beasts-style RPG built with Godot 4 and GDScript. VS Code-primary dev
 
 ## Godot Constraints
 
-- **Minimum Godot version:** 4.3 (4.4+ preferred for `.uid` sidecar support)
+- **Minimum Godot version:** 4.6 (project targets 4.6.1; `.uid` sidecars are stable)
 - **Language:** GDScript only (no C#)
 - **Static typing is mandatory.** Every variable, parameter, and return type must be explicitly typed. Set `UNTYPED_DECLARATION`, `UNSAFE_PROPERTY_ACCESS`, `UNSAFE_METHOD_ACCESS`, and `UNSAFE_CALL_ARGUMENT` to Error in Project Settings > Debug > GDScript.
 - **Composition over inheritance.** Limit scene inheritance to one layer. Compose entities from single-purpose child nodes. Derive only from engine node types (CharacterBody2D, Area2D, etc.).
