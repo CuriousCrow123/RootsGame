@@ -241,6 +241,41 @@ This separation means the plugin is shareable; project-specific knowledge stays 
   - `/gc:simplify`, `/gc:loop` (utilities)
   - CE stays for non-Godot side projects with its own `/ce:` and unprefixed commands.
 
+## Implementation Methodology
+
+Three principles guide every agent, skill, and command built for `godot-compound`:
+
+### 1. Cross-Analyze with Godot Best Practices Research
+
+Every new or rewritten component must be validated against `docs/reference/godot-best-practices.md` (43 sources) and the `godot-patterns` skill reference files. Specifically:
+
+- **Agents:** Each FAIL/PASS example must trace back to a documented pattern or anti-pattern in the research. No invented rules — if it's not in the research, it's not in the agent.
+- **Skills:** Reference content must be a distilled, agent-consumable version of the research findings, not a rewrite from memory.
+- **Commands:** Workflow steps (testing, linting, validation) must match the tooling and processes validated in the research (GUT two-step headless, gdtoolkit, `godot --headless` validation).
+
+This prevents hallucinated patterns and ensures the plugin encodes real Godot community wisdom.
+
+### 2. Validate Real-World Practicality via Web Research
+
+Before building each component, research whether the patterns it checks for actually come up in real Godot development:
+
+- **For each review agent:** Search for real Godot forum posts, GitHub issues, and community discussions where the pattern/anti-pattern caused actual bugs. If nobody has ever hit the problem, the agent is speculative — defer or remove it.
+- **For each skill:** Verify the workflow it supports is something Godot developers actually do. E.g., is headless export testing a real practice? Do teams actually use `.tres` for save files?
+- **For schema categories:** Validate that the compound knowledge categories map to problems Godot developers actually encounter and search for.
+
+Use web search with queries like `"godot 4" site:forum.godotengine.org [pattern]`, `"godot" site:github.com/godotengine/godot/issues [problem]`, and GDQuest/Shaggy Dev tutorials to confirm real-world relevance.
+
+### 3. Follow CE's Orchestration Patterns
+
+The fork must preserve CE's proven orchestration architecture — not just the concepts, but the specific structural patterns that make agents effective:
+
+- **Agent structure:** Study `kieran-rails-reviewer.md` and `performance-oracle.md` as templates. Note how they use persona framing, numbered review principles, FAIL/PASS code blocks, priority ordering, and explicit scope boundaries. Godot agents must follow the same structural patterns with GDScript content.
+- **Skill structure:** Study `compound-docs/SKILL.md` and `brainstorming/SKILL.md`. Note how they use phased execution, parallel sub-agent dispatch, YAML frontmatter validation, and template-based output. Godot skills must follow the same orchestration patterns.
+- **Command structure:** Study `ce/work.md` and `ce/review.md`. Note the task-execution-loop pattern, incremental commit evaluation, conditional agent dispatch, and quality-gate checklists. Godot commands must follow the same workflow architecture with Godot-specific content.
+- **Token budgets:** CE agents target 90-120 lines (~900 tokens). Skills use reference files loaded on demand (150-250 lines each). Commands can be longer but should minimize examples-as-instructions. Match these budgets in the fork.
+
+The goal is that someone familiar with CE instantly recognizes the patterns in `godot-compound` — same architecture, different domain.
+
 ## Open Questions
 
 - **Plugin distribution:** Claude Code marketplace, GitHub repo, or both?
