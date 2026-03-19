@@ -124,7 +124,11 @@ This separation means the plugin is shareable; project-specific knowledge stays 
 - **Agent prompt handling:** Rewrite all examples for Godot — replace Rails/TypeScript examples with GDScript equivalents in every agent (including "stack-agnostic" ones like performance-oracle, security-sentinel)
 - **All-at-once scope:** Fork everything systematically in one pass, ensuring every agent and skill is tailored for Godot
 - **Repo structure:** Separate repository (not inside RootsGame). Required for marketplace distribution and clean separation between game code and tooling.
-- **Coexistence with CE:** Keep both plugins permanently. Use `/gc:` namespace prefix for godot-compound commands (`/gc:plan`, `/gc:work`, `/gc:review`, `/gc:compound`, `/gc:brainstorm`) to avoid collisions with `/ce:` commands. CE stays for any non-Godot side projects.
+- **Coexistence with CE:** Keep both plugins permanently. **All** godot-compound commands use the `/gc:` namespace prefix — no exceptions. This includes commands that CE ships without prefix. Full mapping:
+  - `/gc:plan`, `/gc:work`, `/gc:review`, `/gc:compound`, `/gc:brainstorm` (core workflow)
+  - `/gc:deepen-plan`, `/gc:lfg`, `/gc:slfg` (automation)
+  - `/gc:simplify`, `/gc:loop` (utilities)
+  - CE stays for non-Godot side projects with its own `/ce:` and unprefixed commands.
 
 ## Open Questions
 
