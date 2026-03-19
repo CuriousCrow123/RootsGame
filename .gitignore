@@ -1,0 +1,39 @@
+# Godot
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+export_credentials.cfg
+*.translation
+
+# Export artifacts
+*.pck
+*.apk
+*.aab
+*.ipa
+
+# Signing keys
+*.key
+*.keystore
+*.jks
+
+# Environment / secrets
+.env
+*.env
+*.secret
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.obsidian/
+*.tmp
+
+# Mono (future-proofing)
+.mono/
+data_*/
+mono_crash.*.json
+
+# Android build
+android/build/

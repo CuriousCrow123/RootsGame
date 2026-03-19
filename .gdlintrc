@@ -1,0 +1,22 @@
+max-line-length: 100
+
+excluded_directories:
+  - ".godot"
+  - "addons"
+
+class-definitions-order:
+  - tool
+  - class_name
+  - extends
+  - docstring
+  - signals
+  - enums
+  - consts
+  - static_vars
+  - exported_vars
+  - public_vars
+  - private_vars
+  - onready_vars
+  - func
+  - static_func
+  - inner_class

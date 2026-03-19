@@ -1,0 +1,318 @@
+// Custom Pandoc-Typst template for Godot RPG Fundamentals
+// Pandoc template variables use $variable$ syntax
+
+// ── Colors ──
+#let accent = rgb("#478cbf")
+#let accent-light = rgb("#e8f2f8")
+#let gray-light = rgb("#f5f6f8")
+#let gray-mid = rgb("#6b7280")
+#let gray-dark = rgb("#374151")
+
+// ── Pandoc helpers ──
+#let horizontalrule = {
+  v(0.5em)
+  line(length: 100%, stroke: 0.75pt + rgb("#d1d5db"))
+  v(0.5em)
+}
+
+#show terms: it => {
+  it.children
+    .map(child => [
+      #strong[#child.term]
+      #block(inset: (left: 1.5em, top: -0.4em))[#child.description]
+      ])
+    .join()
+}
+
+#let content-to-string(content) = {
+  if content.has("text") {
+    content.text
+  } else if content.has("children") {
+    content.children.map(content-to-string).join("")
+  } else if content.has("body") {
+    content-to-string(content.body)
+  } else if content == [ ] {
+    " "
+  }
+}
+
+// ── Table defaults ──
+#set table(
+  inset: 6pt,
+  stroke: none,
+)
+
+#show figure.where(kind: table): set figure.caption(position: top)
+#show figure.where(kind: image): set figure.caption(position: bottom)
+
+$if(highlighting-definitions)$
+$highlighting-definitions$
+$endif$
+
+// ── conf function ──
+#let conf(
+  title: none,
+  subtitle: none,
+  authors: (),
+  keywords: (),
+  date: none,
+  abstract-title: none,
+  abstract: none,
+  thanks: none,
+  cols: 1,
+  margin: (x: 1.25in, y: 1.25in),
+  paper: "us-letter",
+  lang: "en",
+  region: "US",
+  font: none,
+  fontsize: 11pt,
+  mathfont: none,
+  codefont: none,
+  linestretch: 1,
+  sectionnumbering: none,
+  linkcolor: none,
+  citecolor: none,
+  filecolor: none,
+  pagenumbering: "1",
+  doc,
+) = {
+  // Document metadata
+  set document(title: title, keywords: keywords)
+
+  // Page setup
+  set page(
+    paper: paper,
+    margin: (x: 1in, y: 1in),
+    header: context {
+      if counter(page).get().first() > 2 {
+        set text(size: 8pt, fill: gray-mid)
+        if title != none { title }
+        h(1fr)
+        if date != none { date }
+        v(-4pt)
+        line(length: 100%, stroke: 0.5pt + rgb("#d1d5db"))
+      }
+    },
+    footer: context {
+      if counter(page).get().first() > 1 {
+        line(length: 100%, stroke: 0.5pt + rgb("#d1d5db"))
+        v(-2pt)
+        set text(size: 8pt, fill: gray-mid)
+        align(center)[#counter(page).display("1")]
+      }
+    },
+  )
+
+  // Typography
+  set par(justify: true, leading: 0.78em)
+  set text(lang: lang, region: region, size: fontsize, fill: gray-dark)
+  set text(font: font) if font != none
+  show math.equation: set text(font: mathfont) if mathfont != none
+  show raw: set text(font: codefont, size: 9pt) if codefont != none
+
+  // Links
+  show link: set text(fill: accent)
+
+  // Headings
+  set heading(numbering: sectionnumbering)
+
+  show heading.where(level: 1): it => {
+    pagebreak(weak: true)
+    v(0.5em)
+    block(width: 100%)[
+      #line(length: 100%, stroke: 2.5pt + accent)
+      #v(-2pt)
+      #text(size: 20pt, weight: "bold", fill: accent)[#it.body]
+    ]
+    v(0.3em)
+  }
+
+  show heading.where(level: 2): it => {
+    v(0.8em)
+    block(width: 100%)[
+      #text(size: 14pt, weight: "bold", fill: rgb("#1e3a5f"))[#it.body]
+      #v(-6pt)
+      #line(length: 40%, stroke: 1.5pt + accent)
+    ]
+    v(0.3em)
+  }
+
+  show heading.where(level: 3): it => {
+    v(0.5em)
+    text(size: 11.5pt, weight: "bold", fill: gray-dark)[#it.body]
+    v(0.2em)
+  }
+
+  // Tables with styled rows — ensure figures (which wrap tables) are breakable
+  show figure: set block(breakable: true)
+  show table: it => {
+    set text(size: 8.5pt)
+    block(width: 100%, breakable: true)[#it]
+  }
+
+  // Blockquotes
+  show quote: it => {
+    block(
+      width: 100%,
+      inset: (left: 16pt, top: 8pt, bottom: 8pt, right: 12pt),
+      stroke: (left: 3pt + accent),
+      fill: accent-light,
+      radius: (right: 4pt),
+    )[
+      #set text(size: 9.5pt, style: "italic", fill: gray-mid)
+      #it.body
+    ]
+  }
+
+  // Code blocks
+  show raw.where(block: true): it => {
+    block(
+      width: 100%,
+      inset: 10pt,
+      fill: rgb("#f8f9fa"),
+      stroke: 0.5pt + rgb("#e5e7eb"),
+      radius: 4pt,
+    )[#it]
+  }
+
+  // Inline code
+  show raw.where(block: false): it => {
+    box(
+      inset: (x: 3pt, y: 0pt),
+      outset: (y: 3pt),
+      fill: rgb("#f3f4f6"),
+      radius: 2pt,
+    )[#it]
+  }
+
+  // Lists
+  set list(marker: text(fill: accent)[•], indent: 1em, spacing: 0.65em)
+  set enum(indent: 1em, spacing: 0.65em)
+
+  // ══════════════════════
+  // TITLE PAGE
+  // ══════════════════════
+  page(header: none, footer: none)[
+    #v(2fr)
+
+    #align(center)[
+      #block(width: 80%)[
+        #line(length: 100%, stroke: 3pt + accent)
+        #v(1.2em)
+        #if title != none {
+          text(size: 28pt, weight: "bold", fill: rgb("#1a1a2e"))[#title]
+        }
+        #v(0.6em)
+        #if subtitle != none {
+          text(size: 16pt, weight: "regular", fill: gray-mid)[#subtitle]
+        }
+        #v(1.2em)
+        #line(length: 100%, stroke: 3pt + accent)
+      ]
+    ]
+
+    #v(2em)
+
+    #align(center)[
+      #if date != none {
+        text(size: 11pt, fill: gray-mid)[#date]
+      }
+    ]
+
+    #v(3em)
+
+    #align(center)[
+      #block(
+        width: 60%,
+        inset: 1.5em,
+        stroke: 1pt + rgb("#e5e7eb"),
+        radius: 6pt,
+        fill: gray-light,
+      )[
+        #set text(size: 9pt, fill: gray-mid)
+        #set par(justify: false)
+        Architecture · World Building · Save Systems \
+        Combat & AI · UI & Dialog · Performance \
+        Accessibility · Tensions & Debates
+      ]
+    ]
+
+    #v(3fr)
+
+    #align(center)[
+      #text(size: 9pt, fill: rgb("#9ca3af"))[100+ sources consulted · Extended research]
+    ]
+
+    #v(1fr)
+  ]
+
+  // Body content
+  doc
+}
+
+// ══════════════════════════════════════════
+// Pandoc document pipeline
+// ══════════════════════════════════════════
+
+#set smartquote(enabled: false)
+
+$for(header-includes)$
+$header-includes$
+
+$endfor$
+#show: doc => conf(
+$if(title)$
+  title: [$title$],
+$endif$
+$if(subtitle)$
+  subtitle: [$subtitle$],
+$endif$
+$if(date)$
+  date: [$date$],
+$endif$
+$if(lang)$
+  lang: "$lang$",
+$endif$
+$if(region)$
+  region: "$region$",
+$endif$
+$if(margin)$
+  margin: ($for(margin/pairs)$$margin.key$: $margin.value$,$endfor$),
+$endif$
+$if(papersize)$
+  paper: "$papersize$",
+$endif$
+$if(mainfont)$
+  font: ("$mainfont$",),
+$endif$
+$if(fontsize)$
+  fontsize: $fontsize$,
+$endif$
+$if(codefont)$
+  codefont: ($for(codefont)$"$codefont$",$endfor$),
+$endif$
+$if(section-numbering)$
+  sectionnumbering: "$section-numbering$",
+$endif$
+  pagenumbering: $if(page-numbering)$"$page-numbering$"$else$"1"$endif$,
+  cols: $if(columns)$$columns$$else$1$endif$,
+  doc,
+)
+
+$for(include-before)$
+$include-before$
+
+$endfor$
+$if(toc)$
+#outline(
+  title: auto,
+  depth: $toc-depth$
+);
+$endif$
+
+$body$
+
+$for(include-after)$
+
+$include-after$
+$endfor$
