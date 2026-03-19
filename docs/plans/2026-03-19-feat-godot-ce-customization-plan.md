@@ -1,7 +1,7 @@
 ---
 title: "feat: Tailor Compound Engineering for Godot 4"
 type: feat
-status: active
+status: phase-a-complete
 date: 2026-03-19
 ---
 
@@ -109,15 +109,15 @@ All customization is file-based configuration — no callbacks, middleware, or r
 
 ### Phase A
 
-- [ ] CLAUDE.md loaded in fresh session (test: ask about typing rules — should cite static typing mandate)
-- [ ] `compound-engineering.local.md` controls `/ce:review` dispatch (test: agents in list run, agents not in list don't)
-- [ ] godot-patterns skill auto-loads when discussing GDScript (test: skill appears in `/skills`, context available during code generation)
-- [ ] gdscript-lint agent runs gdformat + gdlint successfully (test: lint a deliberately mis-formatted `.gd` file)
-- [ ] gdscript-lint exits cleanly when no `.gd` files exist
-- [ ] Context7 MCP starts (test: `claude mcp list`)
-- [ ] **Blocking**: `.claude/agents/` agents resolvable by CE `Task` dispatch (test: `/ce:review` dispatches gdscript-lint)
+- [x] CLAUDE.md loaded in fresh session (test: ask about typing rules — should cite static typing mandate)
+- [x] `compound-engineering.local.md` controls `/ce:review` dispatch (test: agents in list run, agents not in list don't)
+- [x] godot-patterns skill auto-loads when discussing GDScript (test: skill appears in `/skills`, context available during code generation)
+- [x] gdscript-lint agent runs gdformat + gdlint successfully (test: lint a deliberately mis-formatted `.gd` file)
+- [x] gdscript-lint exits cleanly when no `.gd` files exist
+- [x] Context7 MCP starts (test: `claude mcp list`)
+- [x] **Blocking**: `.claude/agents/` agents resolvable by CE `Task` dispatch (test: `/ce:review` dispatches gdscript-lint)
 - [x] `/ce:setup` warning documented in CLAUDE.md
-- [ ] CE's `/ce:plan`, `/ce:work`, `/ce:review`, `/ce:compound` still function
+- [x] CE's `/ce:plan`, `/ce:work`, `/ce:review`, `/ce:compound` still function
 - [x] No CE upstream files modified
 
 ### Phase B (per agent, as built)

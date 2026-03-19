@@ -1,9 +1,10 @@
 ---
 title: "feat: Initialize Godot 4 Project with RPG Architecture"
 type: feat
-status: active
+status: completed
 date: 2026-03-19
 deepened: 2026-03-19
+completed: 2026-03-19
 ---
 
 # feat: Initialize Godot 4 Project with RPG Architecture
