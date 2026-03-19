@@ -1,6 +1,6 @@
 ---
-review_agents: [gdscript-lint, code-simplicity-reviewer, architecture-strategist]
-plan_review_agents: [code-simplicity-reviewer, architecture-strategist]
+review_agents: [gdscript-lint, code-simplicity-reviewer]
+plan_review_agents: [code-simplicity-reviewer]
 ---
 
 # Review Context
