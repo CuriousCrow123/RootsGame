@@ -39,74 +39,185 @@ CE's 5 core commands (`/ce:plan`, `/ce:work`, `/ce:review`, `/ce:compound`, `/ce
 6. **Keep research agents** — best-practices-researcher, framework-docs-researcher, learnings-researcher, repo-research-analyst are stack-agnostic
 7. **MIT license** — fork inherits CE's MIT license, shareable as open-source
 
-## What Gets Stripped
+## Full Audit Results
 
-| CE Component | Action | Reason |
+Every CE agent, skill, and command assessed for Godot relevance (2026-03-19 audit).
+
+### Agents: REMOVE (15)
+
+| Agent | Reason |
+|---|---|
+| dhh-rails-reviewer | Rails-specific persona |
+| kieran-rails-reviewer | Rails-specific patterns |
+| kieran-typescript-reviewer | TypeScript-specific |
+| kieran-python-reviewer | Python-specific |
+| agent-native-reviewer | Web app agent/user parity — irrelevant for games |
+| data-migration-expert | Database migrations |
+| schema-drift-detector | Rails schema.rb |
+| data-integrity-guardian | Database integrity |
+| security-sentinel | OWASP/web attack surfaces — `.tres` security handled by resource-safety-reviewer |
+| figma-design-sync | Figma-to-HTML/CSS — Godot uses `.tscn` |
+| design-implementation-reviewer | Web design comparison |
+| design-iterator | Web design iteration |
+| ankane-readme-writer | Ruby gem READMEs |
+| every-style-editor | Every's editorial style |
+| lint (CE version) | Uses standardrb/erblint — replaced by gdscript-lint |
+
+### Agents: KEEP (10 — stack-agnostic)
+
+| Agent | Notes |
+|---|---|
+| best-practices-researcher | Generic research methodology |
+| framework-docs-researcher | Useful with Context7 for Godot docs |
+| learnings-researcher | Searches docs/solutions/ — works for any domain |
+| repo-research-analyst | Repo structure analysis — generic |
+| git-history-analyzer | Git archaeology — generic |
+| code-simplicity-reviewer | YAGNI principles — universal |
+| pattern-recognition-specialist | Pattern/anti-pattern detection — generic |
+| pr-comment-resolver | PR feedback resolution — generic |
+| bug-reproduction-validator | Bug repro methodology — generic |
+| spec-flow-analyzer | User flow analysis — generic |
+
+### Agents: REWRITE for Godot (4)
+
+| CE Agent | Godot Replacement | What Changes |
 |---|---|---|
-| dhh-rails-reviewer | Remove | Rails-specific persona |
-| kieran-rails-reviewer | Remove | Rails-specific patterns |
-| kieran-typescript-reviewer | Remove | TypeScript-specific |
-| kieran-python-reviewer | Remove | Python-specific |
-| julik-frontend-races-reviewer | Remove | DOM/frontend races |
-| agent-native-reviewer | Remove | Web app agent/user parity — irrelevant for games |
-| data-migration-expert | Remove | Database migrations |
-| schema-drift-detector | Remove | Rails schema.rb |
-| deployment-verification-agent | Remove | Web deployment |
-| data-integrity-guardian | Remove | Database integrity |
-| figma-design-sync | Remove | Figma integration |
-| design-implementation-reviewer | Remove | Web design comparison |
-| design-iterator | Remove | Web design iteration |
-| ankane-readme-writer | Remove | Ruby gem READMEs |
-| dhh-rails-style skill | Remove | Rails coding style |
-| andrew-kane-gem-writer skill | Remove | Ruby gems |
-| dspy-ruby skill | Remove | Ruby LLM framework |
-| every-style-editor skill | Remove | Every's editorial style |
-| proof skill | Remove | Proof web editor |
-| agent-browser skill | Remove | Web browser automation |
-| frontend-design skill | Remove | Web frontend design |
-| rclone skill | Remove | Cloud storage (not needed for game dev) |
-| test-browser command | Remove | Web browser testing |
-| feature-video command | Remove | Web feature recording |
+| architecture-strategist | godot-architecture-reviewer | Scene composition, signals, autoloads, inheritance depth instead of services/controllers |
+| performance-oracle | godot-performance-reviewer | Scene tree traversal, draw calls, `_process` abuse, typed GDScript instead of N+1/SQL |
+| julik-frontend-races-reviewer | godot-timing-reviewer | Signal emission timing, async loading races, `_process` vs `_input` ordering instead of DOM lifecycle |
+| deployment-verification-agent | godot-export-verifier | Export build verification, asset integrity instead of SQL migrations |
 
-## What Gets Replaced
+### Skills: REMOVE (9)
+
+| Skill | Reason |
+|---|---|
+| agent-browser | Web browser automation |
+| andrew-kane-gem-writer | Ruby gems |
+| dhh-rails-style | Rails conventions |
+| dspy-ruby | Ruby LLM framework |
+| every-style-editor | Every's style guide |
+| frontend-design | Web frontend (HTML/CSS) |
+| gemini-imagegen | Google image generation API |
+| proof | Proof web editor sharing |
+| rclone | Cloud storage — not needed for game dev |
+
+### Skills: KEEP (9 — stack-agnostic)
+
+| Skill | Notes |
+|---|---|
+| brainstorming | Generic methodology |
+| compound-docs | Knowledge capture — works for any domain |
+| context-management | Context window health — generic |
+| create-agent-skills | Skill authoring — generic |
+| document-review | Document quality review — generic |
+| file-todos | Review findings tracking |
+| git-worktree | Git worktree management — generic |
+| orchestrating-swarms | Multi-agent coordination — generic |
+| resolve-pr-parallel | Parallel PR resolution — generic |
+
+### Skills: REWRITE for Godot (2)
+
+| CE Skill | Godot Replacement | What Changes |
+|---|---|---|
+| setup | godot-setup | Detect `project.godot`, Godot version, GUT, gdtoolkit instead of Rails/Node/Python |
+| compound-docs schema | compound-godot schema | Cora enums → Godot domains (scene_composition, signal_wiring, resource_management, etc.) |
+
+### Commands: REMOVE (3)
+
+| Command | Reason |
+|---|---|
+| test-browser | Web browser testing |
+| test-xcode | iOS testing |
+| feature-video | Web feature recording |
+
+### Commands: KEEP (10 — stack-agnostic)
+
+| Command | Notes |
+|---|---|
+| deepen-plan | Plan enhancement — generic |
+| lfg | Autonomous pipeline — generic |
+| slfg | Swarm pipeline — generic |
+| simplify | Code quality review — generic |
+| loop | Recurring task — generic |
+| changelog | Git changelog — generic |
+| triage | Finding triage — generic |
+| resolve_todo_parallel | Todo resolution — generic |
+| report-bug | Plugin bug report — generic |
+| heal-skill | Skill repair — generic |
+
+### Commands: REWRITE for Godot (5 core)
+
+| CE Command | Godot Command | What Changes |
+|---|---|---|
+| /ce:plan | /gc:plan | GUT test references, gdtoolkit, scene validation criteria |
+| /ce:work | /gc:work | GUT headless tests, no Figma/browser, Godot-specific acceptance patterns |
+| /ce:review | /gc:review | Godot agent list, no database migration conditionals |
+| /ce:compound | /gc:compound | Godot schema categories |
+| /ce:brainstorm | /gc:brainstorm | Remove Proof sharing, game design focus |
+
+## What Gets Replaced (Summary)
 
 | CE Component | Godot Replacement | Purpose |
 |---|---|---|
 | lint agent (standardrb + erblint) | gdscript-lint (gdformat + gdlint) | Code formatting and style |
-| Rails test examples in /ce:work | GUT headless test commands | Test execution |
-| Figma sync in /ce:work | Remove (no equivalent needed) | — |
-| Browser screenshots in /ce:work | Remove (manual playtesting) | — |
-| Database migration agents in /ce:review | Resource safety reviewer | Check .tres/.tscn integrity |
-| Web-centric architecture-strategist | godot-architecture-reviewer | Scene composition, signals, autoloads |
-| compound-docs schema.yaml (Cora enums) | Godot-specific schema (scene_composition, signal_wiring, resource_management, etc.) | Knowledge capture categories |
+| Rails test examples in /gc:work | GUT headless test commands | Test execution |
+| Figma sync in /gc:work | Remove (no equivalent needed) | — |
+| Browser screenshots in /gc:work | Remove (manual playtesting) | — |
+| Database migration agents in /gc:review | Resource safety reviewer | Check .tres/.tscn integrity |
+| architecture-strategist | godot-architecture-reviewer | Scene composition, signals, autoloads |
+| performance-oracle | godot-performance-reviewer | Scene tree, draw calls, _process abuse |
+| julik-frontend-races-reviewer | godot-timing-reviewer | Signal timing, async loading, frame ordering |
+| deployment-verification-agent | godot-export-verifier | Export build verification |
+| security-sentinel | (removed — covered by resource-safety-reviewer) | — |
+| compound-docs schema.yaml (Cora enums) | Godot-specific schema | Knowledge capture categories |
 
 ## What Gets Kept (Stack-Agnostic)
 
 - **Research agents:** best-practices-researcher, framework-docs-researcher, learnings-researcher, repo-research-analyst, git-history-analyzer
-- **Review agents:** code-simplicity-reviewer, performance-oracle, security-sentinel, pattern-recognition-specialist
+- **Review agents:** code-simplicity-reviewer, pattern-recognition-specialist
 - **Skills:** brainstorming, context-management, craft-prompt, plan, research, extend-plan, extend-research, git-worktree, create-agent-skills
 - **Commands:** ce:plan (rewritten), ce:work (rewritten), ce:review (rewritten), ce:compound (rewritten), ce:brainstorm (rewritten), deepen-plan (rewritten), lfg, slfg
 - **Infrastructure:** compound docs loop, file-todos, learnings search
 
 ## New Godot-Specific Components
 
-### Agents to Build
-- **gdscript-reviewer** — Static typing, member ordering, naming conventions, signal naming
-- **godot-architecture-reviewer** — Composition over inheritance, call down/signal up, scene encapsulation, autoload discipline
-- **resource-safety-reviewer** — .tres/.tscn integrity, .duplicate() checks, res:// reference safety, .uid sidecars
-- **gdscript-lint** — gdformat + gdlint (already built)
+### Agents: New (3)
+- **gdscript-reviewer** — Static typing, member ordering, naming conventions, signal naming, FAIL/PASS GDScript examples
+- **resource-safety-reviewer** — .tres/.tscn integrity, .duplicate() checks, res:// reference safety, .uid sidecars, .tres code execution
+- **gdscript-lint** — gdformat + gdlint (already built in RootsGame, port to plugin)
 
-### Skills to Build
-- **godot-patterns** — Scene architecture, GDScript quality, Resource system (already built)
-- **gdscript-lint** — Format and lint checks (already built)
-- **compound-godot** — Godot-specific schema for knowledge capture
+### Agents: Rewritten from CE (4)
+- **godot-architecture-reviewer** (from architecture-strategist) — Scene composition, call down/signal up, autoload discipline, inheritance depth. GDScript FAIL/PASS examples instead of services/controllers.
+- **godot-performance-reviewer** (from performance-oracle) — Scene tree traversal, `_process`/`_physics_process` abuse, typed GDScript perf, draw calls, `set_process(false)` for off-screen. GDScript examples instead of N+1/SQL.
+- **godot-timing-reviewer** (from julik-frontend-races-reviewer) — Signal emission timing, `await` race conditions, async resource loading, `_process` vs `_input` ordering. GDScript examples instead of DOM lifecycle.
+- **godot-export-verifier** (from deployment-verification-agent) — Export build verification, asset integrity, scene reference validation. GDScript/Godot examples instead of SQL migrations.
 
-### Command Rewrites
-All 5 core commands rewritten to reference:
+### Skills: New (1)
+- **compound-godot** — Godot-specific schema for knowledge capture (scene_composition, signal_wiring, resource_management, gdscript_patterns, etc.)
+
+### Skills: Already Built (port to plugin) (2)
+- **godot-patterns** — Scene architecture, GDScript quality, Resource system
+- **gdscript-lint** — Format and lint checks
+
+### Skills: Rewritten from CE (1)
+- **godot-setup** (from setup) — Detect `project.godot`, Godot version, GUT, gdtoolkit instead of Rails/Node/Python
+
+### Commands: Rewritten (5 core + 5 utilities)
+All `/gc:` commands rewritten to reference:
 - GUT instead of Rails/npm test commands
 - gdtoolkit instead of standardrb/erblint
-- Scene validation instead of database migrations
+- Scene/Resource validation instead of database migrations
 - Godot-specific acceptance criteria patterns
+- No Figma, browser testing, or Proof sharing
+
+### Totals
+
+| Category | Keep | Rewrite | New | Remove |
+|---|---|---|---|---|
+| Agents | 10 | 4 | 3 | 15 |
+| Skills | 9 | 2 | 1 | 9 |
+| Commands | 10 | 5 | 0 | 3 |
+| **Total** | **29** | **11** | **4** | **27** |
 
 ## Project-Specific Extension Layer
 
@@ -121,7 +232,7 @@ This separation means the plugin is shareable; project-specific knowledge stays 
 
 - **Naming:** `godot-compound` — short, clear, matches the pattern
 - **Scope of /ce:work rewrite:** Keep incremental commit logic and todo tracking — useful even solo for session focus and clean git history
-- **Agent prompt handling:** Rewrite all examples for Godot — replace Rails/TypeScript examples with GDScript equivalents in every agent (including "stack-agnostic" ones like performance-oracle, security-sentinel)
+- **Agent prompt handling:** Rewrite all examples for Godot — replace Rails/TypeScript examples with GDScript equivalents in every agent (including "stack-agnostic" ones like performance-oracle, pattern-recognition-specialist)
 - **All-at-once scope:** Fork everything systematically in one pass, ensuring every agent and skill is tailored for Godot
 - **Repo structure:** Separate repository (not inside RootsGame). Required for marketplace distribution and clean separation between game code and tooling.
 - **Coexistence with CE:** Keep both plugins permanently. **All** godot-compound commands use the `/gc:` namespace prefix — no exceptions. This includes commands that CE ships without prefix. Full mapping:
