@@ -5,18 +5,17 @@ excluded_directories:
   - "addons"
 
 class-definitions-order:
-  - tool
-  - class_name
+  - tools
+  - classnames
   - extends
-  - docstring
+  - docstrings
   - signals
   - enums
   - consts
-  - static_vars
-  - exported_vars
-  - public_vars
-  - private_vars
-  - onready_vars
-  - func
-  - static_func
-  - inner_class
+  - staticvars
+  - exports
+  - pubvars
+  - prvvars
+  - onreadypubvars
+  - onreadyprvvars
+  - others

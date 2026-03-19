@@ -1,0 +1,21 @@
+{
+  "godotTools.lsp.serverPort": 6005,
+  "godotTools.lsp.headless": true,
+  "godotTools.debugger.port": 6007,
+  "[gdscript]": {
+    "editor.defaultFormatter": "geequlim.godot-tools",
+    "editor.formatOnSave": false,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false
+  },
+  "files.associations": {
+    "*.gd": "gdscript",
+    "*.tscn": "gdscene",
+    "*.tres": "gdresource",
+    "*.gdshader": "gdshader"
+  },
+  "search.exclude": {
+    ".godot/": true,
+    "**/.godot": true
+  }
+}
