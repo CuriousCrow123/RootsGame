@@ -33,17 +33,12 @@ Install: `pipx install "gdtoolkit==4.*"`
 
 Use Context7 automatically for Godot API lookups — call `resolve-library-id` then `query-docs`.
 
-## Compound Engineering
+## Godot Compound Plugin
 
-- Agent dispatch is controlled by `compound-engineering.local.md` at the project root.
-- **Do NOT run `/ce:setup`** — it auto-detects web stacks and overwrites `compound-engineering.local.md` with non-Godot defaults. Manually maintain the file instead.
-- Compound docs created before the Phase B Godot schema will use CE's default categories and may need re-categorization.
+The `godot-compound` plugin provides Godot-specific agents, skills, and commands via the `/gc:` namespace. Installed at `~/.claude/godot-compound/`.
 
-## Phase B Readiness
-
-Build these when triggered:
-- [ ] **gdscript-reviewer agent** — after 5-10 `.gd` files exist
-- [ ] **godot-architecture-reviewer agent** — after 3+ scenes with inter-scene communication
-- [ ] **resource-safety-reviewer agent** — after first `.tres` and `.tscn` files
-- [ ] **compound-godot schema** — after solving 3-5 real Godot problems
-- [ ] **godot-mcp** — after `project.godot` exists
+- **Use `/gc:` commands** for Godot work: `/gc:plan`, `/gc:work`, `/gc:review`, `/gc:compound`, `/gc:brainstorm`
+- **Use `/ce:` commands** for non-Godot side projects (CE stays installed separately)
+- Agent dispatch is controlled by `compound-engineering.local.md` at the project root
+- **Do NOT run `/gc:setup` or `/ce:setup`** — manually maintain `compound-engineering.local.md` instead
+- Compound docs use the Godot schema (`skills/compound-docs/schema.yaml` in the plugin)
