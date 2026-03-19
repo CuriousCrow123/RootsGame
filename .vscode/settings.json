@@ -1,6 +1,8 @@
 {
   "godotTools.lsp.serverPort": 6005,
-  "godotTools.lsp.headless": true,
+  // Set to true when working WITHOUT the Godot editor open.
+  // Set to false (or remove) when Godot editor is running — it provides the LSP.
+  "godotTools.lsp.headless": false,
   "godotTools.debugger.port": 6007,
   "[gdscript]": {
     "editor.defaultFormatter": "geequlim.godot-tools",
