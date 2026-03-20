@@ -102,6 +102,53 @@ All Phase 1-2 code snippets are already implemented and working. These are docum
 
 **A18. inventory snippet (plan lines 456-500)** — Missing `@warning_ignore` on `load_save_data()`. Missing `_display_names` dictionary and `display_name` parameter on `add_item()`.
 
+### G2. Phase 3 Code Snippet Issues (Missed in Initial Audit)
+
+**A25. SceneManager snippet still shows `@onready var _transition_overlay: ColorRect = %TransitionOverlay` (plan line 787)**
+- Plan's note (line 830) was updated to say ".gd autoload", but the code block itself still has the `@onready %TransitionOverlay` pattern. Should show `_ready()` building the overlay programmatically.
+
+**A26. SceneManager snippet shows non-deferred `remove_child`/`add_child` (plan lines 792-793)**
+- `register_player()` uses direct `player.get_parent().remove_child(player)` + `get_tree().root.add_child(player)`. We learned this crashes during `_ready()`. Should show `call_deferred()` pattern.
+
+**A27. SceneManager snippet has no duplicate player guard (plan lines 789-793)**
+- `register_player()` doesn't check if a player already exists. Returning to Room 1 creates duplicates. Should show the `if _player and is_instance_valid(_player): player.queue_free(); return` guard.
+
+**A28. SceneManager snippet uses single `process_frame` (plan line 813)**
+- Already captured as B3, but worth noting the specific plan line. Should use `await get_tree().scene_changed`.
+
+**A29. SceneManager `_place_player_at_spawn` uses `global_position` (plan line 827)**
+- We changed to `global_transform.origin` + `velocity = Vector3.ZERO` to handle the case where transforms haven't propagated. Plan still shows the old pattern.
+
+**A30. SceneManager snippet has no interactable state save/restore (plan lines 795-822)**
+- `change_scene()` doesn't call `_save_interactable_state()` / `_load_interactable_state()`. This gap caused the chest-resets bug. (Will be replaced by WorldState autoload in refactor.)
+
+**A31. SaveManager snippet uses direct method calls (plan lines 956-974)**
+- Already captured as A1, but noting these are *two separate loops* (collect + restore), both needing `.call()`.
+
+**A32. SaveManager `_restore_save_data` single `process_frame` (plan line 969)**
+- Already captured as B3. After `scene_change_completed` fires, one more frame wait. Should use `scene_changed` or trust SceneManager's own wait.
+
+**A33. SaveManager `load_game()` has no debug print (plan line 948)**
+- Implementation has `print("Game loaded from %s" % path)`. Plan doesn't. Minor.
+
+**A34. SaveManager `save_game()` has no debug print (plan line 923)**
+- Implementation has `print("Game saved to %s" % final_path)`. Plan doesn't. Minor.
+
+**A35. Door interactable snippet has no empty-path guard (plan line 856)**
+- Implementation has `if target_scene_path == "": push_warning(...); return`. Plan calls `SceneManager.change_scene()` directly with no guard.
+
+**A36. Plan task 4 says doors need save/load (plan line 989)**
+- "PlayerController, Inventory, QuestTracker, each chest instance, **each door instance**" — but plan line 859 and 991 explicitly say doors are NOT saveable. Contradiction within the plan.
+
+**A37. Alternative Approaches table stale (plan line 1084)**
+- Says "We have 4 max" autoloads. We now have 5 (adding SaveManager) and will have 7 after refactor. Table should be updated.
+
+**A38. Scene Interface Parity section (plan line 1128)**
+- Says "Add to CLAUDE.md as a convention" for interactable/saveable contracts — but this was never done. Should be added during the plan update pass.
+
+**A39. Integration Test Scenario 1 (plan line 1132)**
+- "Full quest loop across rooms" — this test doesn't exist yet. We have `test_quest_loop.gd` (single room) and `test_scene_transition.gd` (transitions only). The cross-room quest loop test is missing.
+
 ### H. Cross-Cutting Stale Content
 
 **A19. Item registry gap (plan line 452)** — Plan says "plan for a proper registry when item count grows" but we already needed display name lookup in Phase 3 (toast showed `item_id`). The "defer to later" created a real bug. Current fix (`_display_names` dict on Inventory) works but the plan should acknowledge this was resolved.
@@ -137,6 +184,13 @@ All Phase 1-2 code snippets are already implemented and working. These are docum
 | A20-A22 | Stale editor instructions | Confusing | Low | Plan update |
 | A23 | Documentation plan stale | Low | Low | Plan update |
 | A24 | Signal chain stale | Misleading | Low | Plan update |
+| A25-A30 | Stale SceneManager snippet | Misleading | Medium | Plan update |
+| A31-A34 | Stale SaveManager snippet | Misleading | Low | Plan update |
+| A35 | Door missing guard | Misleading | Low | Plan update |
+| A36 | Door saveable contradiction | Confusing | Low | Plan update |
+| A37 | Autoload count stale | Stale | Low | Plan update |
+| A38 | CLAUDE.md convention missing | Gap | Low | Plan update |
+| A39 | Cross-room integration test missing | **Test gap** | Medium | Before Phase 4 |
 
 ## Recommended Priority
 
@@ -153,14 +207,18 @@ All Phase 1-2 code snippets are already implemented and working. These are docum
 8. **D7** — Re-evaluate EventBus candidates with current architecture
 
 **Plan documentation updates (batch during refactor):**
-9. **F11 + A13-A18** — Update ALL code snippets in-place (Phases 1-4) to match current implementation: add `@warning_ignore` annotations, correct types, add missing signals/params, fix method signatures
+9. **F11 + A13-A18 + A25-A35** — Update ALL code snippets in-place (Phases 1-4) to match current implementation: add `@warning_ignore` annotations, correct types, add missing signals/params, fix method signatures, deferred reparenting, duplicate guard, `scene_changed` signal, `.call()` dispatch, empty-path guards, debug prints
 10. **C5** — Delete "remove Player from test_room" instruction; replace with "keep Player, SceneManager guards duplicates"
 11. **C6** — Delete editor group assignment instructions (code handles this)
-12. **A1** — Update SaveManager snippet to use `.call()`
+12. **A36** — Fix door saveable contradiction (task 4 says doors are saveable, lines 859/991 say they're not)
 13. **A19** — Mark item registry gap as resolved; note the `_display_names` approach
 14. **A20-A22** — Update editor instructions: remove stale manual autoload registration, update autoload order to include WorldState + HUD, warn against duplicating UI instances into Room 2
-15. **A23** — Update documentation plan to list conventions already added to CLAUDE.md
+15. **A23 + A38** — Update documentation plan; add interactable/saveable convention to CLAUDE.md
 16. **A24** — Update signal chain to include WorldState save/restore in door flow, `display_name` in chest flow
+17. **A37** — Update Alternative Approaches table: autoload count from "4 max" to current count
+
+**Test gap (before Phase 4):**
+18. **A39** — Write cross-room integration test: quest loop across scene transitions (start quest in Room 1, get item in Room 2, return to Room 1, complete quest)
 
 ## Resolved Questions
 
