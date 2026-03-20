@@ -24,9 +24,10 @@ func _ready() -> void:
 
 func register_player(player: PlayerController) -> void:
 	_player = player
-	# Reparent player to root so it persists across scene changes
-	player.get_parent().remove_child(player)
-	get_tree().root.add_child(player)
+	# Reparent player to root so it persists across scene changes.
+	# Must be deferred — _ready() fires while the tree is still building children.
+	player.get_parent().call_deferred("remove_child", player)
+	get_tree().root.call_deferred("add_child", player)
 
 
 func change_scene(target_scene_path: String, spawn_point_id: String = "") -> void:
@@ -63,6 +64,21 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 
 
 func _place_player_at_spawn(spawn_point_id: String) -> void:
-	var spawn: Marker3D = get_tree().current_scene.find_child(spawn_point_id) as Marker3D
-	if spawn and _player:
+	var scene: Node = get_tree().current_scene
+	if not scene:
+		push_warning("SceneManager: current_scene is null, cannot find spawn '%s'" % spawn_point_id)
+		return
+	var spawn: Marker3D = scene.find_child(spawn_point_id) as Marker3D
+	if not spawn:
+		push_warning(
+			"SceneManager: spawn point '%s' not found in '%s'" % [spawn_point_id, scene.name]
+		)
+		return
+	if _player:
 		_player.global_position = spawn.global_position
+		print(
+			(
+				"SceneManager: placed player at spawn '%s' -> %s"
+				% [spawn_point_id, spawn.global_position]
+			)
+		)
