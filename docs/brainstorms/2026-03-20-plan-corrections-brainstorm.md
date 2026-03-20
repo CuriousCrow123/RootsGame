@@ -86,6 +86,36 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 - The plan targets 4.6.1 but never mentions this signal. All timing code uses `process_frame`.
 - Recommendation: Add to the plan's "Research Insights" and to CLAUDE.md conventions.
 
+### G. Phase 1-2 Stale Snippets (Thorough Read)
+
+All Phase 1-2 code snippets are already implemented and working. These are documentation-only fixes — the running code is correct.
+
+**A13. PlayerController snippet (plan lines 230-283)** — Missing `add_to_group("player")`, `add_to_group("saveable")`, `SceneManager.register_player()`, and `@warning_ignore` annotations on deserialization. Uses `@onready` for QuestTracker but implementation uses a getter. Doesn't show `nearest_interactable_changed` signal.
+
+**A14. interaction_prompt.gd snippet (plan lines 331-343)** — Shows bare show/hide methods but omits all the player connection logic (`_connect_to_player`, `nearest_interactable_changed` signal connection). The plan's snippet would produce a prompt that never appears.
+
+**A15. NPC interactable snippet (plan lines 354-377)** — Uses `Resource` type instead of `DialogueResource`. Doesn't pass `self` in `extra_game_states` (needed for `quest_resource` property access). Missing `@export var quest_resource: QuestData`.
+
+**A16. chest_interactable snippet (plan lines 514-546)** — Missing `@warning_ignore` on `load_save_data()`. Missing `display_name` parameter on `add_item()` call. Missing `_ready()` with `add_to_group("saveable")`.
+
+**A17. quest_tracker snippet (plan lines 611-694)** — Missing `@warning_ignore("unsafe_call_argument")` and `@warning_ignore("unsafe_cast")` throughout. Multiple Dictionary accesses return Variant, which strict typing rejects.
+
+**A18. inventory snippet (plan lines 456-500)** — Missing `@warning_ignore` on `load_save_data()`. Missing `_display_names` dictionary and `display_name` parameter on `add_item()`.
+
+### H. Cross-Cutting Stale Content
+
+**A19. Item registry gap (plan line 452)** — Plan says "plan for a proper registry when item count grows" but we already needed display name lookup in Phase 3 (toast showed `item_id`). The "defer to later" created a real bug. Current fix (`_display_names` dict on Inventory) works but the plan should acknowledge this was resolved.
+
+**A20. Pause menu editor instructions (plan lines 1413-1425)** — Creates `.tscn` but doesn't say where to instance it. Same as E9 but the editor instructions section also needs updating to say "instance as child of HUD autoload" or "build programmatically."
+
+**A21. "Before Step 6" editor instructions stale (plan line 1404)** — Says to register SaveManager manually, but we already did it in `project.godot`. Autoload order listed doesn't include WorldState or HUD.
+
+**A22. "Before Step 5" room duplication (plan lines 1383-1388)** — Says "duplicate test_room.tscn structure" without warning NOT to include UI instances (InteractionPrompt, ItemToast, QuestIndicator). If user duplicates with UI nodes, they get duplicates in the HUD autoload world.
+
+**A23. Documentation plan stale (plan line 1453)** — Says "update CLAUDE.md if new conventions emerge" — we've already added two. Need to also add `scene_changed` signal and `call_deferred()` in `_ready()`.
+
+**A24. Signal chain description stale (plan lines 1092-1096)** — Door flow doesn't mention interactable state save/restore. Chest flow doesn't mention `display_name` parameter. Missing WorldState in the flow.
+
 ## Summary Table
 
 | # | Category | Severity | Fix Complexity | When to Fix |
@@ -100,8 +130,13 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 | D8 | Session state | Architecture gap | Medium | Before Phase 4 |
 | E9 | Pause menu | Will break | Medium | Phase 4 Step 8 |
 | E10 | Mode setting | Silent bug | Low | Phase 4 Step 8 |
-| F11 | Stale code | Misleading | Medium | Plan update |
+| F11 | Stale code (Phase 3+) | Misleading | Medium | Plan update |
 | F12 | Missing signal | Missing pattern | Low | CLAUDE.md + plan |
+| A13-A18 | Stale code (Phase 1-2) | Misleading | Medium | Plan update |
+| A19 | Item registry gap | Resolved | Low | Plan update |
+| A20-A22 | Stale editor instructions | Confusing | Low | Plan update |
+| A23 | Documentation plan stale | Low | Low | Plan update |
+| A24 | Signal chain stale | Misleading | Low | Plan update |
 
 ## Recommended Priority
 
@@ -117,11 +152,15 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 7. **A2** — Public `is_transitioning()` accessor
 8. **D7** — Re-evaluate EventBus candidates with current architecture
 
-**Plan documentation updates (low priority):**
-9. **F11** — Add "stale snippets" note to plan
-10. **C5** — Delete "remove Player from test_room" instruction
-11. **C6** — Delete editor group assignment instructions
+**Plan documentation updates (batch during refactor):**
+9. **F11 + A13-A18** — Update ALL code snippets in-place (Phases 1-4) to match current implementation: add `@warning_ignore` annotations, correct types, add missing signals/params, fix method signatures
+10. **C5** — Delete "remove Player from test_room" instruction; replace with "keep Player, SceneManager guards duplicates"
+11. **C6** — Delete editor group assignment instructions (code handles this)
 12. **A1** — Update SaveManager snippet to use `.call()`
+13. **A19** — Mark item registry gap as resolved; note the `_display_names` approach
+14. **A20-A22** — Update editor instructions: remove stale manual autoload registration, update autoload order to include WorldState + HUD, warn against duplicating UI instances into Room 2
+15. **A23** — Update documentation plan to list conventions already added to CLAUDE.md
+16. **A24** — Update signal chain to include WorldState save/restore in door flow, `display_name` in chest flow
 
 ## Resolved Questions
 
