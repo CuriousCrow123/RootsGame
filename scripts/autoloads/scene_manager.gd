@@ -58,11 +58,8 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 		push_error("Failed to change scene: %s" % error_string(err))
 		_is_transitioning = false
 		return
-	# change_scene_to_file is deferred, so we need two frames:
-	# frame 1: the deferred call executes, old scene freed, new scene added
-	# frame 2: new scene's _ready() has run, current_scene is set
-	await get_tree().process_frame
-	await get_tree().process_frame
+	# scene_changed fires after the new scene's _ready() completes (Godot 4.5+)
+	await get_tree().scene_changed
 	# Restore interactable state in the new scene (e.g., opened chests)
 	WorldState.restore()
 	# Position player at spawn point

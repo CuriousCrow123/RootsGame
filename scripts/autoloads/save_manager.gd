@@ -87,12 +87,19 @@ func _collect_save_data() -> Dictionary:
 func _restore_save_data(data: Dictionary) -> void:
 	var scene_path: String = data.get("scene_path", "")
 	if scene_path != "" and scene_path != get_tree().current_scene.scene_file_path:
-		# Route through SceneManager to avoid bypassing transition state
 		SceneManager.change_scene(scene_path)
 		await SceneManager.scene_change_completed
-	# Wait one frame to ensure all nodes are ready
-	await get_tree().process_frame
+	# AFTER scene change: overwrite WorldState with save file data.
+	# This must happen after change_scene's snapshot()/restore() cycle,
+	# otherwise snapshot() clobbers the loaded data.
+	if data.has("world_state"):
+		WorldState.load_save_data(data["world_state"])
+		WorldState.restore()
+	# Restore remaining saveables (Player, Inventory, QuestTracker).
+	# Skip WorldState — already restored above.
 	for node: Node in get_tree().get_nodes_in_group("saveable"):
+		if node == WorldState:
+			continue
 		if node.has_method("get_save_key") and node.has_method("load_save_data"):
 			var key: String = node.call("get_save_key")
 			if data.has(key):
