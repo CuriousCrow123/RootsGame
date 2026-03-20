@@ -11,3 +11,4 @@ paths:
 - `player_registered` signal lives on SceneManager (owns player lifecycle), not EventBus. EventBus is reserved for genuinely cross-system events.
 - `load_save_data()` replaces entire state (not merge) to avoid stale data after loading a save file.
 - When extracting values from untyped `Dictionary` for typed parameters, use an intermediate typed variable: `var world_data: Dictionary = data["world_state"]` before passing to a function expecting `Dictionary`.
+- Typed dictionaries (e.g., `Dictionary[String, Dictionary]`) cannot receive `data.duplicate(true)` from JSON — the duplicate returns untyped `Dictionary`. Rebuild entry-by-entry: `for key in data: _state[key] = (data[key] as Dictionary).duplicate(true)`.

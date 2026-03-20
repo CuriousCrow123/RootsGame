@@ -147,6 +147,7 @@ scenes/
     interaction_prompt.tscn     # Step 2: "Press E" prompt
     item_toast.tscn             # Step 3: item pickup feedback
     quest_indicator.tscn        # Step 4: active quest HUD
+    pause_menu.tscn             # Step 8: pause menu UI
 
 scripts/
   autoloads/
@@ -175,6 +176,7 @@ scripts/
     interaction_prompt.gd       # Step 2: prompt show/hide
     item_toast.gd               # Step 3: pickup notification
     quest_indicator.gd          # Step 4: quest HUD
+    pause_menu.gd               # Step 8: pause menu
 
 resources/
   items/
@@ -1025,26 +1027,31 @@ EventBus will gain signals when a concrete consumer emerges that cannot be conne
 
 2. **Create pause menu UI** — Simple CanvasLayer with Resume, Save, Load, Quit buttons. Opens on `pause` input action (Tab/Start). Calls `GameState.set_mode(GameState.GameMode.MENU)`.
 
-3. **Input blocking per mode** — Formalize which inputs are blocked per GameMode:
+3. **Input blocking per mode** — Existing `!= OVERWORLD` guards in player states already block movement and interaction for both DIALOGUE and MENU. No player state changes needed. Additionally, `get_tree().paused = true` freezes the entire scene tree when the pause menu opens (HUD is `PROCESS_MODE_ALWAYS` so it keeps processing).
    - OVERWORLD: all inputs active
    - DIALOGUE: movement blocked, interact/cancel active (for dialogue advancement)
-   - MENU: all game inputs blocked, only menu navigation active
+   - MENU: entire tree paused, only HUD (pause menu) processes input
 
-4. **Wire pause menu to SaveManager** — Save/Load buttons call `SaveManager.save_game()` / `SaveManager.load_game()`.
+4. **Wire pause menu to SaveManager** — Save/Load buttons call `SaveManager.save_game()` / `SaveManager.load_game()`. Save/Load are disabled when pausing from non-OVERWORLD modes (e.g., during dialogue) to prevent coroutine state corruption.
 
-5. **Remove debug keybinds** — Remove F5/F9 entirely. Save/load is menu-only.
+5. **Remove debug keybinds** — Removed F5/F9 entirely from SaveManager and project.godot. Save/load is menu-only.
 
 6. **Quit behavior** — `get_tree().quit()` for now. Eventually return to a main menu scene (deferred).
 
-7. **Pause menu follows HUD pattern** — Instantiated by HUD autoload like other UI. HUD handles `pause` input in `_unhandled_input()` and toggles menu visibility + GameState mode.
+7. **Pause menu follows HUD pattern** — Instantiated by HUD autoload like other UI. HUD handles `pause` input in `_input()` (not `_unhandled_input()` — Tab conflicts with UI focus navigation) and toggles menu visibility + GameState mode. HUD saves `_mode_before_pause` and restores it on close, so DIALOGUE → MENU → DIALOGUE works correctly.
+
+**Implementation Notes (discovered during build):**
+- CanvasLayer ordering affects rendering but NOT input exclusivity. Required `get_tree().paused` to stop dialogue balloon from intercepting arrow keys behind the pause menu.
+- Pause menu uses `layer = 110` to render above dialogue balloon and SceneManager fade overlay (both layer 100).
+- `WorldState.load_save_data()` must rebuild `Dictionary[String, Dictionary]` entry-by-entry from JSON — `data.duplicate(true)` returns untyped `Dictionary` which fails strict typing assignment.
 
 **Acceptance Criteria:**
-- [x] Tab/Start opens pause menu
-- [x] Game world pauses (or at minimum, input is blocked)
-- [x] Resume returns to OVERWORLD
-- [x] Save/Load work from menu
+- [x] Tab opens/closes pause menu
+- [x] Game world pauses (`get_tree().paused = true`), only pause menu processes input
+- [x] Resume returns to previous mode (OVERWORLD or DIALOGUE)
+- [x] Save/Load work from menu (disabled during dialogue)
 - [x] Quit calls `get_tree().quit()` (main menu deferred)
-- [x] Cannot open pause menu during dialogue
+- [x] Pause menu can open during dialogue (save/load greyed out, resume works)
 - [x] Cannot move during menu
 
 ---
