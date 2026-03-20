@@ -5,11 +5,9 @@
 [ext_resource type="PackedScene" uid="uid://cq51xcvtuigw0" path="res://scenes/player/player.tscn" id="3_cy37o"]
 [ext_resource type="PackedScene" uid="uid://b500akmpl73q6" path="res://scenes/interactables/npc.tscn" id="4_ytumw"]
 [ext_resource type="Resource" uid="uid://co1vma6jkc36c" path="res://resources/dialogue/npc_greeting.dialogue" id="5_fc6vu"]
-[ext_resource type="PackedScene" uid="uid://cb6fu65kbfgdr" path="res://scenes/ui/interaction_prompt.tscn" id="6_0u7lr"]
 [ext_resource type="Resource" uid="uid://csvrwliskel7v" path="res://resources/quests/fetch_quest.tres" id="6_wb54u"]
 [ext_resource type="PackedScene" uid="uid://dbtvb4go86tcq" path="res://scenes/interactables/chest.tscn" id="7_u3u0o"]
-[ext_resource type="PackedScene" uid="uid://bi240k4k0hb8c" path="res://scenes/ui/item_toast.tscn" id="9_knp17"]
-[ext_resource type="PackedScene" uid="uid://bwyvksvwty50p" path="res://scenes/ui/quest_indicator.tscn" id="10_kkuu3"]
+[ext_resource type="PackedScene" uid="uid://ch7u2u3rh8onc" path="res://scenes/interactables/door.tscn" id="11_knp17"]
 
 [sub_resource type="Environment" id="Environment_cy37o"]
 ambient_light_source = 2
@@ -34,7 +32,7 @@ shadow_enabled = true
 environment = SubResource("Environment_cy37o")
 
 [node name="RoomCamera" type="Camera3D" parent="." unique_id=1855410517]
-transform = Transform3D(0.7071067, -0.49999997, 0.49999994, 0, 0.70710677, 0.7071067, -0.7071067, -0.49999997, 0.49999994, 0, 10, 0)
+transform = Transform3D(0.7071067, -0.49999994, 0.49999994, 0, 0.70710677, 0.7071067, -0.7071067, -0.49999994, 0.49999994, 0, 10, 0)
 projection = 1
 current = true
 size = 10.0
@@ -42,6 +40,7 @@ far = 100.0
 script = ExtResource("2_3gt1g")
 
 [node name="DefaultSpawn" type="Marker3D" parent="." unique_id=638058954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Player" parent="." unique_id=515478349 instance=ExtResource("3_cy37o")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -51,11 +50,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 0)
 dialogue_resource = ExtResource("5_fc6vu")
 quest_resource = ExtResource("6_wb54u")
 
-[node name="InteractionPrompt" parent="." unique_id=1165157183 instance=ExtResource("6_0u7lr")]
-
 [node name="Chest" parent="." unique_id=1354572945 instance=ExtResource("7_u3u0o")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.4, 15.6)
 
-[node name="ItemToast" parent="." unique_id=1368353301 instance=ExtResource("9_knp17")]
+[node name="spawn_from_room_2" type="Marker3D" parent="." unique_id=87716876]
+transform = Transform3D(0.70710677, -0.5, 0.5, 0, 0.7071068, 0.70710677, -0.70710677, -0.5, 0.5, 0, 1, 15)
 
-[node name="QuestIndicator" parent="." unique_id=1221383650 instance=ExtResource("10_kkuu3")]
+[node name="Door" parent="." unique_id=1086833551 instance=ExtResource("11_knp17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 15.85)
+target_scene_path = "uid://b83mxdch8lgjb"
+target_spawn_point = "spawn_from_room_1"
+door_id = "door_room1_to_room2"

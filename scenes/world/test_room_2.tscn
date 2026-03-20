@@ -45,4 +45,5 @@ door_id = "door_room2_to_room1"
 
 [node name="Chest" parent="." unique_id=1354572945 instance=ExtResource("4_7g7j3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+item_quantity = null
 chest_id = "chest_room2"
