@@ -159,6 +159,33 @@ The following work should be planned and executed before Phase 4 begins:
 
 7. **Add architecture notes** — Document HUD autoload pattern, WorldState autoload, `scene_changed` signal in plan's architecture section.
 
+## External Research Validation
+
+Three proposed patterns were validated against Godot documentation and community best practices.
+
+### HUD Autoload Pattern — VALIDATED
+- Instantiating `.tscn` scenes from an autoload's `_ready()` is a standard, documented Godot pattern.
+- CanvasLayer children of autoloads handle input correctly. One nuance: `_input()` is called in **reverse** tree order across autoloads, so the HUD autoload's position in project.godot matters if it needs to consume input before other autoloads.
+- Community consensus: single CanvasLayer-rooted autoload for persistent HUD, with individual panels as child scenes. Multiple UI autoloads cause "HUD appears in main menu" problems.
+- Sources: [Godot Forum: Global CanvasLayer for UI](https://forum.godotengine.org/t/global-canvaslayer-for-ui/112787), [Godot Docs: First 2D Game HUD](https://github.com/godotengine/godot-docs/blob/4.5/getting_started/first_2d_game/06.heads_up_display.md)
+
+### `scene_changed` Signal — VALIDATED
+- Available in Godot 4.5+ ([PR #102986](https://github.com/godotengine/godot/pull/102986)). Our target is 4.6.1.
+- Fires **after** the new scene is in the tree and `current_scene` is valid. Works with both `change_scene_to_file()` and `change_scene_to_packed()`.
+- **If `change_scene_to_file()` fails, the signal does NOT fire.** Must check the `Error` return value before awaiting. Our existing code already does this.
+- No known bugs in 4.5/4.6 for the runtime signal.
+- Sources: [Godot Docs: SceneTree](https://docs.godotengine.org/en/stable/classes/class_scenetree.html), [PR #102986](https://github.com/godotengine/godot/pull/102986)
+
+### Autoload Count (7) — VALIDATED
+- 7 autoloads is within normal range for RPGs. Official docs have no maximum. Community projects commonly have 5-10.
+- Initialization order is guaranteed to match `project.godot` listing order for `_ready()`. `_input()` is reverse order (standard Godot behavior).
+- No concerns at this scale. The "Services pattern for 8+" threshold from the plan is conservative — we're fine at 7.
+- Sources: [Godot Docs: Autoloads vs Regular Nodes](https://docs.godotengine.org/en/stable/tutorials/best_practices/autoloads_versus_internal_nodes.html), [Godot Forum: Autoload input order](https://forum.godotengine.org/t/within-multiple-autoloads-input-is-called-in-reverse-execution-order/120257)
+
+### Design Impact from Research
+
+One finding affects our design: **`_input()` reverse order.** The HUD autoload should be listed **last** in project.godot so it receives `_input()` **first** (reverse order). This means the pause menu (future Phase 4, part of HUD) can consume the `pause` input action before other autoloads process it. Current proposed order already has HUD last — confirmed correct.
+
 ### Workflow
 
 The user's planned approach:
