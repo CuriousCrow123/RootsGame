@@ -300,14 +300,14 @@ func load_save_data(data: Dictionary) -> void:
 8. **Update main scene** — Replace placeholder main.tscn to load test_room.tscn (or change `run/main_scene` in project settings to test_room).
 
 **Acceptance Criteria:**
-- [ ] Player moves in 8 directions with analog input (WASD + gamepad left stick)
-- [ ] Movement is camera-relative (pressing W moves "forward" relative to the isometric view)
-- [ ] Player collides with GridMap walls and cannot pass through them
-- [ ] Camera maintains fixed orthographic angle, follows player
-- [ ] Player StateMachine transitions between Idle and Walk states
-- [ ] Collision layers configured: player on layer 2, environment on layer 1
-- [ ] `get_save_data()` / `load_save_data()` implemented on PlayerController
-- [ ] Runs at 60fps in the editor
+- [x] Player moves in 8 directions with analog input (WASD + gamepad left stick)
+- [x] Movement is camera-relative (pressing W moves "forward" relative to the isometric view)
+- [x] Player collides with GridMap walls and cannot pass through them
+- [x] Camera maintains fixed orthographic angle, follows player
+- [x] Player StateMachine transitions between Idle and Walk states
+- [x] Collision layers configured: player on layer 2, environment on layer 1
+- [x] `get_save_data()` / `load_save_data()` implemented on PlayerController
+- [x] Runs at 60fps in the editor
 
 ##### Step 2: Interactable Pattern + NPC with Dialogue
 
@@ -404,13 +404,13 @@ Nathan: Welcome, traveler! I've been waiting for someone brave enough to help.
 10. **Wire GameState input blocking** — In player Idle and Walk states, check `GameState.current_mode == GameState.GameMode.OVERWORLD` before processing movement. When mode is DIALOGUE, player input is suppressed.
 
 **Acceptance Criteria:**
-- [ ] Walking near the NPC shows "Press E" interaction prompt
-- [ ] Walking away hides the prompt
-- [ ] Pressing E opens dialogue balloon with NPC text
-- [ ] Player cannot move during dialogue (GameState = DIALOGUE)
-- [ ] Dialogue choices work (selecting a response shows the correct follow-up)
-- [ ] Dialogue ends cleanly, GameState returns to OVERWORLD, player can move again
-- [ ] Pressing E again re-triggers dialogue (NPC is re-interactable)
+- [x] Walking near the NPC shows "Press E" interaction prompt
+- [x] Walking away hides the prompt
+- [x] Pressing E opens dialogue balloon with NPC text
+- [x] Player cannot move during dialogue (GameState = DIALOGUE)
+- [x] Dialogue choices work (selecting a response shows the correct follow-up)
+- [x] Dialogue ends cleanly, GameState returns to OVERWORLD, player can move again
+- [x] Pressing E again re-triggers dialogue (NPC is re-interactable)
 - [ ] Interaction prompt only shows for the nearest interactable if multiple are in range (not tested yet but pattern supports it)
 
 > **Research Insight — Interaction Detection:** Player-owned Area3D (interactor pattern) is the community-preferred approach. It follows "call down" (player calls `interact()` on detected bodies), handles multiple overlapping interactables naturally (pick closest by distance), and requires only one Area3D node vs. N per-interactable. Keep distance comparison inside signal callbacks only — never poll `get_overlapping_bodies()` per frame.
@@ -557,14 +557,14 @@ func load_save_data(data: Dictionary) -> void:
    - `test_save_load_roundtrip` — `get_save_data()` → `load_save_data()` preserves state
 
 **Acceptance Criteria:**
-- [ ] Walking near chest shows interaction prompt
-- [ ] Pressing E on chest adds item to inventory (toast notification appears)
-- [ ] Pressing E again on opened chest does nothing (no duplicate items)
-- [ ] `has_item("quest_amulet")` returns true after pickup
+- [x] Walking near chest shows interaction prompt
+- [x] Pressing E on chest adds item to inventory (toast notification appears)
+- [x] Pressing E again on opened chest does nothing (no duplicate items)
+- [x] `has_item("quest_amulet")` returns true after pickup
 - [ ] Chest visual changes to opened state (even if just a color change for prototype)
-- [ ] Inventory save/load roundtrip preserves items
+- [x] Inventory save/load roundtrip preserves items
 - [ ] Chest save/load roundtrip preserves opened state
-- [ ] All inventory unit tests pass
+- [x] All inventory unit tests pass
 
 ##### Step 4: Quest — "Fetch Item from Chest"
 
@@ -746,17 +746,17 @@ else
     - Verifies signals fire in correct order
 
 **Acceptance Criteria:**
-- [ ] Talking to NPC before accepting quest shows intro dialogue with choice
-- [ ] Accepting quest starts tracking (quest indicator shows "The Old Amulet")
-- [ ] Talking to NPC mid-quest (without item) shows "have you found it?" dialogue
-- [ ] Picking up amulet from chest triggers item toast
-- [ ] Talking to NPC with amulet in inventory triggers recognition dialogue
-- [ ] Quest completes, amulet is removed from inventory
-- [ ] Talking to NPC after completion shows thank-you dialogue
-- [ ] Quest indicator updates at each step and shows "Complete" at end
-- [ ] All quest tracker unit tests pass
-- [ ] Integration test for full quest loop passes
-- [ ] **Playable loop milestone achieved:** One room, one NPC, one quest, all systems integrated
+- [x] Talking to NPC before accepting quest shows intro dialogue with choice
+- [x] Accepting quest starts tracking (quest indicator shows "The Old Amulet")
+- [x] Talking to NPC mid-quest (without item) shows "have you found it?" dialogue
+- [x] Picking up amulet from chest triggers item toast
+- [x] Talking to NPC with amulet in inventory triggers recognition dialogue
+- [x] Quest completes, amulet is removed from inventory
+- [x] Talking to NPC after completion shows thank-you dialogue
+- [x] Quest indicator updates at each step and shows "Complete" at end
+- [x] All quest tracker unit tests pass
+- [x] Integration test for full quest loop passes
+- [x] **Playable loop milestone achieved:** One room, one NPC, one quest, all systems integrated
 
 ---
 
@@ -1330,52 +1330,51 @@ Agent will complete its script work for a step first, then hand you the scene in
 
 ### Before Step 3
 
-- [ ] **Chest scene** (`scenes/interactables/chest.tscn`):
+- [x] **Chest scene** (`scenes/interactables/chest.tscn`):
   1. Scene > New Scene > Other Node > **StaticBody3D** (rename to "Chest")
   2. Inspector: Collision Layer = 4 (interactables), Mask = none
   3. Add children:
-     - **CollisionShape3D** — Shape: New BoxShape3D (size: 0.8×0.6×0.6)
-     - **MeshInstance3D** — Mesh: New BoxMesh (same dimensions). Material: brown/wood color. Position Y=0.3.
+     - **CollisionShape3D** — Shape: New BoxShape3D (size: 0.8×0.8×0.8)
+     - **MeshInstance3D** — Mesh: New BoxMesh (same dimensions). Material: brown/wood color.
   4. Attach `res://scripts/interactables/chest_interactable.gd` to root
-  5. Save as `scenes/interactables/chest.tscn`
+  5. Set exports: Item = key_item.tres, Chest Id = "chest_amulet". Add to "saveable" group.
+  6. Save as `scenes/interactables/chest.tscn`
 
-- [ ] **Item toast scene** (`scenes/ui/item_toast.tscn`):
-  1. Scene > New Scene > Other Node > **CanvasLayer** (rename to "ItemToast")
+- [x] **Item toast scene** (`scenes/ui/item_toast.tscn`):
+  1. Scene > New Scene > Other Node > **CanvasLayer** (rename to "ItemToast", Layer = 10)
   2. Add children:
-     - **PanelContainer** — Anchors: top-center. Custom minimum size: 300×50.
-       - **Label** (rename to "ToastLabel") — Text: "Acquired: Item Name". Horizontal alignment: Center.
+     - **PanelContainer** — Anchors: center-bottom. Custom minimum size: 300×40.
+       - **Label** — Text: "Acquired: Item". Horizontal alignment: Center.
   3. Attach `res://scripts/ui/item_toast.gd` to root
-  4. Set `visible = false` in inspector
-  5. Save as `scenes/ui/item_toast.tscn`
+  4. Save as `scenes/ui/item_toast.tscn`
 
-- [ ] **Place chest in test room** — Open `test_room.tscn`:
+- [x] **Place chest in test room** — Open `test_room.tscn`:
   1. Instance `scenes/interactables/chest.tscn` as child of TestRoom
-  2. Position opposite side of room from NPC (e.g., X=-4, Z=3)
-  3. Inspector: set `chest_id` = "test_room_chest", assign `item` = `res://resources/items/key_item.tres` (agent creates this), `item_quantity` = 1
-  4. Node dock > Groups > type "saveable" > Add
-  5. Save test_room.tscn
+  2. Position in room reachable by player, not overlapping NPC
+  3. Exports pre-configured from chest scene (Item = key_item.tres, Chest Id = "chest_amulet")
+  4. Save test_room.tscn
 
-- [ ] **Add ItemToast to test room** — Instance `scenes/ui/item_toast.tscn` as child of TestRoom.
+- [x] **Add ItemToast to test room** — Instance `scenes/ui/item_toast.tscn` as child of TestRoom.
 
 ### Before Step 4
 
-- [ ] **Quest indicator scene** (`scenes/ui/quest_indicator.tscn`):
-  1. Scene > New Scene > Other Node > **CanvasLayer** (rename to "QuestIndicator")
+- [x] **Quest indicator scene** (`scenes/ui/quest_indicator.tscn`):
+  1. Scene > New Scene > Other Node > **CanvasLayer** (rename to "QuestIndicator", Layer = 10)
   2. Add children:
-     - **PanelContainer** — Anchors: top-left. Offset: ~20px from top-left corner.
+     - **PanelContainer** — Anchors: top-right. Custom minimum size: 250×60.
        - **VBoxContainer**:
-         - **Label** (rename to "QuestTitle") — Bold font, text: "Quest Name"
-         - **Label** (rename to "QuestStep") — Smaller font, text: "Current objective"
+         - **Label** (rename to "QuestNameLabel") — Text: "Quest Name"
+         - **Label** (rename to "StepLabel") — Smaller font, text: "Current step..."
   3. Attach `res://scripts/ui/quest_indicator.gd` to root
-  4. Set `visible = false` in inspector
-  5. Save as `scenes/ui/quest_indicator.tscn`
+  4. Save as `scenes/ui/quest_indicator.tscn`
 
-- [ ] **Add QuestTracker to player** — Open `scenes/player/player.tscn`:
+- [x] **Add QuestTracker to player** — Open `scenes/player/player.tscn`:
   1. Add child **Node** to Player root (rename to "QuestTracker")
   2. Attach `res://scripts/quest/quest_tracker.gd`
   3. Save player.tscn
 
-- [ ] **Add QuestIndicator to test room** — Instance `scenes/ui/quest_indicator.tscn` as child of TestRoom.
+- [x] **Add QuestIndicator to test room** — Instance `scenes/ui/quest_indicator.tscn` as child of TestRoom.
+- [x] **Set NPC quest_resource** — Select NPC instance in test_room.tscn, Inspector > Quest Resource > Load `res://resources/quests/fetch_quest.tres`.
 
 ### Before Step 5
 

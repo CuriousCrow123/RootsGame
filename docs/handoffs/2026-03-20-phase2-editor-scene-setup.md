@@ -484,34 +484,46 @@ After building all scenes and saving, run the game (F5 or Play):
 
 ## What Was Actually Done
 
-*(Fill this in as you complete each step. Record any deviations, issues, or creative choices.)*
+All scenes built and tested. Two issues discovered and fixed during testing.
 
 ### Chest Scene
-- [ ] Built as instructed
-- Notes:
+- [x] Built as instructed
+- Collision layer 4, BoxShape3D 0.8^3, item = key_item.tres, chest_id = "chest_amulet", saveable group
 
 ### Item Toast Scene
-- [ ] Built as instructed
-- Notes:
+- [x] Built as instructed
+- CanvasLayer layer 10, PanelContainer > Label, bottom-center anchored
 
 ### Quest Indicator Scene
-- [ ] Built as instructed
-- Notes:
+- [x] Built as instructed
+- CanvasLayer layer 10, PanelContainer > VBoxContainer > QuestNameLabel + StepLabel, top-right anchored
 
 ### Test Room Updates
-- [ ] Chest instanced and positioned
-- [ ] ItemToast instanced
-- [ ] QuestIndicator instanced
-- [ ] NPC quest_resource = fetch_quest.tres
-- [ ] QuestTracker verified on Player
-- Notes:
+- [x] Chest instanced and positioned
+- [x] ItemToast instanced
+- [x] QuestIndicator instanced
+- [x] NPC quest_resource = fetch_quest.tres
+- [x] QuestTracker verified on Player (added to player.tscn)
 
 ### Testing Results
-- [ ] Movement works
-- [ ] Chest interaction works (prompt + pickup + toast)
-- [ ] Quest offer dialogue works
-- [ ] Quest indicator appears
-- [ ] Quest turn-in dialogue works
-- [ ] Quest completes successfully
-- [ ] Post-completion dialogue works
-- Issues encountered:
+- [x] Movement works
+- [x] Chest interaction works (prompt + pickup + toast)
+- [x] Quest offer dialogue works
+- [x] Quest indicator appears
+- [x] Quest turn-in dialogue works
+- [x] Quest completes successfully
+- [x] Post-completion dialogue works
+
+### Issues Encountered and Resolved
+
+#### Quest not completing after turning in amulet
+
+- **Symptom:** NPC said "You found it! Wonderful!" but quest indicator never showed "Complete!" and talking to NPC again produced "Have you found the amulet yet?"
+- **Cause:** The fetch quest has two steps (get_amulet → return_amulet → complete). The dialogue only called `advance_quest("fetch_amulet")` once, moving from get_amulet to return_amulet but never reaching completion. On the next conversation, `is_quest_active` was true but `has_item` was false (item was removed), so the else branch fired.
+- **Fix:** Added a second `do advance_quest("fetch_amulet")` call in the turn-in dialogue. First advance finishes get_amulet → return_amulet, second finishes return_amulet → complete.
+
+#### Quest indicator showing snake_case quest ID
+
+- **Symptom:** Quest indicator showed "fetch_amulet" instead of "The Old Amulet"
+- **Cause:** `quest_indicator.gd` set `_quest_name_label.text = quest_id` (the raw string ID) instead of the human-readable display name from QuestData.
+- **Fix:** Added `get_display_name(quest_id)` method to QuestTracker that looks up `quest_data.display_name`. Updated quest_indicator.gd to call it.
