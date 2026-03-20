@@ -424,8 +424,8 @@ func connect_to_player(player: PlayerController) -> void:
 **Steps:**
 - [x] Update CLAUDE.md with new conventions
 - [x] Update plan document (batch all stale snippet/instruction fixes)
-- [ ] Run `gdformat --check . && gdlint .`
-- [ ] Commit: `docs: update CLAUDE.md conventions and plan snippets for post-Phase 3 patterns`
+- [x] Run `gdformat --check . && gdlint .`
+- [x] Commit: `docs: update CLAUDE.md conventions and plan snippets for post-Phase 3 patterns`
 
 ### Phase 6: Cross-Room Integration Test (if time permits)
 
