@@ -16,10 +16,11 @@ func interact(player: PlayerController) -> void:
 	GameState.set_mode(GameState.GameMode.DIALOGUE)
 	# Pass self so dialogue can access quest_resource property.
 	# DM iterates extra_game_states to resolve method calls and property lookups.
-	DialogueManager.show_dialogue_balloon(
+	DialogueManager.call(
+		"show_dialogue_balloon",
 		dialogue_resource, dialogue_title, [quest_tracker, inventory, self]
 	)
-	await DialogueManager.dialogue_ended
+	await Signal(DialogueManager, "dialogue_ended")
 	# Guard: NPC may have been freed during dialogue (scene transition, load game)
 	if not is_instance_valid(self):
 		return

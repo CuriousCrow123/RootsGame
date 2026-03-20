@@ -22,7 +22,7 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 
 EventBus="*res://scripts/autoloads/event_bus.gd"
 GameState="*res://scripts/autoloads/game_state.gd"
-DialogueManager="*uid://c3rodes2l3gxb"
+DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 WorldState="*res://scripts/autoloads/world_state.gd"
 SceneManager="*res://scripts/autoloads/scene_manager.gd"
 SaveManager="*res://scripts/autoloads/save_manager.gd"
