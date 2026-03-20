@@ -1183,25 +1183,47 @@ Not all interactables are saveable. NPCs and Doors (stateless in prototype) are 
 
 Agent will complete its script work for a step first, then hand you the scene instructions. You build the scenes, then we test together.
 
+> **Prompt for agent when writing editor instructions:**
+> The user builds scenes manually in the Godot editor. Editor instructions must be **step-by-step, explicit, and assume no prior Godot knowledge**. For every node:
+> - State the exact node type to add and what to rename it to
+> - List every Inspector property to change, with the exact value (e.g., "Rotation X: **-45°**" not "tilt downward")
+> - Explain **why** non-obvious values are set (e.g., "Y=0.9 because a 1.8-tall capsule centered at Y=0 buries half underground")
+> - For collision layers/masks, state which **bit numbers** to enable and name them (e.g., "Mask = bits 1 + 3 (environment + npcs)")
+> - Explain the consequence of getting it wrong (e.g., "if Current is not true, you see a grey screen")
+> - Include a **verification step** after anything that can silently fail (e.g., "click Preview to confirm the camera sees the scene", "check that `shapes` is not an empty array in the .tres file")
+> - Show the expected node tree structure when the hierarchy matters
+> - Do not assume the user will know which Inspector section a property lives in — give the full path (e.g., "Inspector > Collision > Mask")
+
 ### Before Step 1
 
-- [x] **MeshLibrary** — This requires the editor's "Convert To" workflow:
-  1. Create new scene (Scene > New Scene > Other Node > Node3D)
-  2. Add child MeshInstance3D nodes for each tile type:
-     - "Floor": PlaneMesh (2m × 2m). Add StaticBody3D child with CollisionShape3D (BoxShape3D, 2×0.1×2)
-     - "Wall": BoxMesh (2m × 3m × 0.4m). Add StaticBody3D child with CollisionShape3D matching the box
-     - "Corner": BoxMesh (0.4m × 3m × 0.4m). Add StaticBody3D child with CollisionShape3D matching
-  3. Save this source scene anywhere temporarily (e.g., `resources/mesh_library_source.tscn`)
-  4. Scene menu > Export As... > MeshLibrary > Save as `resources/mesh_library.tres`
-  5. You can delete the source scene after export
+- [x] **MeshLibrary** — This requires the editor's "Export As MeshLibrary" workflow. **Every MeshInstance3D must have a StaticBody3D > CollisionShape3D child**, otherwise GridMap tiles will have no collision and the player will walk through walls/floors.
+  1. Create new scene (Scene > New Scene > Other Node > **Node3D** as root)
+  2. Add child **MeshInstance3D** nodes for each tile type. The converter only picks up **children** of the root — the root node itself is ignored:
+     - **"Floor"** (MeshInstance3D): Mesh = new BoxMesh (default 1×1×1). Add child **StaticBody3D**, and under that add **CollisionShape3D** with a new BoxShape3D (keep default 1×1×1 to match the mesh).
+     - **"Wall"** (MeshInstance3D): Mesh = new BoxMesh, set size to (1, 3, 1). Add child **StaticBody3D**, and under that add **CollisionShape3D** with a new BoxShape3D, set size to **(1, 3, 1)** to match the mesh exactly.
+  3. Verify the scene tree looks like:
+     ```
+     Node3D (root)
+       ├── Wall (MeshInstance3D)
+       │   └── StaticBody3D
+       │       └── CollisionShape3D (BoxShape3D, size 1×3×1)
+       └── Floor (MeshInstance3D)
+           └── StaticBody3D
+               └── CollisionShape3D (BoxShape3D, size 1×1×1)
+     ```
+  4. Save this source scene to `resources/mesh_library_source.tscn` (keep it — you'll need it to re-export if you add tiles later)
+  5. Scene menu > **Export As... > MeshLibrary** > Save as `resources/mesh_library.tres`
+  6. **Verify collision was exported:** Open `mesh_library.tres` in the text editor and confirm `item/0/shapes` and `item/1/shapes` are **not empty arrays**. If they show `shapes = []`, the StaticBody3D/CollisionShape3D hierarchy is wrong — go back to step 2.
 
 - [x] **Player scene** (`scenes/player/player.tscn`):
   1. Scene > New Scene > Other Node > **CharacterBody3D** (rename to "Player")
-  2. Inspector: Collision > Layer = 2 (player), Mask = 1 (environment)
+  2. Inspector > Collision:
+     - **Layer** = 2 (player) — only bit 2 enabled
+     - **Mask** = 1 + 3 (environment + npcs) — bits 1 and 3 enabled. **The mask controls what `move_and_slide()` collides with.** If npcs (layer 3) is not in the mask, the player walks straight through NPC bodies.
   3. Add children in this order:
-     - **CollisionShape3D** — Shape: New CapsuleShape3D (radius=0.3, height=1.8)
-     - **MeshInstance3D** — Mesh: New CapsuleMesh (same dimensions as collision). Position Y=0.9 so feet are at origin
-     - **Area3D** (rename to "InteractionArea") — Collision Layer = none, Mask = 3 + 4 (npcs + interactables). Add child CollisionShape3D with SphereShape3D (radius=2.0)
+     - **CollisionShape3D** — Shape: New CapsuleShape3D (radius=0.3, height=1.8). **Position Y=0.9** (a capsule with height 1.8 centered at Y=0 buries half underground; Y=0.9 places the bottom at floor level).
+     - **MeshInstance3D** — Mesh: New CapsuleMesh (radius=0.3, height=1.8). **Position Y=0.9** (must match CollisionShape3D offset).
+     - **Area3D** (rename to "InteractionArea") — This detects nearby interactables for the "Press E" prompt. Collision **Layer = none** (all bits off — the area doesn't need to be detected by others), **Mask = 3 + 4** (npcs + interactables — these are the layers it scans for). Add child **CollisionShape3D** with **SphereShape3D** (radius=2.0). The 2.0m radius defines how close the player must be to trigger the prompt.
      - **StateMachine** (type: Node, attach `res://shared/state_machine/state_machine.gd`)
        - **Idle** (type: Node, attach `res://scripts/player/player_states/player_idle.gd`)
        - **Walk** (type: Node, attach `res://scripts/player/player_states/player_walk.gd`)
@@ -1213,15 +1235,54 @@ Agent will complete its script work for a step first, then hand you the scene in
 
   *Note: QuestTracker node is added in Step 4. Omit it for now.*
 
+  > **Collision layer vs. mask — quick reference:**
+  > - **Layer** = "I am on these layers" (what others detect me as)
+  > - **Mask** = "I detect/collide with these layers" (what I scan for)
+  > - For CharacterBody3D, the mask determines what `move_and_slide()` treats as solid. If a StaticBody3D is on layer 3 but the player's mask doesn't include 3, the player phases through it.
+  > - For Area3D, the mask determines which bodies trigger `body_entered`/`body_exited` signals.
+
 - [x] **Test room scene** (`scenes/world/test_room.tscn`):
   1. Scene > New Scene > Other Node > **Node3D** (rename to "TestRoom")
-  2. Add children:
-     - **GridMap** — Inspector: assign `resources/mesh_library.tres` as Mesh Library. Paint a ~10×10 enclosed room: floor tiles across the area, wall tiles around the perimeter. Use the GridMap editor toolbar (bottom panel).
-     - **DirectionalLight3D** — Rotation: X=-45°, Y=30°. Shadow enabled.
-     - **WorldEnvironment** — Environment: New Environment. Ambient Light: source=Color, color=#404040, energy=0.5. Background: mode=Custom Color, color=#1a1a2e.
-     - **Camera3D** (rename to "RoomCamera") — Projection=Orthographic, Size=10, Near=0.05, Far=100. Rotation: X=-30°, Y=45°. Position: raise Y enough to see the room (~15). Attach `res://scripts/camera/camera_follow.gd`
-     - Instance the **Player scene** (`scenes/player/player.tscn`) — Position at room center
-     - **Marker3D** (rename to "DefaultSpawn") — Position at player start location
+  2. Add children in this order:
+
+     **GridMap:**
+     - Add child > GridMap node
+     - Inspector: Mesh Library = load `resources/mesh_library.tres`
+     - Inspector: Cell Size = (1, 1, 1)
+     - Use the GridMap toolbar (bottom panel) to paint tiles:
+       - Select the **Floor** tile, paint a ~16×32 area on **Y level 0** (the default level)
+       - Select the **Wall** tile, paint walls around the perimeter on **Y level 1** (one layer up — walls are 3 units tall with origin at center, so placing on level 1 raises them above the floor). Use the GridMap toolbar's level selector to switch levels.
+     - **Verify collision:** After painting, click **Play Scene (F6)**. If the player walks through walls, the MeshLibrary is missing collision shapes — go back to the MeshLibrary instructions above.
+
+     **DirectionalLight3D:**
+     - Add child > DirectionalLight3D
+     - Inspector: Transform > Rotation = X: **-45°**, Y: **30°**, Z: 0°
+     - Inspector: Shadow > Enabled = **true**
+
+     **WorldEnvironment:**
+     - Add child > WorldEnvironment
+     - Inspector: Environment = New Environment
+     - In the Environment resource: Ambient Light > Source = **Color**, Color = **#404040**, Energy = **0.5**
+
+     **Camera3D (rename to "RoomCamera"):**
+     - Add child > Camera3D, rename to "RoomCamera"
+     - Inspector: Projection = **Orthographic**
+     - Inspector: Size = **10** (controls zoom — how many world units fit vertically on screen)
+     - Inspector: Near = **0.05**, Far = **100**
+     - Inspector: **Current = true** (required — without this Godot uses no camera and you see a grey screen)
+     - Inspector: Transform > Rotation = X: **-45°**, Y: **45°**, Z: **0°**. The X rotation tilts the camera to look downward (negative = nose points down). The Y rotation gives the isometric angle. **Do not use positive X values** — that makes the camera look upward away from the scene.
+     - Inspector: Transform > Position = Y: **10** (puts the camera above the scene; the exact value doesn't matter for orthographic rendering, but it must be high enough that the scene is between the near and far clip planes)
+     - Attach script: `res://scripts/camera/camera_follow.gd`
+     - **Verify in editor:** Click the "Preview" checkbox on the Camera3D node. You should see the GridMap tiles from above at an angle. If you see grey, the rotation is wrong.
+
+     **Player:**
+     - Instance `scenes/player/player.tscn` as child of TestRoom
+     - Inspector: Transform > Position = (0, 1, 0) — Y=1 places the player on top of the floor tiles
+
+     **DefaultSpawn:**
+     - Add child > Marker3D, rename to "DefaultSpawn"
+     - Position at the player's start location (same as Player position)
+
   3. Save as `scenes/world/test_room.tscn`
 
 - [x] **Update main scene** — Project > Project Settings > General > Run > Main Scene: change to `res://scenes/world/test_room.tscn`
@@ -1232,12 +1293,14 @@ Agent will complete its script work for a step first, then hand you the scene in
 
 - [x] **NPC scene** (`scenes/interactables/npc.tscn`):
   1. Scene > New Scene > Other Node > **StaticBody3D** (rename to "NPC")
-  2. Inspector: Collision Layer = 3 (npcs), Mask = none (NPCs don't detect anything)
+  2. Inspector > Collision:
+     - **Layer** = 3 (npcs) — only bit 3 enabled. This is what the player's InteractionArea scans for (mask bit 3) and what the player's CharacterBody3D collides with (mask bit 3).
+     - **Mask** = none (all bits off) — NPCs don't need to detect or collide with anything themselves.
   3. Add children:
-     - **CollisionShape3D** — Shape: New CapsuleShape3D (radius=0.3, height=1.8)
-     - **MeshInstance3D** — Mesh: New CapsuleMesh. Give it a different material color than the player (e.g., blue surface) so you can tell them apart. Position Y=0.9.
-  4. Attach `res://scripts/interactables/npc_interactable.gd` to root
-  5. Inspector: set `npc_id` = "nathan", `dialogue_title` = "start". Leave `dialogue_resource` empty for now (assigned after dialogue file is created).
+     - **CollisionShape3D** — Shape: New CapsuleShape3D (radius=0.3, height=1.8). Inspector > Transform > Position Y = **0.9** (same offset as player — places bottom at floor level).
+     - **MeshInstance3D** — Mesh: New CapsuleMesh (radius=0.3, height=1.8). Inspector > Transform > Position Y = **0.9**. Give it a visually distinct material: Inspector > Mesh > expand > Material > New StandardMaterial3D > Albedo > Color = blue or another color that contrasts with the player.
+  4. Select root "NPC" node > attach script `res://scripts/interactables/npc_interactable.gd`
+  5. Inspector (script exports): set `npc_id` = "nathan", `dialogue_title` = "start". Leave `dialogue_resource` empty for now (assigned after the agent creates the `.dialogue` file).
   6. Save as `scenes/interactables/npc.tscn`
 
 - [x] **Interaction prompt scene** (`scenes/ui/interaction_prompt.tscn`):
