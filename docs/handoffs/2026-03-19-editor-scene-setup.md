@@ -131,6 +131,7 @@ All 10 steps completed. Deviations and specifics recorded below.
 - Both CollisionShape3D and MeshInstance3D set to Position Y=0.9
 - Custom StandardMaterial3D color applied to MeshInstance3D
 - StateMachine `initial_state` set to Idle node via Inspector drag
+- Collision Mask updated to 5 (bits 1+3) — environment + npcs — so `move_and_slide()` collides with both GridMap and NPC StaticBody3D
 
 ### Test Room
 
@@ -200,3 +201,23 @@ All 10 steps completed. Deviations and specifics recorded below.
 - **Symptoms:** Warnings for `quest_started`, `quest_step_completed`, `quest_completed` in `quest_tracker.gd` and `state_finished` in `state.gd`.
 - **Cause:** These signals are stubs for Phase 2 / consumed externally by StateMachine, not within the declaring class.
 - **Fix:** Added `@warning_ignore("unused_signal")` annotations above each declaration.
+
+### Camera showing grey screen despite Current=true
+
+- **Cause:** Camera rotation transform was wrong — the camera was looking upward instead of downward at the scene.
+- **Fix:** Set RoomCamera rotation to X=-45°, Y=45° in editor so it looks down at the GridMap floor.
+
+### Camera not centering on player
+
+- **Cause:** `camera_follow.gd` only lerped X and Z to match the player, but with a tilted orthographic camera the Y difference (camera at Y=15, player at Y=1) caused the player to appear off-screen.
+- **Fix:** Changed follow logic to position the camera along its backward axis (`basis.z`) at `follow_distance` from the player, which naturally centers the target regardless of camera tilt.
+
+### Interaction prompt never disappearing
+
+- **Cause:** `_on_interactable_exited()` set `_nearest_interactable = null` before calling `_update_nearest_interactable()`. The update then compared `closest` (null) with `_nearest_interactable` (already null), so `changed` was false and the hide signal never fired.
+- **Fix:** Removed the early null assignment. Now the update function detects the change correctly because `_nearest_interactable` still references the exited body while `get_overlapping_bodies()` no longer includes it.
+
+### Player walking through NPC and walls
+
+- **Cause:** Player's collision mask was default (1 = environment only). NPC is on layer 3, so `move_and_slide()` ignored it. MeshLibrary items had empty `shapes` arrays — no collision geometry generated.
+- **Fix:** Set player collision mask to 5 (environment + npcs). Added StaticBody3D + CollisionShape3D children to mesh library source scene and re-exported MeshLibrary.

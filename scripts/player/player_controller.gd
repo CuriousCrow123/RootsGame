@@ -87,8 +87,8 @@ func _on_interactable_entered(body: Node3D) -> void:
 
 
 func _on_interactable_exited(body: Node3D) -> void:
-	if body == _nearest_interactable:
-		_nearest_interactable = null
+	if not body.has_method("interact"):
+		return
 	_update_nearest_interactable()
 
 
