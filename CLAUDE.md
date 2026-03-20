@@ -17,6 +17,13 @@ A Cassette Beasts-style RPG built with Godot 4 and GDScript. VS Code-primary dev
   - Call `.duplicate()` on any `.tres` Resource that will be mutated at runtime — Godot shares loaded Resources by path.
   - Prefer `preload()` over dynamic `load()` with string concatenation.
 - **`.tscn` files are read-only for agents.** Scene files have strict structure (five ordered sections, unique ext_resource IDs). Naive edits corrupt scenes. Agents must never edit `.tscn` files directly.
+- **Use `await get_tree().scene_changed` after `change_scene_to_file()`** (Godot 4.5+). Do not count `process_frame` waits — frame timing is fragile and version-dependent. `scene_changed` fires after the new scene's `_ready()` completes.
+- **`call_deferred()` required for tree mutations in `_ready()`.** The scene tree is locked during `_ready()` traversal. Use `call_deferred("remove_child", node)` / `call_deferred("add_child", node)` or `node.reparent.call_deferred(new_parent)`.
+- **Persistent UI as autoloads, not reparented scene children.** The HUD autoload (`hud.gd`) instantiates UI scenes as children via `preload().instantiate()`. UI scripts must not reparent themselves — they live under HUD and persist naturally. HUD uses `preload().instantiate()` (not programmatic build) because UI children are non-trivial scene trees with editor-tweakable layout.
+- **Saveable group contracts:**
+  - `"saveable"` group: iterated by SaveManager for disk persistence. Members: Player, Inventory, QuestTracker, WorldState.
+  - `"interactable_saveable"` group: iterated by WorldState for session state across scene transitions. Members: chests, destructibles, etc.
+  - Both groups use the same three-method duck-typed contract: `get_save_key()`, `get_save_data()`, `load_save_data()`.
 
 ## GDScript Style
 

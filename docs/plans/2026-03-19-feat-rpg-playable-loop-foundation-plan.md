@@ -829,7 +829,7 @@ func _place_player_at_spawn(spawn_point_id: String) -> void:
 
    *Note:* SceneManager is registered as a `.gd` autoload (not `.tscn`) to preserve full type inference with strict typing. The CanvasLayer + ColorRect fade overlay is built programmatically in `_ready()`. Using a `.tscn` autoload causes the parser to infer `Node` type, breaking `unsafe_method_access` checks across all call sites ([godot#86300](https://github.com/godotengine/godot/issues/86300)).
 
-> **Research Insight — Timing (CRITICAL):** `await get_tree().tree_changed` fires on ANY tree modification — it resumes the moment the old scene's root is removed, BEFORE the new scene is instantiated. `_place_player_at_spawn()` would search an empty tree. Use `await get_tree().process_frame` instead, which waits for the new scene to be fully loaded and added.
+> **Research Insight — Timing (UPDATED):** The original plan used `process_frame` counting. Post-Phase 3 refactor now uses `await get_tree().scene_changed` (Godot 4.5+ signal, fires after new scene's `_ready()` completes). This is more reliable than frame counting. See [refactor plan](2026-03-20-refactor-pre-phase4-cleanup-plan.md) Phase 3.
 
 > **Research Insight — Persistent Player:** Changed from Option A (save/restore across scenes) to persistent player pattern. The player is reparented to root via `register_player()` in Step 1, then persists across all scene changes. Inventory, QuestTracker, and all player state naturally survive transitions without serialization. This is the pattern used by Cassette Beasts and recommended by the community for RPGs.
 
@@ -974,7 +974,7 @@ func _restore_save_data(data: Dictionary) -> void:
                 node.load_save_data(data[key])
 ```
 
-   *Key pattern:* Saveable nodes add themselves to a `"saveable"` group (via `add_to_group("saveable")` in `_ready()` or set in the editor). SaveManager iterates the group — zero coupling to specific systems. The saveable contract is: `get_save_key() -> String`, `get_save_data() -> Dictionary`, `load_save_data(data: Dictionary) -> void`.
+   *Key pattern (UPDATED):* Saveable nodes add themselves to `"saveable"` group in `_ready()`. SaveManager iterates the group for disk persistence. Interactables (chests) use `"interactable_saveable"` group instead — WorldState handles their session state as a single blob. SaveManager uses `SceneManager.is_transitioning()` (not `._is_transitioning`). `_restore_save_data()` loads WorldState AFTER scene change to prevent `snapshot()` from clobbering loaded data. See [refactor plan](2026-03-20-refactor-pre-phase4-cleanup-plan.md) Phase 3.
 
 > **Research Insight — Atomic Writes:** Write to `.tmp` then `DirAccess.rename_absolute()` (maps to POSIX `rename()` / Windows `MoveFileEx`). If the process crashes mid-write, the old save file is still intact.
 
@@ -986,7 +986,7 @@ func _restore_save_data(data: Dictionary) -> void:
 
 3. **Add debug keybinds** — Input actions `debug_save` (F5) and `debug_load` (F9). A simple script (on the root or an autoload) listens for these and calls `SaveManager.save_game()` / `SaveManager.load_game()`.
 
-4. **Add "saveable" group to all stateful nodes** — PlayerController, Inventory, QuestTracker, each chest instance, each door instance. Each already has `get_save_data()` / `load_save_data()`.
+4. **Add groups to stateful nodes** — `"saveable"` group: PlayerController, Inventory, QuestTracker, WorldState (disk persistence). `"interactable_saveable"` group: chests (WorldState session state). Doors are NOT saveable (no mutable state).
 
 5. **Save key strategy** — Each saveable node implements `get_save_key() -> String` returning a unique identifier. PlayerController returns `"player"`, Inventory returns `"inventory"`, QuestTracker returns `"quest_tracker"`, chests return their `chest_id`. Doors and NPCs are not saveable (no mutable state in prototype).
 
@@ -1047,7 +1047,7 @@ func _restore_save_data(data: Dictionary) -> void:
 
 1. **Choose the second mode** — Most likely MENU (pause menu). This is the simplest additional mode and naturally follows from having save/load (the player needs a menu to access save/load properly instead of debug keybinds).
 
-2. **Create pause menu UI** — Simple CanvasLayer with Resume, Save, Load, Quit buttons. Opens on `pause` input action (Tab/Start). Sets `GameState.current_mode = MENU`.
+2. **Create pause menu UI** — Simple CanvasLayer with Resume, Save, Load, Quit buttons. Opens on `pause` input action (Tab/Start). Calls `GameState.set_mode(GameState.GameMode.MENU)`.
 
 3. **Input blocking per mode** — Formalize which inputs are blocked per GameMode:
    - OVERWORLD: all inputs active
@@ -1081,7 +1081,7 @@ func _restore_save_data(data: Dictionary) -> void:
 | Resource-based saves | Persistence | Research shows Resources silently drop data on rename, no built-in versioning. Dictionary→JSON is safer for early development with frequent schema changes. |
 | NavigationRegion3D | NPC pathfinding | Decision deferred per brainstorm. NPCs don't move in the prototype. Will decide between NavMesh and AStar3D when needed. |
 | RefCounted middle layer | Data architecture | Community consensus says niche. Add only if concrete performance need arises. Two-layer (Resource + Node) is sufficient. |
-| Services pattern (single autoload) | Autoload management | Research recommends this for 8+ autoloads. We have 4 max. Individual autoloads are simpler at this scale. Revisit if autoload count grows. |
+| Services pattern (single autoload) | Autoload management | Research recommends this for 8+ autoloads. We have 7 (EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, HUD). Individual autoloads are simpler at this scale. Revisit if autoload count grows past 10. |
 | Save/restore player per transition | Player persistence | Creates serialization dance on every door interaction, brief frame with no player, tests save contract unnecessarily. Persistent player node is simpler and community-preferred for RPGs. |
 | Player state files (Idle/Walk/Interact) | Player states | Existing StateMachine infra is sunk cost. Three states with ~25 lines total logic could be inlined into player_controller.gd with a single `if GameState.current_mode != OVERWORLD: return` check. Keep StateMachine approach for future complexity (combat, knockback) but acknowledge the tradeoff. |
 
@@ -1397,16 +1397,13 @@ Agent will complete its script work for a step first, then hand you the scene in
      - Instance door scene, position near room edge
      - Inspector: `target_scene_path` = `res://scenes/world/test_room.tscn`, `target_spawn_point` = "spawn_from_room_2", `door_id` = "room2_to_room1"
 
-- [ ] **Update test_room.tscn for persistent player** — Remove the Player instance from test_room.tscn. The player will be spawned by SceneManager and persisted across scenes. Make sure the "DefaultSpawn" Marker3D remains.
+- [x] **Player persistence via SceneManager** — Keep Player in test_room.tscn. SceneManager.register_player() guards against duplicates on room revisit (frees the scene-instanced copy, keeps the persistent one).
 
 ### Before Step 6
 
-- [ ] **Register SaveManager autoload** — Project > Project Settings > Autoload. Add `res://scripts/autoloads/save_manager.gd`. Ensure order: EventBus, GameState, SceneManager, SaveManager.
+- [x] **Register SaveManager autoload** — Project > Project Settings > Autoload. Add `res://scripts/autoloads/save_manager.gd`. Autoload order: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, HUD.
 
-- [ ] **Add "saveable" group** to stateful nodes — In each relevant scene, select the node > Node dock > Groups > type "saveable" > Add:
-  - `scenes/player/player.tscn`: select Player root (PlayerController), Inventory, QuestTracker
-  - `scenes/interactables/chest.tscn`: select Chest root
-  - *Alternative:* Agent can add `add_to_group("saveable")` in each script's `_ready()` instead, avoiding manual group assignment. Agent will choose the simpler approach.
+- [x] **Saveable groups** — Groups are assigned in code via `_ready()`, not in the editor. `"saveable"` group: Player, Inventory, QuestTracker, WorldState (for disk persistence). `"interactable_saveable"` group: chests (for WorldState session state). See CLAUDE.md for contract details.
 
 ### Before Step 8
 

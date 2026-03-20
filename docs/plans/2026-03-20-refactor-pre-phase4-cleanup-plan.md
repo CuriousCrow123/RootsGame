@@ -84,14 +84,14 @@ Trivial change, no dependencies.
 - `scripts/autoloads/save_manager.gd` — replace direct access
 
 **Steps:**
-- [ ] Add to `scene_manager.gd` (after `_interactable_state` declaration):
+- [x] Add to `scene_manager.gd` (after `_interactable_state` declaration):
   ```gdscript
   func is_transitioning() -> bool:
       return _is_transitioning
   ```
-- [ ] In `save_manager.gd` line 21, replace `SceneManager._is_transitioning` with `SceneManager.is_transitioning()`
-- [ ] Run `gdformat --check . && gdlint .`
-- [ ] Commit: `refactor(scene): add is_transitioning() accessor, remove private var access`
+- [x] In `save_manager.gd` line 21, replace `SceneManager._is_transitioning` with `SceneManager.is_transitioning()`
+- [x] Run `gdformat --check . && gdlint .`
+- [x] Commit: `refactor(scene): add is_transitioning() accessor, remove private var access`
 
 ### Phase 2: WorldState Autoload
 
@@ -191,13 +191,13 @@ Chests KEEP `get_save_key()`, `get_save_data()`, `load_save_data()` — WorldSta
 - In `change_scene()`: replace `_save_interactable_state()` with `WorldState.snapshot()`, replace `_load_interactable_state()` with `WorldState.restore()`
 
 **Steps:**
-- [ ] Create `scripts/autoloads/world_state.gd` with design above
-- [ ] Modify `chest_interactable.gd`: change group from `"saveable"` to `"interactable_saveable"`, add `WorldState.set_state()` call in `interact()`
-- [ ] Modify `scene_manager.gd`: remove state dictionary + methods, delegate to WorldState
-- [ ] Update `tests/unit/test_save_data_contracts.gd`: update chest test to check `"interactable_saveable"` group, add WorldState save/load roundtrip test
-- [ ] Update `tests/integration/test_save_load_cycle.gd`: verify WorldState is serialized as `"world_state"` key
-- [ ] Run `gdformat --check . && gdlint .`
-- [ ] Commit: `refactor(state): extract WorldState autoload from SceneManager`
+- [x] Create `scripts/autoloads/world_state.gd` with design above
+- [x] Modify `chest_interactable.gd`: change group from `"saveable"` to `"interactable_saveable"`, add `WorldState.set_state()` call in `interact()`
+- [x] Modify `scene_manager.gd`: remove state dictionary + methods, delegate to WorldState
+- [x] Update `tests/unit/test_save_data_contracts.gd`: update chest test to check `"interactable_saveable"` group, add WorldState save/load roundtrip test
+- [x] Update `tests/integration/test_save_load_cycle.gd`: verify WorldState is serialized as `"world_state"` key
+- [x] Run `gdformat --check . && gdlint .`
+- [x] Commit: `refactor(state): extract WorldState autoload from SceneManager`
 
 **Editor tasks (user must do manually):**
 - [ ] Register WorldState autoload in Project Settings → Autoload: path `res://scripts/autoloads/world_state.gd`, name `WorldState`
@@ -256,11 +256,11 @@ func _restore_save_data(data: Dictionary) -> void:
 ```
 
 **Steps:**
-- [ ] In `scene_manager.gd`: replace double `process_frame` with `await get_tree().scene_changed`, clean up comments
+- [x] In `scene_manager.gd`: replace double `process_frame` with `await get_tree().scene_changed`, clean up comments
 - [ ] **Verify timing:** Add temporary print in `chest_interactable._ready()` and after `scene_changed` await to confirm `scene_changed` fires AFTER new scene's `_ready()` completes (interactables must be in `"interactable_saveable"` group before `WorldState.restore()` runs)
-- [ ] In `save_manager.gd`: restore WorldState AFTER scene change, skip in saveable loop, remove redundant `process_frame`
-- [ ] Run `gdformat --check . && gdlint .`
-- [ ] Commit: `refactor(scene): use scene_changed signal instead of process_frame counting`
+- [x] In `save_manager.gd`: restore WorldState AFTER scene change, skip in saveable loop, remove redundant `process_frame`
+- [x] Run `gdformat --check . && gdlint .`
+- [x] Commit: `refactor(scene): use scene_changed signal instead of process_frame counting`
 
 ### Phase 4: HUD Autoload
 
@@ -377,13 +377,13 @@ func connect_to_player(player: PlayerController) -> void:
 ```
 
 **Steps:**
-- [ ] Add `player_registered` signal and emission to `scene_manager.gd`
-- [ ] Create `scripts/autoloads/hud.gd`
-- [ ] Refactor `interaction_prompt.gd`: remove reparenting, make `connect_to_player` public with player param
-- [ ] Refactor `item_toast.gd`: same pattern
-- [ ] Refactor `quest_indicator.gd`: same pattern
-- [ ] Run `gdformat --check . && gdlint .`
-- [ ] Commit: `refactor(ui): HUD autoload with player_registered signal for persistent UI`
+- [x] Add `player_registered` signal and emission to `scene_manager.gd`
+- [x] Create `scripts/autoloads/hud.gd`
+- [x] Refactor `interaction_prompt.gd`: remove reparenting, make `connect_to_player` public with player param
+- [x] Refactor `item_toast.gd`: same pattern
+- [x] Refactor `quest_indicator.gd`: same pattern
+- [x] Run `gdformat --check . && gdlint .`
+- [x] Commit: `refactor(ui): HUD autoload with player_registered signal for persistent UI`
 
 **Editor tasks (user must do manually):**
 - [ ] Remove InteractionPrompt instance from `test_room.tscn`
@@ -401,10 +401,10 @@ func connect_to_player(player: PlayerController) -> void:
 - `docs/plans/2026-03-19-feat-rpg-playable-loop-foundation-plan.md` — update stale snippets and instructions
 
 **CLAUDE.md additions:**
-- [ ] Add: `await get_tree().scene_changed` over `process_frame` counting (Godot 4.5+)
-- [ ] Add: `call_deferred()` required for tree mutations in `_ready()`
-- [ ] Add: Persistent UI as autoloads, not reparented scene children
-- [ ] Add: Saveable group contracts — `"saveable"` group iterated by SaveManager for disk persistence, `"interactable_saveable"` group iterated by WorldState for session state. Both use the same three-method contract (`get_save_key`, `get_save_data`, `load_save_data`). Note: HUD uses `preload().instantiate()` for UI scenes (not programmatic build like SceneManager) because UI children are non-trivial scene trees with editor-tweakable layout.
+- [x] Add: `await get_tree().scene_changed` over `process_frame` counting (Godot 4.5+)
+- [x] Add: `call_deferred()` required for tree mutations in `_ready()`
+- [x] Add: Persistent UI as autoloads, not reparented scene children
+- [x] Add: Saveable group contracts — `"saveable"` group iterated by SaveManager for disk persistence, `"interactable_saveable"` group iterated by WorldState for session state. Both use the same three-method contract (`get_save_key`, `get_save_data`, `load_save_data`). Note: HUD uses `preload().instantiate()` for UI scenes (not programmatic build like SceneManager) because UI children are non-trivial scene trees with editor-tweakable layout.
 
 **Plan document updates (batch — all items from brainstorm F11, G1-G24, H1-H6):**
 - [ ] Update SceneManager snippet (lines 775-828) to match current implementation
@@ -422,8 +422,8 @@ func connect_to_player(player: PlayerController) -> void:
 - [ ] Fix `GameState.current_mode = MENU` to `GameState.set_mode()` (line 1050)
 
 **Steps:**
-- [ ] Update CLAUDE.md with new conventions
-- [ ] Update plan document (batch all stale snippet/instruction fixes)
+- [x] Update CLAUDE.md with new conventions
+- [x] Update plan document (batch all stale snippet/instruction fixes)
 - [ ] Run `gdformat --check . && gdlint .`
 - [ ] Commit: `docs: update CLAUDE.md conventions and plan snippets for post-Phase 3 patterns`
 
