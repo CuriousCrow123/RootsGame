@@ -1,7 +1,7 @@
 ---
 title: "feat: RPG Playable Loop Foundation"
 type: feat
-status: active
+status: completed
 date: 2026-03-19
 origin: docs/brainstorms/2026-03-19-rpg-skeleton-systems-brainstorm.md
 ---
@@ -1039,13 +1039,13 @@ EventBus will gain signals when a concrete consumer emerges that cannot be conne
 7. **Pause menu follows HUD pattern** — Instantiated by HUD autoload like other UI. HUD handles `pause` input in `_unhandled_input()` and toggles menu visibility + GameState mode.
 
 **Acceptance Criteria:**
-- [ ] Tab/Start opens pause menu
-- [ ] Game world pauses (or at minimum, input is blocked)
-- [ ] Resume returns to OVERWORLD
-- [ ] Save/Load work from menu
-- [ ] Quit calls `get_tree().quit()` (main menu deferred)
-- [ ] Cannot open pause menu during dialogue
-- [ ] Cannot move during menu
+- [x] Tab/Start opens pause menu
+- [x] Game world pauses (or at minimum, input is blocked)
+- [x] Resume returns to OVERWORLD
+- [x] Save/Load work from menu
+- [x] Quit calls `get_tree().quit()` (main menu deferred)
+- [x] Cannot open pause menu during dialogue
+- [x] Cannot move during menu
 
 ---
 
@@ -1120,28 +1120,28 @@ NPCs and Doors (stateless in prototype) are not in either group. See CLAUDE.md f
 
 ### Functional Requirements
 
-- [ ] Player moves freely in 3D orthographic world with analog input
-- [ ] Player interacts with NPCs (dialogue), chests (items), and doors (scene transitions)
-- [ ] Complete fetch quest loop: accept → find item → return → complete
-- [ ] Dialogue branches based on quest state
-- [ ] Scene transitions with fade effect preserve all player state
-- [ ] Save/load preserves player position, inventory, quest progress, and interactable states
-- [ ] GameState mode switching blocks input appropriately
+- [x] Player moves freely in 3D orthographic world with analog input
+- [x] Player interacts with NPCs (dialogue), chests (items), and doors (scene transitions)
+- [x] Complete fetch quest loop: accept → find item → return → complete
+- [x] Dialogue branches based on quest state
+- [x] Scene transitions with fade effect preserve all player state
+- [x] Save/load preserves player position, inventory, quest progress, and interactable states
+- [x] GameState mode switching blocks input appropriately
 
 ### Non-Functional Requirements
 
-- [ ] 60fps in editor with test room (~100 GridMap tiles)
-- [ ] Static typing on all declarations (enforced by project settings)
-- [ ] `gdformat --check .` and `gdlint .` pass
-- [ ] All Resources use string IDs, never direct node references
-- [ ] All stateful systems implement `get_save_data()` / `load_save_data()`
+- [x] 60fps in editor with test room (~100 GridMap tiles)
+- [x] Static typing on all declarations (enforced by project settings)
+- [x] `gdformat --check .` and `gdlint .` pass
+- [x] All Resources use string IDs, never direct node references
+- [x] All stateful systems implement `get_save_data()` / `load_save_data()`
 
 ### Quality Gates
 
-- [ ] All unit tests pass (inventory, quest tracker, save contracts)
-- [ ] All integration tests pass (quest loop, scene transition, save/load cycle)
-- [ ] No orphaned Resources or dangling node references after scene transitions
-- [ ] Save file is valid JSON and human-readable
+- [x] All unit tests pass (inventory, quest tracker, save contracts)
+- [x] All integration tests pass (quest loop, scene transition, save/load cycle)
+- [x] No orphaned Resources or dangling node references after scene transitions
+- [x] Save file is valid JSON and human-readable
 
 ## Dependencies & Prerequisites
 
