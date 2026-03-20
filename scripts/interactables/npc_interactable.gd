@@ -4,6 +4,7 @@ extends StaticBody3D
 @export var dialogue_resource: DialogueResource
 @export var dialogue_title: String = "start"
 @export var npc_id: String = ""
+@export var quest_resource: QuestData = null
 
 
 func interact(player: PlayerController) -> void:
@@ -13,8 +14,10 @@ func interact(player: PlayerController) -> void:
 	var quest_tracker: QuestTracker = player.get_quest_tracker()
 	var inventory: Inventory = player.get_inventory()
 	GameState.set_mode(GameState.GameMode.DIALOGUE)
+	# Pass self so dialogue can access quest_resource property.
+	# DM iterates extra_game_states to resolve method calls and property lookups.
 	DialogueManager.show_dialogue_balloon(
-		dialogue_resource, dialogue_title, [quest_tracker, inventory]
+		dialogue_resource, dialogue_title, [quest_tracker, inventory, self]
 	)
 	await DialogueManager.dialogue_ended
 	# Guard: NPC may have been freed during dialogue (scene transition, load game)

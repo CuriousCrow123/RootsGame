@@ -1,8 +1,20 @@
 ~ start
 
-Nathan: Welcome, traveler! I've been waiting for someone brave enough to help.
-- Tell me more.
-	Nathan: There's a chest in this room with something I need. Could you fetch it for me?
-	Nathan: I'd get it myself but... well, I'm an NPC. I don't move.
-- Maybe later.
-	Nathan: Take your time. I'm not going anywhere.
+if is_quest_complete("fetch_amulet")
+	Nathan: Thank you for the amulet! You're a true hero.
+elif is_quest_active("fetch_amulet")
+	if has_item("quest_amulet")
+		Nathan: You found it! Wonderful!
+		do advance_quest("fetch_amulet")
+		do remove_item("quest_amulet")
+		Nathan: I can't thank you enough. This amulet means everything to me.
+	else
+		Nathan: Have you found the amulet yet? It should be in that chest over there.
+else
+	Nathan: Welcome, traveler! I've been waiting for someone brave enough to help.
+	Nathan: There's an old amulet in that chest. Could you bring it to me?
+	- I'll help you.
+		do start_quest(quest_resource)
+		Nathan: Wonderful! The chest is right over there.
+	- Not right now.
+		Nathan: Take your time. I'm not going anywhere.
