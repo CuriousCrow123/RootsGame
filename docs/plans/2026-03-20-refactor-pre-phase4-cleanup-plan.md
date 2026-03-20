@@ -1,7 +1,7 @@
 ---
 title: "refactor: Pre-Phase 4 Cleanup — HUD Autoload, WorldState, scene_changed Signal"
 type: refactor
-status: active
+status: completed
 date: 2026-03-20
 origin: docs/brainstorms/2026-03-20-plan-corrections-brainstorm.md
 ---
