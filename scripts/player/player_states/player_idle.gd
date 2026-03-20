@@ -4,7 +4,7 @@ extends State
 
 
 func enter(_previous_state_path: String, _data: Dictionary = {}) -> void:
-	var player: PlayerController = owner as PlayerController
+	var player: PlayerController = get_parent().get_parent() as PlayerController
 	player.velocity = Vector3.ZERO
 	GameState.game_state_changed.connect(_on_game_state_changed)
 
@@ -18,7 +18,7 @@ func handle_input(event: InputEvent) -> void:
 	if GameState.current_mode != GameState.GameMode.OVERWORLD:
 		return
 	if event.is_action_pressed("interact"):
-		var player: PlayerController = owner as PlayerController
+		var player: PlayerController = get_parent().get_parent() as PlayerController
 		if player.get_nearest_interactable():
 			player.interact_with_nearest()
 
@@ -26,7 +26,7 @@ func handle_input(event: InputEvent) -> void:
 func physics_update(_delta: float) -> void:
 	if GameState.current_mode != GameState.GameMode.OVERWORLD:
 		return
-	var player: PlayerController = owner as PlayerController
+	var player: PlayerController = get_parent().get_parent() as PlayerController
 	var direction: Vector3 = player.get_movement_input()
 	if direction.length_squared() > 0.01:
 		state_finished.emit("Walk", {})

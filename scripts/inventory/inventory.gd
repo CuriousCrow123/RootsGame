@@ -46,4 +46,5 @@ func get_save_data() -> Dictionary:
 
 
 func load_save_data(data: Dictionary) -> void:
+	@warning_ignore("unsafe_call_argument")
 	_items.assign(data.get("items", []))

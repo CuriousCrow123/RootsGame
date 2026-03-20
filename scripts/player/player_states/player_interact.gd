@@ -3,7 +3,7 @@ extends State
 
 
 func enter(_previous_state_path: String, _data: Dictionary = {}) -> void:
-	var player: PlayerController = owner as PlayerController
+	var player: PlayerController = get_parent().get_parent() as PlayerController
 	player.velocity = Vector3.ZERO
 	GameState.game_state_changed.connect(_on_game_state_changed)
 	# Disable state machine processing during interaction

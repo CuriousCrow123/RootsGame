@@ -16,7 +16,7 @@ func physics_update(_delta: float) -> void:
 	if GameState.current_mode != GameState.GameMode.OVERWORLD:
 		state_finished.emit("Idle", {})
 		return
-	var player: PlayerController = owner as PlayerController
+	var player: PlayerController = get_parent().get_parent() as PlayerController
 	var direction: Vector3 = player.get_movement_input()
 	if direction.length_squared() < 0.01:
 		state_finished.emit("Idle", {})

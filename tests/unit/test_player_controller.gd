@@ -11,10 +11,11 @@ func test_save_data_structure() -> void:
 	var data: Dictionary = player.get_save_data()
 	assert_has(data, "position")
 	assert_has(data, "rotation_y")
-	assert_almost_eq(data["position"]["x"], 1.0, 0.01)
-	assert_almost_eq(data["position"]["y"], 2.0, 0.01)
-	assert_almost_eq(data["position"]["z"], 3.0, 0.01)
-	assert_almost_eq(data["rotation_y"], 1.5, 0.01)
+	var pos: Dictionary = data["position"]
+	assert_almost_eq(pos["x"] as float, 1.0, 0.01)
+	assert_almost_eq(pos["y"] as float, 2.0, 0.01)
+	assert_almost_eq(pos["z"] as float, 3.0, 0.01)
+	assert_almost_eq(data["rotation_y"] as float, 1.5, 0.01)
 
 
 func test_load_save_data_roundtrip() -> void:

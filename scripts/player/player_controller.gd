@@ -48,7 +48,7 @@ func get_nearest_interactable() -> Node3D:
 
 func interact_with_nearest() -> void:
 	if _nearest_interactable and _nearest_interactable.has_method("interact"):
-		_nearest_interactable.interact(self)
+		_nearest_interactable.call("interact", self)
 
 
 func get_save_key() -> String:
@@ -68,8 +68,12 @@ func get_save_data() -> Dictionary:
 
 
 func load_save_data(data: Dictionary) -> void:
+	# Deserialization from JSON — Dictionary.get() returns Variant by design.
+	@warning_ignore("unsafe_call_argument")
 	var pos: Dictionary = data.get("position", {})
+	@warning_ignore("unsafe_call_argument")
 	global_position = Vector3(pos.get("x", 0.0), pos.get("y", 0.0), pos.get("z", 0.0))
+	@warning_ignore("unsafe_call_argument")
 	rotation.y = data.get("rotation_y", 0.0)
 
 
