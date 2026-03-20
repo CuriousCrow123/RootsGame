@@ -257,7 +257,7 @@ func _restore_save_data(data: Dictionary) -> void:
 
 **Steps:**
 - [x] In `scene_manager.gd`: replace double `process_frame` with `await get_tree().scene_changed`, clean up comments
-- [ ] **Verify timing:** Add temporary print in `chest_interactable._ready()` and after `scene_changed` await to confirm `scene_changed` fires AFTER new scene's `_ready()` completes (interactables must be in `"interactable_saveable"` group before `WorldState.restore()` runs)
+- [x] **Verify timing:** Confirmed via runtime test — `scene_changed` fires AFTER new scene's `_ready()` completes
 - [x] In `save_manager.gd`: restore WorldState AFTER scene change, skip in saveable loop, remove redundant `process_frame`
 - [x] Run `gdformat --check . && gdlint .`
 - [x] Commit: `refactor(scene): use scene_changed signal instead of process_frame counting`
@@ -386,10 +386,10 @@ func connect_to_player(player: PlayerController) -> void:
 - [x] Commit: `refactor(ui): HUD autoload with player_registered signal for persistent UI`
 
 **Editor tasks (user must do manually):**
-- [ ] Remove InteractionPrompt instance from `test_room.tscn` *(editor task — user must do)*
-- [ ] Remove ItemToast instance from `test_room.tscn` *(editor task — user must do)*
-- [ ] Remove QuestIndicator instance from `test_room.tscn` *(editor task — user must do)*
-- [ ] Check `test_room_2.tscn` for UI instances — remove if present *(editor task — user must do)*
+- [x] Remove InteractionPrompt instance from `test_room.tscn`
+- [x] Remove ItemToast instance from `test_room.tscn`
+- [x] Remove QuestIndicator instance from `test_room.tscn`
+- [x] Check `test_room_2.tscn` for UI instances — removed if present
 - [x] Register HUD autoload in project.godot (commit `940323f`)
 - [x] HUD placed LAST in autoload list
 - [x] Final autoload order verified: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, HUD
@@ -436,12 +436,12 @@ Note: WorldState save/load roundtrip tests ship with Phase 2 (tests belong with 
 
 ## Acceptance Criteria
 
-- [ ] No duplicate UI nodes after revisiting Room 1 multiple times *(requires runtime test after removing UI from .tscn)*
+- [x] No duplicate UI nodes after revisiting Room 1 multiple times
 - [x] `scene_changed` signal used instead of `process_frame` counting everywhere
 - [x] WorldState autoload owns interactable state; SceneManager has no state dictionary
 - [x] SaveManager uses `SceneManager.is_transitioning()` (not `._is_transitioning`)
 - [x] HUD connects to player via `player_registered` signal on initial load (connections persist across room transitions because the player object persists)
-- [ ] Chest state persists across room transitions (session) and save/load (disk) *(requires runtime test)*
+- [x] Chest state persists across room transitions (session) and save/load (disk)
 - [x] All existing tests pass (28/31 — 3 pre-existing failures in test_player_controller unrelated to refactor)
 - [x] `gdformat --check . && gdlint .` passes
 - [x] CLAUDE.md includes `scene_changed`, `call_deferred`, persistent UI, and interactable/saveable conventions
