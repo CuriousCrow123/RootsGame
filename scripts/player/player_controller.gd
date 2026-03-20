@@ -18,8 +18,11 @@ var _nearest_interactable: Node3D = null
 
 func _ready() -> void:
 	add_to_group("player")
+	add_to_group("saveable")
 	_interaction_area.body_entered.connect(_on_interactable_entered)
 	_interaction_area.body_exited.connect(_on_interactable_exited)
+	# Reparent to root so player persists across scene changes
+	SceneManager.register_player(self)
 
 
 # -- Public accessors (interactables call these, not get_node) --

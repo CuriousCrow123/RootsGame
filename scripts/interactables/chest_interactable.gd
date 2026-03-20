@@ -10,6 +10,10 @@ signal chest_opened(item: ItemData)
 var _is_opened: bool = false
 
 
+func _ready() -> void:
+	add_to_group("saveable")
+
+
 func interact(player: PlayerController) -> void:
 	if _is_opened:
 		return
