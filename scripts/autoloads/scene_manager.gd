@@ -40,13 +40,16 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 	await tween.finished
 	if not _is_transitioning:
 		return  # Cancelled
-	# Load scene — change_scene_to_file is deferred
+	# Load scene — change_scene_to_file is deferred (runs at end of frame)
 	var err: Error = get_tree().change_scene_to_file(target_scene_path)
 	if err != OK:
 		push_error("Failed to change scene: %s" % error_string(err))
 		_is_transitioning = false
 		return
-	# Wait for the new scene to be fully ready (tree_changed fires too early)
+	# change_scene_to_file is deferred, so we need two frames:
+	# frame 1: the deferred call executes, old scene freed, new scene added
+	# frame 2: new scene's _ready() has run, current_scene is set
+	await get_tree().process_frame
 	await get_tree().process_frame
 	# Position player at spawn point
 	if spawn_point_id != "" and _player:
