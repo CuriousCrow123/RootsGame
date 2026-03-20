@@ -1185,7 +1185,7 @@ Agent will complete its script work for a step first, then hand you the scene in
 
 ### Before Step 1
 
-- [ ] **MeshLibrary** — This requires the editor's "Convert To" workflow:
+- [x] **MeshLibrary** — This requires the editor's "Convert To" workflow:
   1. Create new scene (Scene > New Scene > Other Node > Node3D)
   2. Add child MeshInstance3D nodes for each tile type:
      - "Floor": PlaneMesh (2m × 2m). Add StaticBody3D child with CollisionShape3D (BoxShape3D, 2×0.1×2)
@@ -1195,7 +1195,7 @@ Agent will complete its script work for a step first, then hand you the scene in
   4. Scene menu > Export As... > MeshLibrary > Save as `resources/mesh_library.tres`
   5. You can delete the source scene after export
 
-- [ ] **Player scene** (`scenes/player/player.tscn`):
+- [x] **Player scene** (`scenes/player/player.tscn`):
   1. Scene > New Scene > Other Node > **CharacterBody3D** (rename to "Player")
   2. Inspector: Collision > Layer = 2 (player), Mask = 1 (environment)
   3. Add children in this order:
@@ -1213,7 +1213,7 @@ Agent will complete its script work for a step first, then hand you the scene in
 
   *Note: QuestTracker node is added in Step 4. Omit it for now.*
 
-- [ ] **Test room scene** (`scenes/world/test_room.tscn`):
+- [x] **Test room scene** (`scenes/world/test_room.tscn`):
   1. Scene > New Scene > Other Node > **Node3D** (rename to "TestRoom")
   2. Add children:
      - **GridMap** — Inspector: assign `resources/mesh_library.tres` as Mesh Library. Paint a ~10×10 enclosed room: floor tiles across the area, wall tiles around the perimeter. Use the GridMap editor toolbar (bottom panel).
@@ -1224,17 +1224,13 @@ Agent will complete its script work for a step first, then hand you the scene in
      - **Marker3D** (rename to "DefaultSpawn") — Position at player start location
   3. Save as `scenes/world/test_room.tscn`
 
-- [ ] **Update main scene** — Project > Project Settings > General > Run > Main Scene: change to `res://scenes/world/test_room.tscn`
+- [x] **Update main scene** — Project > Project Settings > General > Run > Main Scene: change to `res://scenes/world/test_room.tscn`
 
 ### Before Step 2
 
-- [ ] **Install Dialogue Manager** — From terminal:
-  ```bash
-  git submodule add https://github.com/nathanhoad/godot_dialogue_manager.git addons/dialogue_manager
-  ```
-  Then in Godot: Project > Project Settings > Plugins > Dialogue Manager > Enable. Verify no errors. Reopen project if prompted.
+- [x] **Install Dialogue Manager** — Vendored copy into `addons/dialogue_manager/`. Enabled in editor.
 
-- [ ] **NPC scene** (`scenes/interactables/npc.tscn`):
+- [x] **NPC scene** (`scenes/interactables/npc.tscn`):
   1. Scene > New Scene > Other Node > **StaticBody3D** (rename to "NPC")
   2. Inspector: Collision Layer = 3 (npcs), Mask = none (NPCs don't detect anything)
   3. Add children:
@@ -1244,7 +1240,7 @@ Agent will complete its script work for a step first, then hand you the scene in
   5. Inspector: set `npc_id` = "nathan", `dialogue_title` = "start". Leave `dialogue_resource` empty for now (assigned after dialogue file is created).
   6. Save as `scenes/interactables/npc.tscn`
 
-- [ ] **Interaction prompt scene** (`scenes/ui/interaction_prompt.tscn`):
+- [x] **Interaction prompt scene** (`scenes/ui/interaction_prompt.tscn`):
   1. Scene > New Scene > Other Node > **CanvasLayer** (rename to "InteractionPrompt")
   2. Add children:
      - **PanelContainer** — Anchors: bottom-center. Custom minimum size: 200×40.
@@ -1253,7 +1249,7 @@ Agent will complete its script work for a step first, then hand you the scene in
   4. Set `visible = false` in inspector (hidden by default)
   5. Save as `scenes/ui/interaction_prompt.tscn`
 
-- [ ] **Dialogue balloon scene** (`scenes/ui/dialogue_balloon.tscn`):
+- [x] **Dialogue balloon scene** (`scenes/ui/dialogue_balloon.tscn`):
   1. Check if Dialogue Manager ships an example balloon: look in `addons/dialogue_manager/example_balloon/`. If it does, **duplicate it** to `scenes/ui/dialogue_balloon.tscn` and customize. If not:
   2. Create: CanvasLayer > MarginContainer (anchors: full rect, bottom half) > VBoxContainer:
      - **RichTextLabel** (rename to "DialogueLabel") — BBCode enabled, fit content height, size flags: expand + fill
@@ -1261,13 +1257,13 @@ Agent will complete its script work for a step first, then hand you the scene in
   3. Attach `res://scripts/ui/dialogue_balloon.gd` to root
   4. Save as `scenes/ui/dialogue_balloon.tscn`
 
-- [ ] **Place NPC in test room** — Open `test_room.tscn`:
+- [x] **Place NPC in test room** — Open `test_room.tscn`:
   1. Instance `scenes/interactables/npc.tscn` as child of TestRoom
   2. Position the NPC a few tiles away from the player spawn (e.g., X=4, Z=0)
   3. In inspector: assign the dialogue resource once agent creates it (`resources/dialogue/npc_greeting.dialogue`)
   4. Save test_room.tscn
 
-- [ ] **Add InteractionPrompt to test room** — Instance `scenes/ui/interaction_prompt.tscn` as child of TestRoom. The PlayerController script will find it and toggle visibility.
+- [x] **Add InteractionPrompt to test room** — Instance `scenes/ui/interaction_prompt.tscn` as child of TestRoom. The PlayerController script will find it and toggle visibility.
 
 ### Before Step 3
 

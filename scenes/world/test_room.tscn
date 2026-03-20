@@ -30,8 +30,9 @@ shadow_enabled = true
 environment = SubResource("Environment_cy37o")
 
 [node name="RoomCamera" type="Camera3D" parent="." unique_id=1855410517]
-transform = Transform3D(0.70710677, 0.35355338, 0.6123724, 0, 0.8660254, -0.5, -0.70710677, 0.35355338, 0.6123724, 0, 15, 0)
+transform = Transform3D(0.7071068, 0.35355338, 0.61237246, 0, 0.8660254, -0.50000006, -0.7071068, 0.35355338, 0.61237246, 0.546258, 15, 0)
 projection = 1
+current = true
 size = 10.0
 far = 100.0
 script = ExtResource("2_3gt1g")

@@ -2,6 +2,7 @@ class_name State
 extends Node
 ## Base class for state machine states. Override virtual methods in subclasses.
 
+@warning_ignore("unused_signal")
 signal state_finished(next_state_path: String, data: Dictionary)
 
 
