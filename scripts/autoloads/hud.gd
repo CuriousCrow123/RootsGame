@@ -9,6 +9,7 @@ var _item_toast: CanvasLayer = null
 var _quest_indicator: CanvasLayer = null
 var _pause_menu: CanvasLayer = null
 var _is_pause_menu_open: bool = false
+var _mode_before_pause: GameState.GameMode = GameState.GameMode.OVERWORLD
 
 
 func _ready() -> void:
@@ -27,11 +28,13 @@ func _ready() -> void:
 		_on_player_registered(existing_player)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	# Use _input (not _unhandled_input) because Tab is consumed by
+	# UI focus navigation before _unhandled_input sees it.
 	if event.is_action_pressed("pause"):
 		if _is_pause_menu_open:
 			close_pause_menu()
-		elif GameState.current_mode == GameState.GameMode.OVERWORLD:
+		elif GameState.current_mode != GameState.GameMode.MENU:
 			open_pause_menu()
 		get_viewport().set_input_as_handled()
 
@@ -40,6 +43,7 @@ func open_pause_menu() -> void:
 	if _is_pause_menu_open:
 		return
 	_is_pause_menu_open = true
+	_mode_before_pause = GameState.current_mode
 	GameState.set_mode(GameState.GameMode.MENU)
 	_pause_menu.call("open_menu")
 
@@ -49,7 +53,7 @@ func close_pause_menu() -> void:
 		return
 	_is_pause_menu_open = false
 	_pause_menu.call("close_menu")
-	GameState.set_mode(GameState.GameMode.OVERWORLD)
+	GameState.set_mode(_mode_before_pause)
 
 
 func _on_player_registered(player: PlayerController) -> void:

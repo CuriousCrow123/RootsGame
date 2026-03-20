@@ -53,4 +53,8 @@ func get_save_data() -> Dictionary:
 
 
 func load_save_data(data: Dictionary) -> void:
-	_state = data.duplicate(true)
+	_state = {}
+	for key: String in data:
+		@warning_ignore("unsafe_cast")
+		var entry: Dictionary = data[key] as Dictionary
+		_state[key] = entry.duplicate(true)
