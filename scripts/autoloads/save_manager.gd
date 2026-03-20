@@ -79,8 +79,8 @@ func _collect_save_data() -> Dictionary:
 	}
 	for node: Node in get_tree().get_nodes_in_group("saveable"):
 		if node.has_method("get_save_key") and node.has_method("get_save_data"):
-			var key: String = node.get_save_key()
-			data[key] = node.get_save_data()
+			var key: String = node.call("get_save_key")
+			data[key] = node.call("get_save_data")
 	return data
 
 
@@ -94,6 +94,6 @@ func _restore_save_data(data: Dictionary) -> void:
 	await get_tree().process_frame
 	for node: Node in get_tree().get_nodes_in_group("saveable"):
 		if node.has_method("get_save_key") and node.has_method("load_save_data"):
-			var key: String = node.get_save_key()
+			var key: String = node.call("get_save_key")
 			if data.has(key):
-				node.load_save_data(data[key])
+				node.call("load_save_data", data[key])
