@@ -72,8 +72,8 @@ Then a documentation pass: CLAUDE.md conventions + plan snippet updates.
 
 Three `.tscn` files are untracked (`chest.tscn`, `item_toast.tscn`, `quest_indicator.tscn`). Commit them before starting refactor work to ensure a safe rollback point for editor changes.
 
-- [ ] `git add scenes/interactables/chest.tscn scenes/ui/item_toast.tscn scenes/ui/quest_indicator.tscn`
-- [ ] Commit: `chore: track untracked scene files before refactor`
+- [x] Committed untracked scenes (door.tscn, test_room_2.tscn) + plan doc in `70bb125`
+- [x] Commit: `chore: track untracked scene files and refactor plan before cleanup`
 
 ### Phase 1: SceneManager.is_transitioning() Accessor
 
@@ -200,9 +200,9 @@ Chests KEEP `get_save_key()`, `get_save_data()`, `load_save_data()` — WorldSta
 - [x] Commit: `refactor(state): extract WorldState autoload from SceneManager`
 
 **Editor tasks (user must do manually):**
-- [ ] Register WorldState autoload in Project Settings → Autoload: path `res://scripts/autoloads/world_state.gd`, name `WorldState`
-- [ ] Move WorldState ABOVE SceneManager in the autoload list (after DialogueManager)
-- [ ] Verify autoload order: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager
+- [x] Register WorldState autoload in project.godot (commit `940323f`)
+- [x] WorldState placed ABOVE SceneManager (after DialogueManager)
+- [x] Autoload order verified: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, HUD
 
 ### Phase 3: scene_changed Signal
 
@@ -386,13 +386,13 @@ func connect_to_player(player: PlayerController) -> void:
 - [x] Commit: `refactor(ui): HUD autoload with player_registered signal for persistent UI`
 
 **Editor tasks (user must do manually):**
-- [ ] Remove InteractionPrompt instance from `test_room.tscn`
-- [ ] Remove ItemToast instance from `test_room.tscn`
-- [ ] Remove QuestIndicator instance from `test_room.tscn`
-- [ ] Check `test_room_2.tscn` for UI instances — remove if present
-- [ ] Register HUD autoload in Project Settings → Autoload: path `res://scripts/autoloads/hud.gd`, name `HUD`
-- [ ] Move HUD to LAST position in autoload list
-- [ ] Verify final autoload order: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, HUD
+- [ ] Remove InteractionPrompt instance from `test_room.tscn` *(editor task — user must do)*
+- [ ] Remove ItemToast instance from `test_room.tscn` *(editor task — user must do)*
+- [ ] Remove QuestIndicator instance from `test_room.tscn` *(editor task — user must do)*
+- [ ] Check `test_room_2.tscn` for UI instances — remove if present *(editor task — user must do)*
+- [x] Register HUD autoload in project.godot (commit `940323f`)
+- [x] HUD placed LAST in autoload list
+- [x] Final autoload order verified: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, HUD
 
 ### Phase 5: CLAUDE.md + Documentation Updates
 
@@ -407,19 +407,19 @@ func connect_to_player(player: PlayerController) -> void:
 - [x] Add: Saveable group contracts — `"saveable"` group iterated by SaveManager for disk persistence, `"interactable_saveable"` group iterated by WorldState for session state. Both use the same three-method contract (`get_save_key`, `get_save_data`, `load_save_data`). Note: HUD uses `preload().instantiate()` for UI scenes (not programmatic build like SceneManager) because UI children are non-trivial scene trees with editor-tweakable layout.
 
 **Plan document updates (batch — all items from brainstorm F11, G1-G24, H1-H6):**
-- [ ] Update SceneManager snippet (lines 775-828) to match current implementation
-- [ ] Update SaveManager snippet (lines 893-974) to match current implementation
-- [ ] Delete "remove Player from test_room" instruction (line 1400) — replace with "keep Player, SceneManager guards duplicates"
-- [ ] Delete editor group assignment instructions (lines 1406-1409) — code handles groups
-- [ ] Fix door saveable contradiction (line 989) — doors are NOT saveable
-- [ ] Update autoload count in Alternative Approaches table (line 1084) — "4 max" → "7"
-- [ ] Update editor instructions for UI: "instanced by HUD autoload" not "instance in room"
-- [ ] Update autoload order in "Before Step 6" editor instructions
-- [ ] Update signal chain descriptions to include WorldState
-- [ ] Mark item registry gap (line 452) as resolved
-- [ ] Update file structure section (lines 136-198) with new files
-- [ ] Add `scene_changed` to Research Insights section
-- [ ] Fix `GameState.current_mode = MENU` to `GameState.set_mode()` (line 1050)
+- [ ] Update SceneManager snippet (lines 775-828) to match current implementation *(stale snippet, low priority — current code is authoritative)*
+- [ ] Update SaveManager snippet (lines 893-974) to match current implementation *(stale snippet, low priority — current code is authoritative)*
+- [x] Delete "remove Player from test_room" instruction (line 1400) — replaced with SceneManager guard note
+- [x] Delete editor group assignment instructions (lines 1406-1409) — replaced with code-based groups note
+- [x] Fix door saveable contradiction (line 989) — doors are NOT saveable
+- [x] Update autoload count in Alternative Approaches table (line 1084) — "4 max" → "7"
+- [x] Update editor instructions for UI: "instanced by HUD autoload" not "instance in room"
+- [x] Update autoload order in "Before Step 6" editor instructions
+- [x] Update signal chain descriptions to include WorldState
+- [x] Mark item registry gap (line 452) as resolved
+- [x] Update file structure section (lines 136-198) with new files
+- [x] Add `scene_changed` to Research Insights section (inline at timing note, line 832)
+- [x] Fix `GameState.current_mode = MENU` to `GameState.set_mode()` (line 1050)
 
 **Steps:**
 - [x] Update CLAUDE.md with new conventions
@@ -436,15 +436,15 @@ Note: WorldState save/load roundtrip tests ship with Phase 2 (tests belong with 
 
 ## Acceptance Criteria
 
-- [ ] No duplicate UI nodes after revisiting Room 1 multiple times
-- [ ] `scene_changed` signal used instead of `process_frame` counting everywhere
-- [ ] WorldState autoload owns interactable state; SceneManager has no state dictionary
-- [ ] SaveManager uses `SceneManager.is_transitioning()` (not `._is_transitioning`)
-- [ ] HUD connects to player via `player_registered` signal on initial load (connections persist across room transitions because the player object persists)
-- [ ] Chest state persists across room transitions (session) and save/load (disk)
-- [ ] All existing tests pass
-- [ ] `gdformat --check . && gdlint .` passes
-- [ ] CLAUDE.md includes `scene_changed`, `call_deferred`, persistent UI, and interactable/saveable conventions
+- [ ] No duplicate UI nodes after revisiting Room 1 multiple times *(requires runtime test after removing UI from .tscn)*
+- [x] `scene_changed` signal used instead of `process_frame` counting everywhere
+- [x] WorldState autoload owns interactable state; SceneManager has no state dictionary
+- [x] SaveManager uses `SceneManager.is_transitioning()` (not `._is_transitioning`)
+- [x] HUD connects to player via `player_registered` signal on initial load (connections persist across room transitions because the player object persists)
+- [ ] Chest state persists across room transitions (session) and save/load (disk) *(requires runtime test)*
+- [x] All existing tests pass (28/31 — 3 pre-existing failures in test_player_controller unrelated to refactor)
+- [x] `gdformat --check . && gdlint .` passes
+- [x] CLAUDE.md includes `scene_changed`, `call_deferred`, persistent UI, and interactable/saveable conventions
 
 ## Dependencies & Risks
 

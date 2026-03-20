@@ -152,8 +152,10 @@ scripts/
   autoloads/
     event_bus.gd                # Exists (empty stub)
     game_state.gd               # Exists (GameMode enum)
+    world_state.gd              # Refactor: interactable session state
     scene_manager.gd            # Step 5: scene transitions
     save_manager.gd             # Step 6: serialization
+    hud.gd                      # Refactor: persistent UI container
   player/
     player_controller.gd        # Step 1: movement + interaction
     player_states/
@@ -449,7 +451,7 @@ extends Resource
 
 2. **Create test item resource** (`resources/items/key_item.tres`) — ItemData with `item_id = "quest_amulet"`, `display_name = "Old Amulet"`, `description = "A tarnished amulet that hums faintly."`.
 
-   > **Research Insight — Item Registry:** The inventory stores string IDs, but the item toast UI needs to display `display_name` and `icon` from ItemData. A simple lookup dictionary is needed: either a preloaded `const ITEMS: Dictionary` mapping item_id → ItemData, or a static method on ItemData that loads by ID. For the prototype with one item, the toast can receive the ItemData reference directly from the chest via signal payload. Plan for a proper registry when item count grows.
+   > **Research Insight — Item Registry (RESOLVED):** Resolved by storing `display_name` in the Inventory alongside the item_id (passed via `add_item(id, quantity, display_name)`). ItemToast reads the display name from Inventory via `get_display_name()`. No separate registry needed for the prototype. Plan for a proper registry when item count grows.
 
 3. **Write inventory system** (`scripts/inventory/inventory.gd`):
 
@@ -1093,7 +1095,7 @@ func _restore_save_data(data: Dictionary) -> void:
 Action `interact` → PlayerController._unhandled_input() → calls `_nearest_interactable.interact(self)` → interactable-specific behavior:
 - NPC: `GameState.set_mode(DIALOGUE)` → `GameState.game_state_changed` signal → Player states check mode → movement blocked → `DialogueManager.show_dialogue_balloon()` → dialogue mutations may call `QuestTracker.start_quest()` / `QuestTracker.advance_quest()` / `Inventory.add_item()` / `Inventory.remove_item()` → `DialogueManager.dialogue_ended` → `GameState.set_mode(OVERWORLD)` → movement unblocked
 - Chest: `Inventory.add_item()` → `Inventory.item_added` signal → ItemToast shows notification
-- Door: `SceneManager.change_scene()` → `SceneManager.scene_change_started` → fade → scene load → player state restore → `SceneManager.scene_change_completed`
+- Door: `SceneManager.change_scene()` → `SceneManager.scene_change_started` → fade → `WorldState.snapshot()` → scene load → `await scene_changed` → `WorldState.restore()` → player spawn → `SceneManager.scene_change_completed`
 
 **Quest state check (during NPC dialogue):**
 Dialogue Manager evaluates conditions → calls `QuestTracker.is_quest_active()` / `QuestTracker.is_quest_complete()` / `Inventory.has_item()` via `extra_game_states` → branches dialogue accordingly
@@ -1110,7 +1112,7 @@ Dialogue Manager evaluates conditions → calls `QuestTracker.is_quest_active()`
 
 - **Chest opened but item not added:** FIXED — chest now sets `_is_opened = true` AFTER `inventory.add_item()` with null guard. If inventory is null, chest stays closed.
 - **Quest advanced but item not removed:** Place `do QuestTracker.advance_quest(...)` and `do Inventory.remove_item(...)` on the same dialogue line or consecutive `do` statements within the same step. Dialogue Manager executes mutations within a single step atomically.
-- **Save during scene transition:** FIXED — SaveManager now checks `SceneManager._is_transitioning` and refuses to save during transitions.
+- **Save during scene transition:** FIXED — SaveManager now checks `SceneManager.is_transitioning()` and refuses to save during transitions.
 - **NPC coroutine survives node destruction:** FIXED — `is_instance_valid(self)` guard added after `await DialogueManager.dialogue_ended`. Also, SaveManager routes scene changes through SceneManager (not direct `change_scene_to_file()`), preventing SceneManager from being permanently locked by a bypassed transition.
 - **Player state between scenes:** No longer a risk — persistent player node survives scene changes without serialization.
 
@@ -1119,13 +1121,14 @@ Dialogue Manager evaluates conditions → calls `QuestTracker.is_quest_active()`
 **Interactable interface** (duck-typed, checked via `has_method()`):
 - `func interact(player: PlayerController) -> void` — called by PlayerController
 
-**Saveable interface** (for nodes with mutable state):
+**Saveable interface** (for nodes with mutable state, two tiers):
 - `func get_save_key() -> String` — unique identifier for save data
 - `func get_save_data() -> Dictionary` — serialize current state
 - `func load_save_data(data: Dictionary) -> void` — restore from saved state
-- Member of `"saveable"` group
+- `"saveable"` group — disk persistence (SaveManager iterates): Player, Inventory, QuestTracker, WorldState
+- `"interactable_saveable"` group — session state (WorldState iterates): chests
 
-Not all interactables are saveable. NPCs and Doors (stateless in prototype) are not in the saveable group. Chests and PlayerController/Inventory/QuestTracker are saveable. Add to CLAUDE.md as a convention: "Interactable types implement `func interact(player: PlayerController) -> void`. Stateful nodes additionally implement the saveable contract (`get_save_key`, `get_save_data`, `load_save_data`) and join the `saveable` group."
+NPCs and Doors (stateless in prototype) are not in either group. See CLAUDE.md for full convention.
 
 ### Integration Test Scenarios
 
@@ -1326,7 +1329,7 @@ Agent will complete its script work for a step first, then hand you the scene in
   3. In inspector: assign the dialogue resource once agent creates it (`resources/dialogue/npc_greeting.dialogue`)
   4. Save test_room.tscn
 
-- [x] **Add InteractionPrompt to test room** — Instance `scenes/ui/interaction_prompt.tscn` as child of TestRoom. The PlayerController script will find it and toggle visibility.
+- [x] **InteractionPrompt** — Now instanced by HUD autoload (not in test room). Remove from test_room.tscn if still present.
 
 ### Before Step 3
 
@@ -1354,7 +1357,7 @@ Agent will complete its script work for a step first, then hand you the scene in
   3. Exports pre-configured from chest scene (Item = key_item.tres, Chest Id = "chest_amulet")
   4. Save test_room.tscn
 
-- [x] **Add ItemToast to test room** — Instance `scenes/ui/item_toast.tscn` as child of TestRoom.
+- [x] **ItemToast** — Now instanced by HUD autoload (not in test room). Remove from test_room.tscn if still present.
 
 ### Before Step 4
 
@@ -1373,7 +1376,7 @@ Agent will complete its script work for a step first, then hand you the scene in
   2. Attach `res://scripts/quest/quest_tracker.gd`
   3. Save player.tscn
 
-- [x] **Add QuestIndicator to test room** — Instance `scenes/ui/quest_indicator.tscn` as child of TestRoom.
+- [x] **QuestIndicator** — Now instanced by HUD autoload (not in test room). Remove from test_room.tscn if still present.
 - [x] **Set NPC quest_resource** — Select NPC instance in test_room.tscn, Inspector > Quest Resource > Load `res://resources/quests/fetch_quest.tres`.
 
 ### Before Step 5
