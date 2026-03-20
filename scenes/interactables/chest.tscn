@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://dbtvb4go86tcq"]
+
+[ext_resource type="Script" uid="uid://cwheofwyecj3u" path="res://scripts/interactables/chest_interactable.gd" id="1_nvuik"]
+[ext_resource type="Resource" path="res://resources/items/key_item.tres" id="2_6vl4s"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6vl4s"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_k73g1"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7mhpd"]
+albedo_color = Color(0.54509807, 0.4117647, 0.078431375, 1)
+
+[node name="Chest" type="StaticBody3D" unique_id=1354572945 groups=["saveable"]]
+collision_layer = 8
+script = ExtResource("1_nvuik")
+item = ExtResource("2_6vl4s")
+chest_id = "chest_amulet"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=605233976]
+shape = SubResource("BoxShape3D_6vl4s")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1637371552]
+mesh = SubResource("BoxMesh_k73g1")
+skeleton = NodePath("../CollisionShape3D")
+surface_material_override/0 = SubResource("StandardMaterial3D_7mhpd")

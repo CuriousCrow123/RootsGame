@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bi240k4k0hb8c"]
+
+[ext_resource type="Script" uid="uid://ddq6s1y23pha5" path="res://scripts/ui/item_toast.gd" id="1_4g4r7"]
+
+[node name="ItemToast" type="CanvasLayer" unique_id=1368353301]
+layer = 10
+script = ExtResource("1_4g4r7")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1150796290]
+custom_minimum_size = Vector2(300, 40)
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -120.0
+offset_right = 150.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Label" type="Label" parent="PanelContainer" unique_id=760171819]
+layout_mode = 2
+text = "Acquired: Item"
+horizontal_alignment = 1
+vertical_alignment = 1
