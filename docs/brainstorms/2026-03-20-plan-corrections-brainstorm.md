@@ -2,7 +2,7 @@
 
 ## Context
 
-During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene-transition-patterns-retrospective](2026-03-20-scene-transition-patterns-retrospective.md)). A systematic audit of the remaining plan ([feat-rpg-playable-loop-foundation-plan](../plans/2026-03-19-feat-rpg-playable-loop-foundation-plan.md)) revealed 12 additional issues — same classes of incorrect assumptions that will cause bugs in Phase 4 or mislead future implementers.
+During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene-transition-patterns-retrospective](2026-03-20-scene-transition-patterns-retrospective.md)). A systematic audit of the entire plan ([feat-rpg-playable-loop-foundation-plan](../plans/2026-03-19-feat-rpg-playable-loop-foundation-plan.md)) revealed 46 issues across all phases — same classes of incorrect assumptions that will cause bugs in Phase 4 or mislead future implementers.
 
 ## Issues by Category
 
@@ -12,6 +12,7 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 - Plan shows: `node.get_save_key()` / `node.get_save_data()` / `node.load_save_data()`
 - Problem: `get_nodes_in_group()` returns `Array[Node]`. Strict typing rejects methods not on `Node`.
 - Correct: `node.call("get_save_key")` — already fixed in implementation, but plan code is stale.
+- Also affects: SaveManager's restore loop (plan lines 956-974) — both collect and restore loops need `.call()`.
 
 **A2. SaveManager accesses private var `SceneManager._is_transitioning` (plan line 905)**
 - Problem: Cross-autoload access to a `_`-prefixed var. Works but violates encapsulation.
@@ -23,8 +24,9 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 **B3. `process_frame` used everywhere instead of `scene_changed` signal**
 - Plan lines: 813 (SceneManager), 969 (SaveManager `_restore_save_data`)
 - Problem: `await get_tree().process_frame` is fragile and version-dependent. One frame wasn't enough (we had to use two). The official pattern for Godot 4.5+ is `await get_tree().scene_changed`.
-- Impact: SceneManager already uses two frames (works). SaveManager's `_restore_save_data` uses one frame after `scene_change_completed` (may be OK since SceneManager already waited, but fragile).
+- Impact: SceneManager already uses two frames (works). SaveManager's `_restore_save_data` uses one frame after `scene_change_completed` — redundant if SceneManager already waited, but fragile if the coupling changes.
 - Recommendation: Replace all post-`change_scene_to_file` waits with `await get_tree().scene_changed`. This is the single highest-value fix.
+- Also stale at: plan line 813 (SceneManager snippet), plan line 969 (SaveManager snippet).
 
 ### C. Persistent Node Lifecycle Bugs
 
@@ -35,7 +37,7 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
   - **(a) Guard in each UI script** (like `register_player`): check if an instance already exists at root, `queue_free()` the duplicate. Repetitive.
   - **(b) Move UI to autoloads**: register InteractionPrompt, ItemToast, QuestIndicator as autoloads (or children of a single HUD autoload). They naturally persist. No reparenting. No duplicates.
   - **(c) Remove UI from room scenes entirely**: build them in code from an autoload's `_ready()`, like SceneManager builds its overlay. No editor scene needed.
-- Recommendation: **(b)** — a single `HUD` autoload that builds/owns all persistent UI. Matches the research finding that persistent UI should be autoloads, not reparented nodes. Also resolves the EventBus concern (A7).
+- Recommendation: **(b)** — a single `HUD` autoload that builds/owns all persistent UI. Matches the research finding that persistent UI should be autoloads, not reparented nodes. Also resolves the EventBus concern (D7).
 
 **C5. Plan says "remove Player from test_room.tscn" (plan line 1400)**
 - Problem: `register_player()` is called from `PlayerController._ready()`. If no scene contains a Player instance, who creates the first one? SceneManager doesn't instantiate the player — it only reparents one that already exists.
@@ -45,6 +47,7 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 **C6. Saveable group added both in code AND editor (plan lines 1406-1409)**
 - Problem: The plan tells the user to add "saveable" group in the editor, but our scripts already call `add_to_group("saveable")` in `_ready()`. Doing both is harmless but confusing.
 - Recommendation: Delete the editor instructions. Code-based group membership is the correct pattern — it's self-documenting and can't be forgotten when creating new scenes.
+- Also affects: Chest editor instruction (plan line 1340) — same redundant "Add to saveable group" instruction.
 
 ### D. Architecture Gaps
 
@@ -79,115 +82,103 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 - SceneManager code (lines 775-828): still shows `.tscn` pattern, `@onready var %TransitionOverlay`, non-deferred reparenting, single `process_frame`
 - SaveManager code (lines 893-974): still shows direct method calls on group nodes
 - These snippets no longer match the implementation. Anyone reading the plan will be misled.
-- Recommendation: Either update the code snippets or add a prominent note: "Code snippets in this plan are design-time drafts. See the actual implementation for the current patterns."
+- Recommendation: Update the code snippets in-place to match current implementation.
 
 **F12. Plan doesn't mention `scene_changed` signal anywhere**
 - Godot 4.5+ provides `await get_tree().scene_changed` — the official way to wait for scene transitions.
 - The plan targets 4.6.1 but never mentions this signal. All timing code uses `process_frame`.
 - Recommendation: Add to the plan's "Research Insights" and to CLAUDE.md conventions.
 
-### G. Phase 1-2 Stale Snippets (Thorough Read)
+### G. Stale Snippets and Documentation
 
 All Phase 1-2 code snippets are already implemented and working. These are documentation-only fixes — the running code is correct.
 
-**A13. PlayerController snippet (plan lines 230-283)** — Missing `add_to_group("player")`, `add_to_group("saveable")`, `SceneManager.register_player()`, and `@warning_ignore` annotations on deserialization. Uses `@onready` for QuestTracker but implementation uses a getter. Doesn't show `nearest_interactable_changed` signal.
+#### Phase 1-2 Snippets
 
-**A14. interaction_prompt.gd snippet (plan lines 331-343)** — Shows bare show/hide methods but omits all the player connection logic (`_connect_to_player`, `nearest_interactable_changed` signal connection). The plan's snippet would produce a prompt that never appears.
+**G1. PlayerController snippet (plan lines 230-283)** — Missing `add_to_group("player")`, `add_to_group("saveable")`, `SceneManager.register_player()`, and `@warning_ignore` annotations on deserialization. Uses `@onready` for QuestTracker but implementation uses a getter. Doesn't show `nearest_interactable_changed` signal.
 
-**A15. NPC interactable snippet (plan lines 354-377)** — Uses `Resource` type instead of `DialogueResource`. Doesn't pass `self` in `extra_game_states` (needed for `quest_resource` property access). Missing `@export var quest_resource: QuestData`.
+**G2. interaction_prompt.gd snippet (plan lines 331-343)** — Shows bare show/hide methods but omits all the player connection logic (`_connect_to_player`, `nearest_interactable_changed` signal connection). The plan's snippet would produce a prompt that never appears.
 
-**A16. chest_interactable snippet (plan lines 514-546)** — Missing `@warning_ignore` on `load_save_data()`. Missing `display_name` parameter on `add_item()` call. Missing `_ready()` with `add_to_group("saveable")`.
+**G3. NPC interactable snippet (plan lines 354-377)** — Uses `Resource` type instead of `DialogueResource`. Doesn't pass `self` in `extra_game_states` (needed for `quest_resource` property access). Missing `@export var quest_resource: QuestData`.
 
-**A17. quest_tracker snippet (plan lines 611-694)** — Missing `@warning_ignore("unsafe_call_argument")` and `@warning_ignore("unsafe_cast")` throughout. Multiple Dictionary accesses return Variant, which strict typing rejects.
+**G4. chest_interactable snippet (plan lines 514-546)** — Missing `@warning_ignore` on `load_save_data()`. Missing `display_name` parameter on `add_item()` call. Missing `_ready()` with `add_to_group("saveable")`.
 
-**A18. inventory snippet (plan lines 456-500)** — Missing `@warning_ignore` on `load_save_data()`. Missing `_display_names` dictionary and `display_name` parameter on `add_item()`.
+**G5. quest_tracker snippet (plan lines 611-694)** — Missing `@warning_ignore("unsafe_call_argument")` and `@warning_ignore("unsafe_cast")` throughout. Multiple Dictionary accesses return Variant, which strict typing rejects.
 
-### G2. Phase 3 Code Snippet Issues (Missed in Initial Audit)
+**G6. inventory snippet (plan lines 456-500)** — Missing `@warning_ignore` on `load_save_data()`. Missing `_display_names` dictionary and `display_name` parameter on `add_item()`.
 
-**A25. SceneManager snippet still shows `@onready var _transition_overlay: ColorRect = %TransitionOverlay` (plan line 787)**
+#### Phase 3 Snippets
+
+**G7. SceneManager snippet still shows `@onready var _transition_overlay: ColorRect = %TransitionOverlay` (plan line 787)**
 - Plan's note (line 830) was updated to say ".gd autoload", but the code block itself still has the `@onready %TransitionOverlay` pattern. Should show `_ready()` building the overlay programmatically.
 
-**A26. SceneManager snippet shows non-deferred `remove_child`/`add_child` (plan lines 792-793)**
+**G8. SceneManager snippet shows non-deferred `remove_child`/`add_child` (plan lines 792-793)**
 - `register_player()` uses direct `player.get_parent().remove_child(player)` + `get_tree().root.add_child(player)`. We learned this crashes during `_ready()`. Should show `call_deferred()` pattern.
 
-**A27. SceneManager snippet has no duplicate player guard (plan lines 789-793)**
+**G9. SceneManager snippet has no duplicate player guard (plan lines 789-793)**
 - `register_player()` doesn't check if a player already exists. Returning to Room 1 creates duplicates. Should show the `if _player and is_instance_valid(_player): player.queue_free(); return` guard.
 
-**A28. SceneManager snippet uses single `process_frame` (plan line 813)**
-- Already captured as B3, but worth noting the specific plan line. Should use `await get_tree().scene_changed`.
-
-**A29. SceneManager `_place_player_at_spawn` uses `global_position` (plan line 827)**
+**G10. SceneManager `_place_player_at_spawn` uses `global_position` (plan line 827)**
 - We changed to `global_transform.origin` + `velocity = Vector3.ZERO` to handle the case where transforms haven't propagated. Plan still shows the old pattern.
 
-**A30. SceneManager snippet has no interactable state save/restore (plan lines 795-822)**
+**G11. SceneManager snippet has no interactable state save/restore (plan lines 795-822)**
 - `change_scene()` doesn't call `_save_interactable_state()` / `_load_interactable_state()`. This gap caused the chest-resets bug. (Will be replaced by WorldState autoload in refactor.)
 
-**A31. SaveManager snippet uses direct method calls (plan lines 956-974)**
-- Already captured as A1, but noting these are *two separate loops* (collect + restore), both needing `.call()`.
+**G12. SaveManager missing debug prints (plan lines 923, 948)**
+- Implementation has `print("Game saved to %s" % final_path)` and `print("Game loaded from %s" % path)`. Plan doesn't. Minor.
 
-**A32. SaveManager `_restore_save_data` single `process_frame` (plan line 969)**
-- Already captured as B3. After `scene_change_completed` fires, one more frame wait. Should use `scene_changed` or trust SceneManager's own wait.
-
-**A33. SaveManager `load_game()` has no debug print (plan line 948)**
-- Implementation has `print("Game loaded from %s" % path)`. Plan doesn't. Minor.
-
-**A34. SaveManager `save_game()` has no debug print (plan line 923)**
-- Implementation has `print("Game saved to %s" % final_path)`. Plan doesn't. Minor.
-
-**A35. Door interactable snippet has no empty-path guard (plan line 856)**
+**G13. Door interactable snippet has no empty-path guard (plan line 856)**
 - Implementation has `if target_scene_path == "": push_warning(...); return`. Plan calls `SceneManager.change_scene()` directly with no guard.
 
-**A36. Plan task 4 says doors need save/load (plan line 989)**
-- "PlayerController, Inventory, QuestTracker, each chest instance, **each door instance**" — but plan line 859 and 991 explicitly say doors are NOT saveable. Contradiction within the plan.
+**G14. Door saveable contradiction (plan line 989 vs 859/991)**
+- Task 4 says "PlayerController, Inventory, QuestTracker, each chest instance, **each door instance**" — but plan lines 859 and 991 explicitly say doors are NOT saveable. Contradiction within the plan.
 
-**A37. Alternative Approaches table stale (plan line 1084)**
+#### Acceptance Criteria, Dependencies, Editor Instructions
+
+**G15. Autoload count stale (plan line 1084)**
 - Says "We have 4 max" autoloads. We now have 5 (adding SaveManager) and will have 7 after refactor. Table should be updated.
 
-**A38. Scene Interface Parity section (plan line 1128)**
+**G16. CLAUDE.md convention missing (plan line 1128)**
 - Says "Add to CLAUDE.md as a convention" for interactable/saveable contracts — but this was never done. Should be added during the plan update pass.
 
-**A39. Integration Test Scenario 1 (plan line 1132)**
+**G17. Cross-room integration test missing (plan line 1132)**
 - "Full quest loop across rooms" — this test doesn't exist yet. We have `test_quest_loop.gd` (single room) and `test_scene_transition.gd` (transitions only). The cross-room quest loop test is missing.
 
-### G3. Acceptance Criteria, Dependencies, Editor Instructions (Lines 1138-1401)
-
-**A40. Global acceptance criteria don't mention persistent UI or interactable state (lines 1142-1148)**
-- Line 1146: "Scene transitions with fade effect preserve all player state" — but doesn't mention UI persistence or interactable state (chest opened status) across transitions. These are now requirements that emerged from Phase 3 bugs.
+**G18. Acceptance criteria don't mention persistent UI or interactable state (lines 1142-1148)**
+- Line 1146: "Scene transitions with fade effect preserve all player state" — but doesn't mention UI persistence or interactable state (chest opened status) across transitions.
 - Line 1147: "Save/load preserves... interactable states" — correct for save files, but doesn't mention in-session persistence via WorldState.
 
-**A41. Quality gate "No orphaned Resources or dangling node references after scene transitions" (line 1162)**
-- This is actually testable now — and relevant given the reparenting pattern. The duplicate player guard and persistent UI work specifically to prevent dangling references. No test currently validates this gate.
+**G19. Orphaned reference quality gate untested (line 1162)**
+- "No orphaned Resources or dangling node references after scene transitions" — this is testable and relevant given the reparenting pattern. No test currently validates this gate.
 
-**A42. Dependencies table doesn't list GUT version (line 1170)**
+**G20. GUT version not pinned (line 1170)**
 - Says "Installed (`addons/gut/`)" but no version pinned. GUT API differences across versions can break tests.
 
-**A43. Editor instructions for UI scenes say "instance as child of TestRoom" (lines 1329, 1357, 1376)**
-- Lines 1329, 1357, 1376: InteractionPrompt, ItemToast, QuestIndicator all say "Instance as child of TestRoom" — but with the HUD autoload refactor, they should NOT be in room scenes at all. These instructions are stale post-refactor.
-- Until the refactor: they're currently reparenting to root, which works but means these instructions are misleading about where they actually live at runtime.
+**G21. UI "instance in room" instructions stale (lines 1329, 1357, 1376)**
+- InteractionPrompt, ItemToast, QuestIndicator all say "Instance as child of TestRoom" — but with the HUD autoload refactor, they should NOT be in room scenes at all.
 
-**A44. Chest editor instruction says "Add to saveable group" (line 1340)**
-- Same as C6 — code already does `add_to_group("saveable")` in `_ready()`. Editor instruction is redundant.
+**G22. Room 2 instructions incomplete (lines 1383-1388)**
+- Says "duplicate test_room.tscn structure" without warning NOT to include UI instances. Also doesn't mention adding NPC or chest to Room 2 for cross-room quest testing.
 
-**A45. "Before Step 5" room 2 instructions don't mention UI (lines 1383-1388)**
-- Already captured as A22. But also: doesn't mention adding NPC or chest to Room 2 (for cross-room quest testing). Room 2 currently only has a door + spawn marker.
+**G23. File structure section stale (lines 136-198)**
+- Doesn't list `scripts/interactables/door_interactable.gd`, `scripts/autoloads/save_manager.gd`, or any test files beyond `test_example.gd`. After refactor: also missing `scripts/autoloads/world_state.gd` and `scripts/autoloads/hud.gd`.
 
-**A46. File structure section (lines 136-198) is missing new files**
-- Doesn't list `scripts/interactables/door_interactable.gd`, `scripts/autoloads/save_manager.gd`, or any test files beyond `test_example.gd`. The file structure was a "End State" projection but doesn't match reality (missing `.gd.uid` sidecar files, missing `docs/` directory structure).
-- After refactor: will also be missing `scripts/autoloads/world_state.gd` and `scripts/autoloads/hud.gd`.
+**G24. Signal chain description stale (plan lines 1092-1096)**
+- Door flow doesn't mention interactable state save/restore. Chest flow doesn't mention `display_name` parameter. Missing WorldState in the flow.
 
 ### H. Cross-Cutting Stale Content
 
-**A19. Item registry gap (plan line 452)** — Plan says "plan for a proper registry when item count grows" but we already needed display name lookup in Phase 3 (toast showed `item_id`). The "defer to later" created a real bug. Current fix (`_display_names` dict on Inventory) works but the plan should acknowledge this was resolved.
+**H1. Item registry gap (plan line 452)** — Plan says "plan for a proper registry when item count grows" but we already needed display name lookup in Phase 3 (toast showed `item_id`). The "defer to later" created a real bug. Current fix (`_display_names` dict on Inventory) works but the plan should acknowledge this was resolved.
 
-**A20. Pause menu editor instructions (plan lines 1413-1425)** — Creates `.tscn` but doesn't say where to instance it. Same as E9 but the editor instructions section also needs updating to say "instance as child of HUD autoload" or "build programmatically."
+**H2. Pause menu editor instructions (plan lines 1413-1425)** — Creates `.tscn` but doesn't say where to instance it. Same as E9 but the editor instructions section also needs updating to say "instance as child of HUD autoload" or "build programmatically."
 
-**A21. "Before Step 6" editor instructions stale (plan line 1404)** — Says to register SaveManager manually, but we already did it in `project.godot`. Autoload order listed doesn't include WorldState or HUD.
+**H3. "Before Step 6" editor instructions stale (plan line 1404)** — Says to register SaveManager manually, but we already did it in `project.godot`. Autoload order listed doesn't include WorldState or HUD.
 
-**A22. "Before Step 5" room duplication (plan lines 1383-1388)** — Says "duplicate test_room.tscn structure" without warning NOT to include UI instances (InteractionPrompt, ItemToast, QuestIndicator). If user duplicates with UI nodes, they get duplicates in the HUD autoload world.
+**H4. "Before Step 5" room duplication (plan lines 1383-1388)** — Says "duplicate test_room.tscn structure" without warning NOT to include UI instances (InteractionPrompt, ItemToast, QuestIndicator). If user duplicates with UI nodes, they get duplicates in the HUD autoload world.
 
-**A23. Documentation plan stale (plan line 1453)** — Says "update CLAUDE.md if new conventions emerge" — we've already added two. Need to also add `scene_changed` signal and `call_deferred()` in `_ready()`.
+**H5. Documentation plan stale (plan line 1453)** — Says "update CLAUDE.md if new conventions emerge" — we've already added two. Need to also add `scene_changed` signal and `call_deferred()` in `_ready()`.
 
-**A24. Signal chain description stale (plan lines 1092-1096)** — Door flow doesn't mention interactable state save/restore. Chest flow doesn't mention `display_name` parameter. Missing WorldState in the flow.
+**H6. Signal chain description stale (plan lines 1092-1096)** — Door flow doesn't mention interactable state save/restore. Chest flow doesn't mention `display_name` parameter. Missing WorldState in the flow.
 
 ## Summary Table
 
@@ -205,25 +196,10 @@ All Phase 1-2 code snippets are already implemented and working. These are docum
 | E10 | Mode setting | Silent bug | Low | Phase 4 Step 8 |
 | F11 | Stale code (Phase 3+) | Misleading | Medium | Plan update |
 | F12 | Missing signal | Missing pattern | Low | CLAUDE.md + plan |
-| A13-A18 | Stale code (Phase 1-2) | Misleading | Medium | Plan update |
-| A19 | Item registry gap | Resolved | Low | Plan update |
-| A20-A22 | Stale editor instructions | Confusing | Low | Plan update |
-| A23 | Documentation plan stale | Low | Low | Plan update |
-| A24 | Signal chain stale | Misleading | Low | Plan update |
-| A25-A30 | Stale SceneManager snippet | Misleading | Medium | Plan update |
-| A31-A34 | Stale SaveManager snippet | Misleading | Low | Plan update |
-| A35 | Door missing guard | Misleading | Low | Plan update |
-| A36 | Door saveable contradiction | Confusing | Low | Plan update |
-| A37 | Autoload count stale | Stale | Low | Plan update |
-| A38 | CLAUDE.md convention missing | Gap | Low | Plan update |
-| A39 | Cross-room integration test missing | **Test gap** | Medium | Before Phase 4 |
-| A40 | Acceptance criteria incomplete | Gap | Low | Plan update |
-| A41 | Orphaned reference quality gate untested | Test gap | Low | Before Phase 4 |
-| A42 | GUT version not pinned | Risk | Low | Plan update |
-| A43 | UI "instance in room" instructions stale | Stale post-refactor | Low | Plan update |
-| A44 | Chest "add to saveable" redundant | Same as C6 | Low | Plan update |
-| A45 | Room 2 instructions incomplete | Gap | Low | Plan update |
-| A46 | File structure section stale | Stale | Low | Plan update |
+| G1-G6 | Stale code (Phase 1-2) | Misleading | Medium | Plan update |
+| G7-G14 | Stale code (Phase 3) | Misleading | Medium | Plan update |
+| G15-G24 | Stale docs/instructions | Gap | Low | Plan update |
+| H1-H6 | Cross-cutting stale content | Confusing | Low | Plan update |
 
 ## Recommended Priority
 
@@ -234,24 +210,24 @@ All Phase 1-2 code snippets are already implemented and working. These are docum
 4. **D8** — Extract WorldState autoload for interactable state tracking
 
 **Fix during Phase 4 (non-blocking):**
-4. **E9** — Pause menu as autoload, not room child
+5. **E9** — Pause menu as autoload, not room child
 6. **E10** — Use `set_mode()` not direct assignment
 7. **A2** — Public `is_transitioning()` accessor
 8. **D7** — Re-evaluate EventBus candidates with current architecture
 
 **Plan documentation updates (batch during refactor):**
-9. **F11 + A13-A18 + A25-A35** — Update ALL code snippets in-place (Phases 1-4) to match current implementation: add `@warning_ignore` annotations, correct types, add missing signals/params, fix method signatures, deferred reparenting, duplicate guard, `scene_changed` signal, `.call()` dispatch, empty-path guards, debug prints
+9. **F11 + G1-G14** — Update ALL code snippets in-place (Phases 1-4) to match current implementation: add `@warning_ignore` annotations, correct types, add missing signals/params, fix method signatures, deferred reparenting, duplicate guard, `scene_changed` signal, `.call()` dispatch, empty-path guards, debug prints
 10. **C5** — Delete "remove Player from test_room" instruction; replace with "keep Player, SceneManager guards duplicates"
 11. **C6** — Delete editor group assignment instructions (code handles this)
-12. **A36** — Fix door saveable contradiction (task 4 says doors are saveable, lines 859/991 say they're not)
-13. **A19** — Mark item registry gap as resolved; note the `_display_names` approach
-14. **A20-A22** — Update editor instructions: remove stale manual autoload registration, update autoload order to include WorldState + HUD, warn against duplicating UI instances into Room 2
-15. **A23 + A38** — Update documentation plan; add interactable/saveable convention to CLAUDE.md
-16. **A24** — Update signal chain to include WorldState save/restore in door flow, `display_name` in chest flow
-17. **A37** — Update Alternative Approaches table: autoload count from "4 max" to current count
+12. **G14** — Fix door saveable contradiction (task 4 says doors are saveable, lines 859/991 say they're not)
+13. **H1** — Mark item registry gap as resolved; note the `_display_names` approach
+14. **H2-H4** — Update editor instructions: remove stale manual autoload registration, update autoload order to include WorldState + HUD, warn against duplicating UI instances into Room 2
+15. **H5 + G16** — Update documentation plan; add interactable/saveable convention to CLAUDE.md
+16. **G24 + H6** — Update signal chain to include WorldState save/restore in door flow, `display_name` in chest flow
+17. **G15** — Update Alternative Approaches table: autoload count from "4 max" to current count
 
 **Test gap (before Phase 4):**
-18. **A39** — Write cross-room integration test: quest loop across scene transitions (start quest in Room 1, get item in Room 2, return to Room 1, complete quest)
+18. **G17** — Write cross-room integration test: quest loop across scene transitions (start quest in Room 1, get item in Room 2, return to Room 1, complete quest)
 
 ## Resolved Questions
 
