@@ -20,6 +20,7 @@ func connect_to_player(player: PlayerController) -> void:
 	_quest_tracker.quest_started.connect(_on_quest_started)
 	_quest_tracker.quest_step_completed.connect(_on_quest_step_completed)
 	_quest_tracker.quest_completed.connect(_on_quest_completed)
+	_quest_tracker.quests_reset.connect(_on_quests_reset)
 
 
 func _on_quest_started(quest_id: String) -> void:
@@ -38,6 +39,10 @@ func _on_quest_completed(quest_id: String) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_interval(3.0)
 	tween.tween_callback(_panel.hide)
+
+
+func _on_quests_reset() -> void:
+	_panel.visible = false
 
 
 func _update_display(quest_id: String) -> void:

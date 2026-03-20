@@ -2,6 +2,7 @@ extends Node
 ## Tracks interactable state across scene transitions within a session.
 ## Implements the saveable contract so SaveManager can serialize/deserialize
 ## all interactable state as a single blob.
+## Interactable nodes call WorldState.register(self) in _ready().
 
 ## All values are flat Dictionaries of primitives (e.g., {"is_opened": true}).
 ## If interactables begin storing nested Resources, manual duplication is needed.
@@ -9,7 +10,23 @@ var _state: Dictionary[String, Dictionary] = {}
 
 
 func _ready() -> void:
-	add_to_group("saveable")
+	SaveManager.register(self)
+
+
+func register(node: Node) -> void:
+	assert(
+		node.has_method("get_save_key"),
+		"%s registered as interactable_saveable but missing get_save_key()" % node.name,
+	)
+	assert(
+		node.has_method("get_save_data"),
+		"%s registered as interactable_saveable but missing get_save_data()" % node.name,
+	)
+	assert(
+		node.has_method("load_save_data"),
+		"%s registered as interactable_saveable but missing load_save_data()" % node.name,
+	)
+	node.add_to_group("interactable_saveable")
 
 
 func get_state(key: String) -> Dictionary:

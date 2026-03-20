@@ -11,6 +11,10 @@ var _items: Array[Dictionary] = []
 var _display_names: Dictionary = {}
 
 
+func _ready() -> void:
+	SaveManager.register(self)
+
+
 func add_item(item_id: String, quantity: int = 1, display_name: String = "") -> void:
 	if display_name != "":
 		_display_names[item_id] = display_name

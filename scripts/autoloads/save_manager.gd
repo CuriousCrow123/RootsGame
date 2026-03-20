@@ -1,11 +1,27 @@
 extends Node
 ## Serializes/deserializes all saveable node state to JSON.
-## Saveable nodes: add to "saveable" group, implement get_save_key(),
-## get_save_data(), load_save_data().
+## Saveable nodes call SaveManager.register(self) in _ready().
+## Registration validates the three-method contract and adds to "saveable" group.
 
 const SAVE_DIR: String = "user://saves/"
 const SAVE_FILE: String = "save_001.json"
 const SAVE_VERSION: int = 1
+
+
+func register(node: Node) -> void:
+	assert(
+		node.has_method("get_save_key"),
+		"%s registered as saveable but missing get_save_key()" % node.name,
+	)
+	assert(
+		node.has_method("get_save_data"),
+		"%s registered as saveable but missing get_save_data()" % node.name,
+	)
+	assert(
+		node.has_method("load_save_data"),
+		"%s registered as saveable but missing load_save_data()" % node.name,
+	)
+	node.add_to_group("saveable")
 
 
 func save_game() -> void:
@@ -76,17 +92,18 @@ func _collect_save_data() -> Dictionary:
 
 
 func _restore_save_data(data: Dictionary) -> void:
+	# Always reload scene — guarantees clean slate for all scene-local state
+	# (interactables, spawn points, etc.) even when loading in the same room.
 	var scene_path: String = data.get("scene_path", "")
-	if scene_path != "" and scene_path != get_tree().current_scene.scene_file_path:
+	if scene_path != "":
 		SceneManager.change_scene(scene_path)
 		await SceneManager.scene_change_completed
 	# AFTER scene change: overwrite WorldState with save file data.
 	# This must happen after change_scene's snapshot()/restore() cycle,
 	# otherwise snapshot() clobbers the loaded data.
-	if data.has("world_state"):
-		var world_data: Dictionary = data["world_state"]
-		WorldState.load_save_data(world_data)
-		WorldState.restore()
+	var world_data: Dictionary = data.get("world_state", {})
+	WorldState.load_save_data(world_data)
+	WorldState.restore()
 	# Restore remaining saveables (Player, Inventory, QuestTracker).
 	# Skip WorldState — already restored above.
 	for node: Node in get_tree().get_nodes_in_group("saveable"):
@@ -94,5 +111,6 @@ func _restore_save_data(data: Dictionary) -> void:
 			continue
 		if node.has_method("get_save_key") and node.has_method("load_save_data"):
 			var key: String = node.call("get_save_key")
-			if data.has(key):
-				node.call("load_save_data", data[key])
+			# Always call load_save_data — empty dict triggers "clear then rebuild"
+			# to reset state that didn't exist at save time (e.g., quest started after save)
+			node.call("load_save_data", data.get(key, {}))

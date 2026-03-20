@@ -7,11 +7,16 @@ extends Node
 signal quest_started(quest_id: String)
 signal quest_step_completed(quest_id: String, step_id: String)
 signal quest_completed(quest_id: String)
+signal quests_reset
 
 enum QuestState { INACTIVE, ACTIVE, COMPLETE }
 
 # { quest_id: { "state": QuestState, "current_step_id": String, "data": QuestData } }
 var _quests: Dictionary = {}
+
+
+func _ready() -> void:
+	SaveManager.register(self)
 
 
 func start_quest(quest_data: QuestData) -> void:
@@ -85,22 +90,37 @@ func get_save_key() -> String:
 func get_save_data() -> Dictionary:
 	var save: Dictionary = {}
 	for qid: String in _quests:
+		@warning_ignore("unsafe_cast")
+		var quest_data: QuestData = _quests[qid]["data"] as QuestData
 		save[qid] = {
 			"state": _quests[qid]["state"],
 			"current_step_id": _quests[qid]["current_step_id"],
+			"resource_path": quest_data.resource_path if quest_data else "",
 		}
 	return save
 
 
 func load_save_data(data: Dictionary) -> void:
+	# Clear then rebuild — save file is the single source of truth
+	_quests.clear()
 	for qid: String in data:
-		if _quests.has(qid):
-			@warning_ignore("unsafe_cast")
-			var entry: Dictionary = data[qid] as Dictionary
-			@warning_ignore("unsafe_call_argument")
-			_quests[qid]["state"] = entry.get("state", QuestState.INACTIVE)
-			@warning_ignore("unsafe_call_argument")
-			_quests[qid]["current_step_id"] = entry.get("current_step_id", "")
+		@warning_ignore("unsafe_cast")
+		var entry: Dictionary = data[qid] as Dictionary
+		var res_path: String = entry.get("resource_path", "")
+		if res_path == "":
+			push_warning("Quest '%s' has no resource_path in save data, skipping" % qid)
+			continue
+		@warning_ignore("unsafe_cast")
+		var quest_data: QuestData = load(res_path) as QuestData
+		if not quest_data:
+			push_warning("Failed to load QuestData at '%s' for quest '%s'" % [res_path, qid])
+			continue
+		_quests[qid] = {
+			"state": entry.get("state", QuestState.INACTIVE),
+			"current_step_id": entry.get("current_step_id", ""),
+			"data": quest_data,
+		}
+	quests_reset.emit()
 
 
 # -- Private --

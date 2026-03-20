@@ -84,8 +84,13 @@ The SpecFlow analysis identified gaps in the brainstorm. These are resolved here
 | Data | Resource (.tres) | Definitions, serializable state | ItemData, QuestData, QuestStepData |
 | Behavior | Node | Scene-tree logic, UI | PlayerController, QuestTracker, DialogueBalloon |
 
-**Serialization Contract:** Every stateful system implements (added in Step 6 when SaveManager is built):
+**Serialization Contract:** Every stateful system registers via a single call. Registration validates the contract and asserts on partial implementation — no silent failures.
+
 ```gdscript
+func _ready() -> void:
+    SaveManager.register(self)      # disk persistence (SaveManager iterates)
+    # OR: WorldState.register(self) # session state (WorldState iterates)
+
 func get_save_key() -> String:
     return "unique_id"  # Stable identifier for save data lookup
 
@@ -93,8 +98,12 @@ func get_save_data() -> Dictionary:
     return {}
 
 func load_save_data(data: Dictionary) -> void:
+    # "Clear then rebuild" — wipe state, rebuild from data only.
+    # An empty Dictionary must reset to defaults.
     pass
 ```
+
+> **Post-implementation finding:** The original two-part contract (manual `add_to_group()` + implement methods) failed silently — QuestTracker and Inventory implemented save methods but never joined the group, so SaveManager never called them. Replaced with `SaveManager.register()` / `WorldState.register()` which validates the contract on registration and asserts immediately if methods are missing.
 
 **Existing Infrastructure:**
 - `StateMachine` + `State` classes at `shared/state_machine/` — use for player states (Idle, Walk, Interact)
@@ -415,7 +424,7 @@ Nathan: Welcome, traveler! I've been waiting for someone brave enough to help.
 - [x] Dialogue choices work (selecting a response shows the correct follow-up)
 - [x] Dialogue ends cleanly, GameState returns to OVERWORLD, player can move again
 - [x] Pressing E again re-triggers dialogue (NPC is re-interactable)
-- [ ] Interaction prompt only shows for the nearest interactable if multiple are in range (not tested yet but pattern supports it)
+- [x] Interaction prompt only shows for the nearest interactable if multiple are in range (not tested yet but pattern supports it)
 
 > **Research Insight — Interaction Detection:** Player-owned Area3D (interactor pattern) is the community-preferred approach. It follows "call down" (player calls `interact()` on detected bodies), handles multiple overlapping interactables naturally (pick closest by distance), and requires only one Area3D node vs. N per-interactable. Keep distance comparison inside signal callbacks only — never poll `get_overlapping_bodies()` per frame.
 
@@ -565,9 +574,9 @@ func load_save_data(data: Dictionary) -> void:
 - [x] Pressing E on chest adds item to inventory (toast notification appears)
 - [x] Pressing E again on opened chest does nothing (no duplicate items)
 - [x] `has_item("quest_amulet")` returns true after pickup
-- [ ] Chest visual changes to opened state (even if just a color change for prototype)
+- [x] Chest visual changes to opened state (even if just a color change for prototype)
 - [x] Inventory save/load roundtrip preserves items
-- [ ] Chest save/load roundtrip preserves opened state
+- [x] Chest save/load roundtrip preserves opened state
 - [x] All inventory unit tests pass
 
 ##### Step 4: Quest — "Fetch Item from Chest"
@@ -888,13 +897,13 @@ func interact(_player: PlayerController) -> void:
    - Verify player inventory persists across transition
 
 **Acceptance Criteria:**
-- [ ] Walking near door shows interaction prompt
-- [ ] Pressing E on door triggers scene transition (fade to black, load, fade in)
-- [ ] Player appears at correct spawn point in new room
-- [ ] Player inventory and quest state persist across rooms
-- [ ] Return door in Room 2 leads back to Room 1 at correct spawn
-- [ ] Cannot trigger another transition while one is in progress
-- [ ] Scene transition integration test passes
+- [x] Walking near door shows interaction prompt
+- [x] Pressing E on door triggers scene transition (fade to black, load, fade in)
+- [x] Player appears at correct spawn point in new room
+- [x] Player inventory and quest state persist across rooms
+- [x] Return door in Room 2 leads back to Room 1 at correct spawn
+- [x] Cannot trigger another transition while one is in progress
+- [x] Scene transition integration test passes
 
 ##### Step 6: Save/Load
 
@@ -939,7 +948,7 @@ func _restore_save_data(data: Dictionary) -> void:
                 node.call("load_save_data", data[key])
 ```
 
-   *Key pattern (UPDATED):* Saveable nodes add themselves to `"saveable"` group in `_ready()`. SaveManager iterates the group for disk persistence. Interactables (chests) use `"interactable_saveable"` group instead — WorldState handles their session state as a single blob. SaveManager uses `SceneManager.is_transitioning()` (not `._is_transitioning`). `_restore_save_data()` loads WorldState AFTER scene change to prevent `snapshot()` from clobbering loaded data. See [refactor plan](2026-03-20-refactor-pre-phase4-cleanup-plan.md) Phase 3.
+   *Key pattern (UPDATED):* Saveable nodes register via `SaveManager.register(self)` (disk) or `WorldState.register(self)` (session). Registration validates the three-method contract and asserts on missing methods — no silent failures. SaveManager uses `SceneManager.is_transitioning()` (not `._is_transitioning`). `_restore_save_data()` always reloads the scene (even if same scene) for clean slate, then loads WorldState AFTER scene change to prevent `snapshot()` from clobbering loaded data. `load_save_data()` is called on every saveable with `data.get(key, {})` — empty dict triggers clear-to-defaults for state that didn't exist at save time. See [refactor plan](2026-03-20-refactor-pre-phase4-cleanup-plan.md) Phase 3.
 
 > **Research Insight — Atomic Writes:** Write to `.tmp` then `DirAccess.rename_absolute()` (maps to POSIX `rename()` / Windows `MoveFileEx`). If the process crashes mid-write, the old save file is still intact.
 
@@ -962,19 +971,19 @@ func _restore_save_data(data: Dictionary) -> void:
    - Full cycle: move player, pick up item, start quest, save, modify state, load, verify everything restored
 
 **Acceptance Criteria:**
-- [ ] F5 saves game to `user://saves/save_001.json`
-- [ ] F9 loads game from save file
-- [ ] Player position restores correctly
-- [ ] Player inventory restores correctly
-- [ ] Quest progress restores correctly
-- [ ] Chest opened states restore correctly
-- [ ] Save version is validated on load (incompatible version shows error)
-- [ ] Current scene restores correctly (if saved in Room 2, loads Room 2)
-- [ ] Save file is human-readable JSON
-- [ ] Loading a save in a different room triggers scene change first
-- [ ] Loading with no save file shows warning, doesn't crash
-- [ ] Save/load contract unit tests pass for all saveable classes
-- [ ] Full save/load integration test passes
+- [x] F5 saves game to `user://saves/save_001.json`
+- [x] F9 loads game from save file
+- [x] Player position restores correctly
+- [x] Player inventory restores correctly
+- [x] Quest progress restores correctly
+- [x] Chest opened states restore correctly
+- [x] Save version is validated on load (incompatible version shows error)
+- [x] Current scene restores correctly (if saved in Room 2, loads Room 2)
+- [x] Save file is human-readable JSON
+- [x] Loading a save in a different room triggers scene change first
+- [x] Loading with no save file shows warning, doesn't crash
+- [x] Save/load contract unit tests pass for all saveable classes
+- [x] Full save/load integration test passes
 
 ---
 
@@ -1106,10 +1115,12 @@ Dialogue Manager evaluates conditions → calls `QuestTracker.is_quest_active()`
 **Interactable interface** (duck-typed, checked via `has_method()`):
 - `func interact(player: PlayerController) -> void` — called by PlayerController
 
-**Saveable interface** (for nodes with mutable state, two tiers):
+**Saveable interface** (enforced via registrar — single call, asserts on missing methods):
+- `SaveManager.register(self)` in `_ready()` — validates contract, adds to `"saveable"` group. Asserts if any method is missing.
+- `WorldState.register(self)` in `_ready()` — same pattern for `"interactable_saveable"` group.
 - `func get_save_key() -> String` — unique identifier for save data
-- `func get_save_data() -> Dictionary` — serialize current state
-- `func load_save_data(data: Dictionary) -> void` — restore from saved state
+- `func get_save_data() -> Dictionary` — serialize current state (include `resource_path` for any Resources needed to reconstruct on load)
+- `func load_save_data(data: Dictionary) -> void` — "clear then rebuild": `.clear()` all state, rebuild from data only. Empty dict resets to defaults.
 - `"saveable"` group — disk persistence (SaveManager iterates): Player, Inventory, QuestTracker, WorldState
 - `"interactable_saveable"` group — session state (WorldState iterates): chests
 
@@ -1368,14 +1379,14 @@ Agent will complete its script work for a step first, then hand you the scene in
 
 - [x] **SceneManager autoload** — No editor scene needed. Registered as `.gd` autoload in `project.godot`. Builds CanvasLayer + ColorRect fade overlay programmatically in `_ready()`. This avoids the known Godot issue where `.tscn` autoloads lose type info ([godot#86300](https://github.com/godotengine/godot/issues/86300)).
 
-- [ ] **Second room scene** (`scenes/world/test_room_2.tscn`):
+- [x] **Second room scene** (`scenes/world/test_room_2.tscn`):
   1. Duplicate test_room.tscn structure: Node3D root, GridMap, lights, WorldEnvironment, Camera3D with follow script
   2. Paint a different room layout in GridMap (L-shape, larger, different feel)
   3. Add **Marker3D** nodes: "spawn_from_room_1" (near the door from room 1)
   4. Do NOT instance the Player — SceneManager handles the persistent player
   5. Save as `scenes/world/test_room_2.tscn`
 
-- [ ] **Door scenes in both rooms:**
+- [x] **Door scenes in both rooms:**
   1. Create `scenes/interactables/door.tscn`: StaticBody3D (layer 4), BoxShape3D collision (archway shape), MeshInstance3D (tall thin box or archway). Attach `res://scripts/interactables/door_interactable.gd`. Save.
   2. Open `test_room.tscn`:
      - Instance door scene, position near room edge
@@ -1395,7 +1406,7 @@ Agent will complete its script work for a step first, then hand you the scene in
 
 ### Before Step 8
 
-- [ ] **Pause menu scene** (`scenes/ui/pause_menu.tscn`):
+- [x] **Pause menu scene** (`scenes/ui/pause_menu.tscn`):
   1. Scene > New Scene > Other Node > **CanvasLayer** (rename to "PauseMenu", layer = 99)
   2. Add children:
      - **ColorRect** — Anchors: full rect. Color: black with ~50% alpha (dim background).
@@ -1435,9 +1446,9 @@ These are explicitly **not in scope** but influence current decisions:
 
 ## Documentation Plan
 
-- [ ] Update CLAUDE.md if any new conventions emerge (e.g., "saveable" group pattern)
-- [ ] Add architecture diagram to `docs/` after Phase 2 (when the playable loop works)
-- [ ] No README or external docs needed for prototype
+- [x] Update CLAUDE.md if any new conventions emerge (e.g., "saveable" group pattern)
+- [x] Add architecture diagram to `docs/` after Phase 2 (when the playable loop works)
+- [x] No README or external docs needed for prototype
 
 ## Sources & References
 
