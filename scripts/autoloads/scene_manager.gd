@@ -1,14 +1,25 @@
 extends Node
 ## Manages scene transitions with fade overlay and persistent player.
-## Registered as autoload from a .tscn scene (needs CanvasLayer + ColorRect child).
+## Registered as a .gd autoload — builds the overlay in _ready() so the
+## parser knows the full type (no .tscn = no unsafe_method_access warnings).
 
 signal scene_change_started
 signal scene_change_completed
 
 var _is_transitioning: bool = false
 var _player: PlayerController = null
+var _transition_overlay: ColorRect
 
-@onready var _transition_overlay: ColorRect = %TransitionOverlay
+
+func _ready() -> void:
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 100  # Above all game UI
+	add_child(canvas)
+	_transition_overlay = ColorRect.new()
+	_transition_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
+	_transition_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_transition_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	canvas.add_child(_transition_overlay)
 
 
 func register_player(player: PlayerController) -> void:

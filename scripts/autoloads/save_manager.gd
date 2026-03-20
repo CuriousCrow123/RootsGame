@@ -18,7 +18,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func save_game() -> void:
-	@warning_ignore("unsafe_property_access")
 	if SceneManager._is_transitioning:
 		push_warning("Cannot save during scene transition")
 		return
@@ -89,7 +88,6 @@ func _restore_save_data(data: Dictionary) -> void:
 	var scene_path: String = data.get("scene_path", "")
 	if scene_path != "" and scene_path != get_tree().current_scene.scene_file_path:
 		# Route through SceneManager to avoid bypassing transition state
-		@warning_ignore("unsafe_method_access")
 		SceneManager.change_scene(scene_path)
 		await SceneManager.scene_change_completed
 	# Wait one frame to ensure all nodes are ready

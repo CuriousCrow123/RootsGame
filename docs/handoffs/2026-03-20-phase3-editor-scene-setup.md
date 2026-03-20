@@ -10,27 +10,11 @@ Phase 3 editor setup for the RPG Playable Loop Foundation. Agent wrote all scrip
 
 ## Editor Instructions
 
-### 1. Build SceneManager Scene (`scenes/autoloads/scene_manager.tscn`)
+### 1. SceneManager — No Editor Setup Needed
 
-The SceneManager autoload is registered in `project.godot` pointing to `res://scenes/autoloads/scene_manager.tscn`. This scene provides the fade overlay for transitions.
+SceneManager is registered as a `.gd` autoload (not `.tscn`). It builds its CanvasLayer + ColorRect fade overlay programmatically in `_ready()`. This avoids the known Godot issue where `.tscn` autoloads lose type information, causing `unsafe_method_access` warnings with strict typing.
 
-1. Create directory: `scenes/autoloads/` (if it doesn't exist)
-2. New Scene > **Node** (rename "SceneManager")
-3. Attach `res://scripts/autoloads/scene_manager.gd` to root
-4. Add children:
-   - **CanvasLayer** (rename "TransitionLayer")
-     - Set `layer` = 100 (above all game UI)
-     - Add child **ColorRect** (rename "TransitionOverlay")
-       - Set as **Scene Unique Name** (right-click > "Access as Unique Name" or click the `%` icon) — the script references it as `%TransitionOverlay`
-       - Anchor Preset: **Full Rect** (Layout > Anchors Preset > Full Rect, or set all anchors to cover entire screen)
-       - Color = **Black** (`#000000`)
-       - Color Alpha = **0.0** (fully transparent at start)
-       - Mouse Filter = **Ignore** (so it doesn't block clicks)
-5. Save as `scenes/autoloads/scene_manager.tscn`
-
-**Verification:** Run the game. If SceneManager loaded correctly, you should see no errors about `%TransitionOverlay` in the Output panel. The game should behave exactly as before (the overlay is transparent).
-
-> **Why a .tscn autoload?** SceneManager needs a CanvasLayer + ColorRect for fade transitions. A bare `.gd` autoload can't have child nodes. The `.tscn` scene is instantiated as the autoload, and `@onready var _transition_overlay: ColorRect = %TransitionOverlay` binds to the ColorRect.
+**Verification:** Run the game. No errors in Output panel. The game behaves as before.
 
 ### 2. Build Door Scene (`scenes/interactables/door.tscn`)
 
@@ -148,7 +132,7 @@ After completing all editor setup, verify each of these:
 
 ### Error Cases
 - [ ] Press F9 with no save file — warning in Output, no crash
-- [ ] No errors about `%TransitionOverlay` in Output
+- [ ] No errors about SceneManager in Output
 
 ---
 
