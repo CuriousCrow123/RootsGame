@@ -10,7 +10,7 @@ extends CanvasLayer
 
 func _ready() -> void:
 	visible = false
-	layer = 90  # Below SceneManager fade (100), above game UI
+	layer = 110  # Above dialogue balloon (100) and SceneManager fade (100)
 	_resume_button.pressed.connect(_on_resume_pressed)
 	_save_button.pressed.connect(_on_save_pressed)
 	_load_button.pressed.connect(_on_load_pressed)
