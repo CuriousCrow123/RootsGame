@@ -8,15 +8,6 @@ const SAVE_FILE: String = "save_001.json"
 const SAVE_VERSION: int = 1
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("debug_save"):
-		save_game()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("debug_load"):
-		load_game()
-		get_viewport().set_input_as_handled()
-
-
 func save_game() -> void:
 	if SceneManager.is_transitioning():
 		push_warning("Cannot save during scene transition")
