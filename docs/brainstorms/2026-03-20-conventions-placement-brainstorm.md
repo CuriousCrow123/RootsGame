@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-20
 **Origin:** 23 conventions extracted from `docs/plans/2026-03-20-refactor-pre-phase4-cleanup-plan.md`
-**Status:** CLAUDE.md and .claude/rules/ done. godot-patterns plugin updates deferred (separate scope).
+**Status:** All three destinations complete.
 
 ## What We're Building
 
@@ -13,7 +13,7 @@ A structured placement strategy for 23 best practices discovered during the pre-
 Research shows CLAUDE.md has a ~100 line effective budget before instruction dilution. The project was at 47 lines before this work. Rather than dumping all 23 patterns into CLAUDE.md, we split by scope and delivery mechanism:
 
 - **CLAUDE.md** — 4 Godot-universal additions (per the plan's Phase 5) — **DONE**
-- **godot-patterns skill references** — ~8 Godot-universal patterns that enhance the plugin for all projects — NOT STARTED
+- **godot-patterns skill references** — ~8 Godot-universal patterns that enhance the plugin for all projects — **DONE**
 - **`.claude/rules/`** — ~8 project-specific patterns, auto-injected when touching relevant files — **DONE**
 
 ## Key Decisions
@@ -36,7 +36,7 @@ Implemented in refactor commit `7d64be1`. All 4 additions landed:
 
 CLAUDE.md is now at ~57 lines — well within budget.
 
-### 3. godot-patterns reference updates (Godot-universal) — NOT STARTED
+### 3. godot-patterns reference updates (Godot-universal) — DONE
 
 These patterns improve the plugin for any Godot 4 project:
 
