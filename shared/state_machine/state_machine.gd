@@ -10,7 +10,8 @@ var current_state: State
 func _ready() -> void:
 	for child: Node in get_children():
 		if child is State:
-			child.state_finished.connect(_on_state_finished)
+			var state: State = child as State
+			state.state_finished.connect(_on_state_finished)
 	if initial_state:
 		current_state = initial_state
 		current_state.enter("")

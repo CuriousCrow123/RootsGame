@@ -7,6 +7,7 @@ A Cassette Beasts-style RPG built with Godot 4 and GDScript. VS Code-primary dev
 - **Minimum Godot version:** 4.6 (project targets 4.6.1; `.uid` sidecars are stable)
 - **Language:** GDScript only (no C#)
 - **Static typing is mandatory.** Every variable, parameter, and return type must be explicitly typed. Set `UNTYPED_DECLARATION`, `UNSAFE_PROPERTY_ACCESS`, `UNSAFE_METHOD_ACCESS`, and `UNSAFE_CALL_ARGUMENT` to Error in Project Settings > Debug > GDScript.
+- **Explicit casts after `is` checks.** GDScript's type checker does NOT narrow types after `if x is SomeType`. You must cast explicitly with `var typed: SomeType = x as SomeType` before accessing subtype members — otherwise strict typing flags it as an error.
 - **Composition over inheritance.** Limit scene inheritance to one layer. Compose entities from single-purpose child nodes. Derive only from engine node types (CharacterBody2D, Area2D, etc.).
 - **"Call down, signal up."** Parents call methods on children. Children emit signals. Siblings communicate through a shared parent. The Event Bus autoload is for genuinely cross-system events only (player death, quest completion).
 - **Resource safety:**

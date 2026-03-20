@@ -1,0 +1,8 @@
+~ start
+
+Nathan: Welcome, traveler! I've been waiting for someone brave enough to help.
+- Tell me more.
+	Nathan: There's a chest in this room with something I need. Could you fetch it for me?
+	Nathan: I'd get it myself but... well, I'm an NPC. I don't move.
+- Maybe later.
+	Nathan: Take your time. I'm not going anywhere.
