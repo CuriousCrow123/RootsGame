@@ -776,7 +776,7 @@ else
 # scripts/autoloads/scene_manager.gd
 extends Node
 ## Manages scene transitions with fade overlay and persistent player.
-## Registered as autoload from a .tscn scene (needs CanvasLayer + ColorRect child).
+## Registered as .gd autoload — builds CanvasLayer + ColorRect overlay in _ready().
 
 signal scene_change_started
 signal scene_change_completed
@@ -827,7 +827,7 @@ func _place_player_at_spawn(spawn_point_id: String) -> void:
         _player.global_position = spawn.global_position
 ```
 
-   *Note:* SceneManager is registered as autoload from a `.tscn` scene (not bare `.gd`), so it can have a CanvasLayer + ColorRect child for the fade overlay. Use `%TransitionOverlay` (scene unique name) for restructuring resilience.
+   *Note:* SceneManager is registered as a `.gd` autoload (not `.tscn`) to preserve full type inference with strict typing. The CanvasLayer + ColorRect fade overlay is built programmatically in `_ready()`. Using a `.tscn` autoload causes the parser to infer `Node` type, breaking `unsafe_method_access` checks across all call sites ([godot#86300](https://github.com/godotengine/godot/issues/86300)).
 
 > **Research Insight — Timing (CRITICAL):** `await get_tree().tree_changed` fires on ANY tree modification — it resumes the moment the old scene's root is removed, BEFORE the new scene is instantiated. `_place_player_at_spawn()` would search an empty tree. Use `await get_tree().process_frame` instead, which waits for the new scene to be fully loaded and added.
 
@@ -860,7 +860,7 @@ func interact(_player: PlayerController) -> void:
 
 > **Research Insight:** Use `@export_file("*.tscn")` instead of bare `@export var ... : String`. This gives the editor a file picker and makes the path dependency visible, preventing typos.
 
-6. **Register SceneManager autoload** — Add to project.godot: `SceneManager="*res://scripts/autoloads/scene_manager.gd"` (or scene path if it has a child CanvasLayer).
+6. **Register SceneManager autoload** — Add to project.godot: `SceneManager="*res://scripts/autoloads/scene_manager.gd"`. Always use `.gd` autoloads (not `.tscn`) to preserve strict typing — build child nodes programmatically in `_ready()` instead.
 
 7. **Place doors in both rooms** — Room 1 has a door leading to Room 2 and vice versa. Each door's `target_scene_path` and `target_spawn_point` are configured via exports.
 
@@ -1378,13 +1378,7 @@ Agent will complete its script work for a step first, then hand you the scene in
 
 ### Before Step 5
 
-- [ ] **SceneManager scene** (`scenes/autoloads/scene_manager.tscn`):
-  1. Scene > New Scene > Other Node > **Node** (rename to "SceneManager")
-  2. Attach `res://scripts/autoloads/scene_manager.gd`
-  3. Add child: **CanvasLayer** (layer = 100, so it renders above everything)
-     - **ColorRect** (rename to "TransitionOverlay", set unique name %) — Anchors: full rect. Color: black (#000000). Modulate alpha = 0 (transparent by default). Mouse filter = Ignore.
-  4. Save as `scenes/autoloads/scene_manager.tscn`
-  5. Register autoload: Project > Project Settings > Autoload > Add `res://scenes/autoloads/scene_manager.tscn`. Ensure order: EventBus, GameState, SceneManager.
+- [x] **SceneManager autoload** — No editor scene needed. Registered as `.gd` autoload in `project.godot`. Builds CanvasLayer + ColorRect fade overlay programmatically in `_ready()`. This avoids the known Godot issue where `.tscn` autoloads lose type info ([godot#86300](https://github.com/godotengine/godot/issues/86300)).
 
 - [ ] **Second room scene** (`scenes/world/test_room_2.tscn`):
   1. Duplicate test_room.tscn structure: Node3D root, GridMap, lights, WorldEnvironment, Camera3D with follow script
