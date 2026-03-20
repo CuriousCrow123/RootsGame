@@ -149,6 +149,32 @@ All Phase 1-2 code snippets are already implemented and working. These are docum
 **A39. Integration Test Scenario 1 (plan line 1132)**
 - "Full quest loop across rooms" — this test doesn't exist yet. We have `test_quest_loop.gd` (single room) and `test_scene_transition.gd` (transitions only). The cross-room quest loop test is missing.
 
+### G3. Acceptance Criteria, Dependencies, Editor Instructions (Lines 1138-1401)
+
+**A40. Global acceptance criteria don't mention persistent UI or interactable state (lines 1142-1148)**
+- Line 1146: "Scene transitions with fade effect preserve all player state" — but doesn't mention UI persistence or interactable state (chest opened status) across transitions. These are now requirements that emerged from Phase 3 bugs.
+- Line 1147: "Save/load preserves... interactable states" — correct for save files, but doesn't mention in-session persistence via WorldState.
+
+**A41. Quality gate "No orphaned Resources or dangling node references after scene transitions" (line 1162)**
+- This is actually testable now — and relevant given the reparenting pattern. The duplicate player guard and persistent UI work specifically to prevent dangling references. No test currently validates this gate.
+
+**A42. Dependencies table doesn't list GUT version (line 1170)**
+- Says "Installed (`addons/gut/`)" but no version pinned. GUT API differences across versions can break tests.
+
+**A43. Editor instructions for UI scenes say "instance as child of TestRoom" (lines 1329, 1357, 1376)**
+- Lines 1329, 1357, 1376: InteractionPrompt, ItemToast, QuestIndicator all say "Instance as child of TestRoom" — but with the HUD autoload refactor, they should NOT be in room scenes at all. These instructions are stale post-refactor.
+- Until the refactor: they're currently reparenting to root, which works but means these instructions are misleading about where they actually live at runtime.
+
+**A44. Chest editor instruction says "Add to saveable group" (line 1340)**
+- Same as C6 — code already does `add_to_group("saveable")` in `_ready()`. Editor instruction is redundant.
+
+**A45. "Before Step 5" room 2 instructions don't mention UI (lines 1383-1388)**
+- Already captured as A22. But also: doesn't mention adding NPC or chest to Room 2 (for cross-room quest testing). Room 2 currently only has a door + spawn marker.
+
+**A46. File structure section (lines 136-198) is missing new files**
+- Doesn't list `scripts/interactables/door_interactable.gd`, `scripts/autoloads/save_manager.gd`, or any test files beyond `test_example.gd`. The file structure was a "End State" projection but doesn't match reality (missing `.gd.uid` sidecar files, missing `docs/` directory structure).
+- After refactor: will also be missing `scripts/autoloads/world_state.gd` and `scripts/autoloads/hud.gd`.
+
 ### H. Cross-Cutting Stale Content
 
 **A19. Item registry gap (plan line 452)** — Plan says "plan for a proper registry when item count grows" but we already needed display name lookup in Phase 3 (toast showed `item_id`). The "defer to later" created a real bug. Current fix (`_display_names` dict on Inventory) works but the plan should acknowledge this was resolved.
@@ -191,6 +217,13 @@ All Phase 1-2 code snippets are already implemented and working. These are docum
 | A37 | Autoload count stale | Stale | Low | Plan update |
 | A38 | CLAUDE.md convention missing | Gap | Low | Plan update |
 | A39 | Cross-room integration test missing | **Test gap** | Medium | Before Phase 4 |
+| A40 | Acceptance criteria incomplete | Gap | Low | Plan update |
+| A41 | Orphaned reference quality gate untested | Test gap | Low | Before Phase 4 |
+| A42 | GUT version not pinned | Risk | Low | Plan update |
+| A43 | UI "instance in room" instructions stale | Stale post-refactor | Low | Plan update |
+| A44 | Chest "add to saveable" redundant | Same as C6 | Low | Plan update |
+| A45 | Room 2 instructions incomplete | Gap | Low | Plan update |
+| A46 | File structure section stale | Stale | Low | Plan update |
 
 ## Recommended Priority
 
