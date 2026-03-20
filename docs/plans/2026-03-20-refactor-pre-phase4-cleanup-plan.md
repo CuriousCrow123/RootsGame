@@ -407,8 +407,8 @@ func connect_to_player(player: PlayerController) -> void:
 - [x] Add: Saveable group contracts — `"saveable"` group iterated by SaveManager for disk persistence, `"interactable_saveable"` group iterated by WorldState for session state. Both use the same three-method contract (`get_save_key`, `get_save_data`, `load_save_data`). Note: HUD uses `preload().instantiate()` for UI scenes (not programmatic build like SceneManager) because UI children are non-trivial scene trees with editor-tweakable layout.
 
 **Plan document updates (batch — all items from brainstorm F11, G1-G24, H1-H6):**
-- [ ] Update SceneManager snippet (lines 775-828) to match current implementation *(stale snippet, low priority — current code is authoritative)*
-- [ ] Update SaveManager snippet (lines 893-974) to match current implementation *(stale snippet, low priority — current code is authoritative)*
+- [x] Update SceneManager snippet (lines 775-828) to match current implementation
+- [x] Update SaveManager snippet (lines 893-974) to match current implementation
 - [x] Delete "remove Player from test_room" instruction (line 1400) — replaced with SceneManager guard note
 - [x] Delete editor group assignment instructions (lines 1406-1409) — replaced with code-based groups note
 - [x] Fix door saveable contradiction (line 989) — doors are NOT saveable

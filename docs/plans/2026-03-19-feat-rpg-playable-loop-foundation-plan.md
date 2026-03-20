@@ -775,58 +775,68 @@ else
 1. **Create SceneManager autoload** (`scripts/autoloads/scene_manager.gd`):
 
 ```gdscript
-# scripts/autoloads/scene_manager.gd
+# scripts/autoloads/scene_manager.gd (current implementation)
 extends Node
 ## Manages scene transitions with fade overlay and persistent player.
-## Registered as .gd autoload — builds CanvasLayer + ColorRect overlay in _ready().
 
 signal scene_change_started
 signal scene_change_completed
+signal player_registered(player: PlayerController)
 
 var _is_transitioning: bool = false
 var _player: PlayerController = null
+var _transition_overlay: ColorRect
 
-@onready var _transition_overlay: ColorRect = %TransitionOverlay
+func is_transitioning() -> bool:
+    return _is_transitioning
+
+func get_player() -> PlayerController:
+    return _player
+
+func _ready() -> void:
+    var canvas: CanvasLayer = CanvasLayer.new()
+    canvas.layer = 100
+    add_child(canvas)
+    _transition_overlay = ColorRect.new()
+    _transition_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
+    _transition_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _transition_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+    canvas.add_child(_transition_overlay)
 
 func register_player(player: PlayerController) -> void:
+    if _player and is_instance_valid(_player):
+        player.queue_free()
+        return
     _player = player
-    # Reparent player to root so it persists across scene changes
-    player.get_parent().remove_child(player)
-    get_tree().root.add_child(player)
+    player.get_parent().call_deferred("remove_child", player)
+    get_tree().root.call_deferred("add_child", player)
+    player_registered.emit(_player)
 
 func change_scene(target_scene_path: String, spawn_point_id: String = "") -> void:
     if _is_transitioning:
         return
     _is_transitioning = true
     scene_change_started.emit()
-    # Fade out (0.3s)
     var tween: Tween = create_tween()
     tween.tween_property(_transition_overlay, "color:a", 1.0, 0.3)
     await tween.finished
     if not _is_transitioning:
-        return  # Cancelled
-    # Load scene — change_scene_to_file is deferred
+        return
+    WorldState.snapshot()
     var err: Error = get_tree().change_scene_to_file(target_scene_path)
     if err != OK:
         push_error("Failed to change scene: %s" % error_string(err))
         _is_transitioning = false
         return
-    # Wait for the new scene to be fully ready (tree_changed fires too early)
-    await get_tree().process_frame
-    # Position player at spawn point
+    await get_tree().scene_changed
+    WorldState.restore()
     if spawn_point_id != "" and _player:
         _place_player_at_spawn(spawn_point_id)
-    # Fade in (0.3s)
     tween = create_tween()
     tween.tween_property(_transition_overlay, "color:a", 0.0, 0.3)
     await tween.finished
     _is_transitioning = false
     scene_change_completed.emit()
-
-func _place_player_at_spawn(spawn_point_id: String) -> void:
-    var spawn: Marker3D = get_tree().current_scene.find_child(spawn_point_id) as Marker3D
-    if spawn and _player:
-        _player.global_position = spawn.global_position
 ```
 
    *Note:* SceneManager is registered as a `.gd` autoload (not `.tscn`) to preserve full type inference with strict typing. The CanvasLayer + ColorRect fade overlay is built programmatically in `_ready()`. Using a `.tscn` autoload causes the parser to infer `Node` type, breaking `unsafe_method_access` checks across all call sites ([godot#86300](https://github.com/godotengine/godot/issues/86300)).
@@ -893,87 +903,38 @@ func interact(_player: PlayerController) -> void:
 1. **Create SaveManager autoload** (`scripts/autoloads/save_manager.gd`):
 
 ```gdscript
-# scripts/autoloads/save_manager.gd
-extends Node
-## Serializes/deserializes all saveable node state to JSON.
-## Saveable nodes: add to "saveable" group, implement get_save_key(),
-## get_save_data(), load_save_data().
-
-const SAVE_DIR: String = "user://saves/"
-const SAVE_FILE: String = "save_001.json"
-const SAVE_VERSION: int = 1
+# scripts/autoloads/save_manager.gd (current implementation — key changes only)
+# Full file: see scripts/autoloads/save_manager.gd
 
 func save_game() -> void:
-    if SceneManager._is_transitioning:
+    if SceneManager.is_transitioning():  # Public accessor, not private var
         push_warning("Cannot save during scene transition")
         return
-    var save_data: Dictionary = _collect_save_data()
-    DirAccess.make_dir_recursive_absolute(SAVE_DIR)
-    # Atomic write: write to .tmp then rename — partial file on crash is safe
-    var tmp_path: String = SAVE_DIR + SAVE_FILE + ".tmp"
-    var final_path: String = SAVE_DIR + SAVE_FILE
-    var file: FileAccess = FileAccess.open(tmp_path, FileAccess.WRITE)
-    if not file:
-        push_error("Failed to open temp save file at %s (error: %d)" % [
-            tmp_path, FileAccess.get_open_error()
-        ])
-        return
-    file.store_string(JSON.stringify(save_data, "\t"))
-    file.close()
-    var rename_err: Error = DirAccess.rename_absolute(tmp_path, final_path)
-    if rename_err != OK:
-        push_error("Failed to rename temp save (error: %d)" % rename_err)
-
-func load_game() -> void:
-    var path: String = SAVE_DIR + SAVE_FILE
-    if not FileAccess.file_exists(path):
-        push_warning("No save file found at %s" % path)
-        return
-    var file: FileAccess = FileAccess.open(path, FileAccess.READ)
-    if not file:
-        push_error("Failed to open save file at %s" % path)
-        return
-    var json: JSON = JSON.new()
-    var parse_result: Error = json.parse(file.get_as_text())
-    file.close()
-    if parse_result != OK:
-        push_error("Failed to parse save file: %s" % json.get_error_message())
-        return
-    if typeof(json.data) != TYPE_DICTIONARY:
-        push_error("Save file root is not a Dictionary (got type %d)" % typeof(json.data))
-        return
-    var save_data: Dictionary = json.data
-    var file_version: int = save_data.get("version", 0)
-    if file_version != SAVE_VERSION:
-        push_error("Incompatible save version: expected %d, got %d" % [SAVE_VERSION, file_version])
-        return
-    await _restore_save_data(save_data)
+    # ... (collect + atomic write unchanged)
 
 func _collect_save_data() -> Dictionary:
-    var data: Dictionary = {
-        "version": SAVE_VERSION,
-        "scene_path": get_tree().current_scene.scene_file_path,
-        "timestamp": Time.get_unix_time_from_system(),
-    }
-    for node: Node in get_tree().get_nodes_in_group("saveable"):
-        if node.has_method("get_save_key") and node.has_method("get_save_data"):
-            var key: String = node.get_save_key()
-            data[key] = node.get_save_data()
-    return data
+    # ... iterates "saveable" group with .call() for duck typing
+    # WorldState is in "saveable" group — serialized as "world_state" key
 
 func _restore_save_data(data: Dictionary) -> void:
     var scene_path: String = data.get("scene_path", "")
     if scene_path != "" and scene_path != get_tree().current_scene.scene_file_path:
-        # Route through SceneManager to avoid bypassing transition state
         SceneManager.change_scene(scene_path)
         await SceneManager.scene_change_completed
-    # Wait one frame to ensure all nodes are ready
-    await get_tree().process_frame
+    # CRITICAL: Load WorldState AFTER scene change completes.
+    # change_scene() calls WorldState.snapshot() — loading before would be clobbered.
+    if data.has("world_state"):
+        var world_data: Dictionary = data["world_state"]
+        WorldState.load_save_data(world_data)
+        WorldState.restore()
+    # Restore remaining saveables, skip WorldState (already restored above)
     for node: Node in get_tree().get_nodes_in_group("saveable"):
+        if node == WorldState:
+            continue
         if node.has_method("get_save_key") and node.has_method("load_save_data"):
-            var key: String = node.get_save_key()
+            var key: String = node.call("get_save_key")
             if data.has(key):
-                node.load_save_data(data[key])
+                node.call("load_save_data", data[key])
 ```
 
    *Key pattern (UPDATED):* Saveable nodes add themselves to `"saveable"` group in `_ready()`. SaveManager iterates the group for disk persistence. Interactables (chests) use `"interactable_saveable"` group instead — WorldState handles their session state as a single blob. SaveManager uses `SceneManager.is_transitioning()` (not `._is_transitioning`). `_restore_save_data()` loads WorldState AFTER scene change to prevent `snapshot()` from clobbering loaded data. See [refactor plan](2026-03-20-refactor-pre-phase4-cleanup-plan.md) Phase 3.
