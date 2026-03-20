@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="QuestData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://csvrwliskel7v"]
 
-[ext_resource type="Script" path="res://resources/quests/quest_data.gd" id="1"]
-[ext_resource type="Script" path="res://resources/quests/quest_step_data.gd" id="2"]
+[ext_resource type="Script" uid="uid://cdaptdcv4v3jf" path="res://resources/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://btm5ighlmx4tn" path="res://resources/quests/quest_step_data.gd" id="2"]
 
 [sub_resource type="Resource" id="step_get_amulet"]
 script = ExtResource("2")
@@ -13,11 +13,10 @@ next_step_id = "return_amulet"
 script = ExtResource("2")
 step_id = "return_amulet"
 description = "Return the amulet to Nathan"
-next_step_id = ""
 
 [resource]
 script = ExtResource("1")
 quest_id = "fetch_amulet"
 display_name = "The Old Amulet"
 description = "Nathan needs an old amulet retrieved from a nearby chest."
-steps = [SubResource("step_get_amulet"), SubResource("step_return_amulet")]
+steps = Array[ExtResource("2")]([SubResource("step_get_amulet"), SubResource("step_return_amulet")])

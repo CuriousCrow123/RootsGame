@@ -61,6 +61,16 @@ func is_quest_complete(quest_id: String) -> bool:
 	return get_quest_state(quest_id) == QuestState.COMPLETE
 
 
+func get_display_name(quest_id: String) -> String:
+	if not _quests.has(quest_id):
+		return quest_id
+	@warning_ignore("unsafe_cast")
+	var quest_data: QuestData = _quests[quest_id]["data"] as QuestData
+	if quest_data:
+		return quest_data.display_name
+	return quest_id
+
+
 func get_current_step_description(quest_id: String) -> String:
 	var step: QuestStepData = _get_current_step(quest_id)
 	if step:

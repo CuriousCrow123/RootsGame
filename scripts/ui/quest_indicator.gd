@@ -39,7 +39,7 @@ func _on_quest_step_completed(quest_id: String, _step_id: String) -> void:
 
 
 func _on_quest_completed(quest_id: String) -> void:
-	_quest_name_label.text = quest_id
+	_quest_name_label.text = _quest_tracker.get_display_name(quest_id)
 	_step_label.text = "Complete!"
 	# Hide after a delay
 	var tween: Tween = create_tween()
@@ -50,5 +50,5 @@ func _on_quest_completed(quest_id: String) -> void:
 func _update_display(quest_id: String) -> void:
 	if not _quest_tracker:
 		return
-	_quest_name_label.text = quest_id
+	_quest_name_label.text = _quest_tracker.get_display_name(quest_id)
 	_step_label.text = _quest_tracker.get_current_step_description(quest_id)

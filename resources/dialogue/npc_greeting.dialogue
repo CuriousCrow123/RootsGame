@@ -6,6 +6,7 @@ elif is_quest_active("fetch_amulet")
 	if has_item("quest_amulet")
 		Nathan: You found it! Wonderful!
 		do advance_quest("fetch_amulet")
+		do advance_quest("fetch_amulet")
 		do remove_item("quest_amulet")
 		Nathan: I can't thank you enough. This amulet means everything to me.
 	else
