@@ -7,11 +7,10 @@ extends CanvasLayer
 
 func _ready() -> void:
 	visible = false
-	# Reparent to root so this UI persists across scene changes (like the player)
-	get_parent().call_deferred("remove_child", self)
-	get_tree().root.call_deferred("add_child", self)
-	# Deferred so player is ready first
-	_connect_to_player.call_deferred()
+
+
+func connect_to_player(player: PlayerController) -> void:
+	player.nearest_interactable_changed.connect(_on_nearest_interactable_changed)
 
 
 func show_prompt(text: String = "Press E") -> void:
@@ -21,14 +20,6 @@ func show_prompt(text: String = "Press E") -> void:
 
 func hide_prompt() -> void:
 	visible = false
-
-
-func _connect_to_player() -> void:
-	var players: Array[Node] = get_tree().get_nodes_in_group("player")
-	if players.size() > 0:
-		var player: PlayerController = players[0] as PlayerController
-		if player:
-			player.nearest_interactable_changed.connect(_on_nearest_interactable_changed)
 
 
 func _on_nearest_interactable_changed(interactable: Node3D) -> void:

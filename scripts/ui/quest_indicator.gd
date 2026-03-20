@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## HUD element showing active quest name and current step description.
-## Connects to QuestTracker signals via the player group.
+## Connects to QuestTracker signals via connect_to_player().
 
 var _quest_tracker: QuestTracker = null
 
@@ -11,19 +11,9 @@ var _quest_tracker: QuestTracker = null
 
 func _ready() -> void:
 	_panel.visible = false
-	# Reparent to root so this UI persists across scene changes (like the player)
-	get_parent().call_deferred("remove_child", self)
-	get_tree().root.call_deferred("add_child", self)
-	_connect_to_player.call_deferred()
 
 
-func _connect_to_player() -> void:
-	var players: Array[Node] = get_tree().get_nodes_in_group("player")
-	if players.size() == 0:
-		return
-	var player: PlayerController = players[0] as PlayerController
-	if not player:
-		return
+func connect_to_player(player: PlayerController) -> void:
 	_quest_tracker = player.get_quest_tracker()
 	if not _quest_tracker:
 		return

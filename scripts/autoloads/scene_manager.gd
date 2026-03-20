@@ -5,6 +5,7 @@ extends Node
 
 signal scene_change_started
 signal scene_change_completed
+signal player_registered(player: PlayerController)
 
 var _is_transitioning: bool = false
 var _player: PlayerController = null
@@ -13,6 +14,10 @@ var _transition_overlay: ColorRect
 
 func is_transitioning() -> bool:
 	return _is_transitioning
+
+
+func get_player() -> PlayerController:
+	return _player
 
 
 func _ready() -> void:
@@ -37,6 +42,7 @@ func register_player(player: PlayerController) -> void:
 	# Must be deferred — _ready() fires while the tree is still building children.
 	player.get_parent().call_deferred("remove_child", player)
 	get_tree().root.call_deferred("add_child", player)
+	player_registered.emit(_player)
 
 
 func change_scene(target_scene_path: String, spawn_point_id: String = "") -> void:
