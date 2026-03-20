@@ -996,11 +996,24 @@ func _restore_save_data(data: Dictionary) -> void:
 
 4. **Audit signal architecture** — Verify "call down, signal up" is followed everywhere. Document any exceptions.
 
+**Audit Result (2026-03-20):**
+
+The pre-Phase 4 refactor (HUD autoload + `player_registered` signal) already eliminated all cross-tree wiring. Every signal has a natural owner and direct connection:
+- QuestTracker → QuestIndicator: via HUD `connect_to_player()` pattern
+- Inventory → ItemToast: via HUD `connect_to_player()` pattern
+- PlayerController → InteractionPrompt: via HUD `connect_to_player()` pattern
+- GameState → Player states: direct autoload reference (fine — GameState is a global singleton by design)
+- SceneManager → HUD: `player_registered` signal (SceneManager owns player lifecycle)
+
+**No EventBus signals needed.** EventBus stays empty. All candidate signals (`quest_completed`, `item_acquired`) already reach their consumers through the HUD pattern without tree traversal. No achievements or statistics system exists to consume global broadcasts.
+
+EventBus will gain signals when a concrete consumer emerges that cannot be connected through HUD or parent-child relationships (e.g., an achievement system, an analytics tracker, or a world-reaction system).
+
 **Acceptance Criteria:**
-- [ ] EventBus has only concrete, justified signals
-- [ ] No system imports or references another system directly (except parent→child)
-- [ ] All existing functionality still works after refactor
-- [ ] Signal flow is documented in comments or a brief architecture note
+- [x] EventBus has only concrete, justified signals (zero — all wired via HUD pattern)
+- [x] No system imports or references another system directly (except parent→child and autoloads)
+- [x] All existing functionality still works after refactor
+- [x] Signal flow is documented in comments or a brief architecture note
 
 ##### Step 8: Second Game Mode (GameState)
 
@@ -1019,14 +1032,18 @@ func _restore_save_data(data: Dictionary) -> void:
 
 4. **Wire pause menu to SaveManager** — Save/Load buttons call `SaveManager.save_game()` / `SaveManager.load_game()`.
 
-5. **Remove debug keybinds** — Replace F5/F9 with proper menu-based save/load (or keep as developer shortcuts).
+5. **Remove debug keybinds** — Remove F5/F9 entirely. Save/load is menu-only.
+
+6. **Quit behavior** — `get_tree().quit()` for now. Eventually return to a main menu scene (deferred).
+
+7. **Pause menu follows HUD pattern** — Instantiated by HUD autoload like other UI. HUD handles `pause` input in `_unhandled_input()` and toggles menu visibility + GameState mode.
 
 **Acceptance Criteria:**
 - [ ] Tab/Start opens pause menu
 - [ ] Game world pauses (or at minimum, input is blocked)
 - [ ] Resume returns to OVERWORLD
 - [ ] Save/Load work from menu
-- [ ] Quit exits to main menu or closes game
+- [ ] Quit calls `get_tree().quit()` (main menu deferred)
 - [ ] Cannot open pause menu during dialogue
 - [ ] Cannot move during menu
 
