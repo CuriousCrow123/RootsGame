@@ -18,7 +18,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func save_game() -> void:
-	if SceneManager._is_transitioning:
+	if SceneManager.is_transitioning():
 		push_warning("Cannot save during scene transition")
 		return
 	var save_data: Dictionary = _collect_save_data()

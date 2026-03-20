@@ -14,6 +14,10 @@ var _transition_overlay: ColorRect
 var _interactable_state: Dictionary = {}
 
 
+func is_transitioning() -> bool:
+	return _is_transitioning
+
+
 func _ready() -> void:
 	var canvas: CanvasLayer = CanvasLayer.new()
 	canvas.layer = 100  # Above all game UI
@@ -66,6 +70,12 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 	_load_interactable_state()
 	# Position player at spawn point
 	if spawn_point_id != "" and _player:
+		print(
+			(
+				"SceneManager: current_scene = %s, player valid = %s"
+				% [get_tree().current_scene, is_instance_valid(_player)]
+			)
+		)
 		_place_player_at_spawn(spawn_point_id)
 	# Fade in (0.3s)
 	tween = create_tween()
@@ -80,10 +90,22 @@ func _place_player_at_spawn(spawn_point_id: String) -> void:
 	if not scene:
 		push_warning("SceneManager: current_scene is null, cannot find spawn '%s'" % spawn_point_id)
 		return
-	var spawn: Marker3D = scene.find_child(spawn_point_id) as Marker3D
+	var spawn_node: Node = scene.find_child(spawn_point_id)
+	if not spawn_node:
+		print(
+			(
+				"SceneManager: ERROR spawn point '%s' not found in '%s'. Children: %s"
+				% [spawn_point_id, scene.name, _get_child_names(scene)]
+			)
+		)
+		return
+	var spawn: Marker3D = spawn_node as Marker3D
 	if not spawn:
-		push_warning(
-			"SceneManager: spawn point '%s' not found in '%s'" % [spawn_point_id, scene.name]
+		print(
+			(
+				"SceneManager: ERROR '%s' is not a Marker3D (is %s)"
+				% [spawn_point_id, spawn_node.get_class()]
+			)
 		)
 		return
 	if _player:
@@ -95,6 +117,13 @@ func _place_player_at_spawn(spawn_point_id: String) -> void:
 				% [spawn_point_id, spawn.global_position]
 			)
 		)
+
+
+func _get_child_names(node: Node) -> Array[String]:
+	var names: Array[String] = []
+	for child: Node in node.get_children():
+		names.append(child.name)
+	return names
 
 
 func _save_interactable_state() -> void:
