@@ -5,6 +5,7 @@ extends GutTest
 var _inventory: Inventory
 var _tracker: QuestTracker
 var _chest_script: GDScript = preload("res://scripts/interactables/chest_interactable.gd")
+var _world_state_script: GDScript = preload("res://scripts/autoloads/world_state.gd")
 
 
 func before_each() -> void:
@@ -93,6 +94,16 @@ func test_chest_save_key() -> void:
 	assert_eq(chest.get_save_key(), "test_chest")
 
 
+func test_chest_in_interactable_saveable_group() -> void:
+	var chest: StaticBody3D = StaticBody3D.new()
+	chest.set_script(_chest_script)
+	add_child_autofree(chest)
+	assert_true(
+		chest.is_in_group("interactable_saveable"), "Chest should be in interactable_saveable group"
+	)
+	assert_false(chest.is_in_group("saveable"), "Chest should NOT be in saveable group")
+
+
 func test_chest_roundtrip() -> void:
 	var chest: StaticBody3D = StaticBody3D.new()
 	chest.set_script(_chest_script)
@@ -112,6 +123,49 @@ func test_chest_roundtrip() -> void:
 
 	fresh.load_save_data(saved)
 	assert_true(fresh._is_opened, "Loaded chest should be opened")
+
+
+# -- WorldState contract --
+
+
+func test_world_state_save_key() -> void:
+	var ws: Node = _world_state_script.new()
+	add_child_autofree(ws)
+	assert_eq(ws.call("get_save_key"), "world_state")
+
+
+func test_world_state_roundtrip() -> void:
+	var ws: Node = _world_state_script.new()
+	add_child_autofree(ws)
+	ws.call("set_state", "chest_a", {"is_opened": true})
+	ws.call("set_state", "chest_b", {"is_opened": false})
+	var saved: Dictionary = ws.call("get_save_data")
+
+	var fresh: Node = _world_state_script.new()
+	add_child_autofree(fresh)
+	fresh.call("load_save_data", saved)
+
+	var state_a: Dictionary = fresh.call("get_state", "chest_a")
+	var state_b: Dictionary = fresh.call("get_state", "chest_b")
+	assert_eq(state_a.get("is_opened"), true, "chest_a should be opened")
+	assert_eq(state_b.get("is_opened"), false, "chest_b should be closed")
+
+
+func test_world_state_defensive_copy() -> void:
+	var ws: Node = _world_state_script.new()
+	add_child_autofree(ws)
+	ws.call("set_state", "chest_a", {"is_opened": true})
+	var saved: Dictionary = ws.call("get_save_data")
+
+	# Mutate the returned data — should not affect internal state
+	saved["chest_a"]["is_opened"] = false
+
+	var internal: Dictionary = ws.call("get_state", "chest_a")
+	assert_eq(
+		internal.get("is_opened"),
+		true,
+		"Internal state should not be mutated by external changes to save data"
+	)
 
 
 # -- PlayerController contract --

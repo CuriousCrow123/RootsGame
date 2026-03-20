@@ -11,7 +11,7 @@ var _is_opened: bool = false
 
 
 func _ready() -> void:
-	add_to_group("saveable")
+	add_to_group("interactable_saveable")
 
 
 func interact(player: PlayerController) -> void:
@@ -25,6 +25,7 @@ func interact(player: PlayerController) -> void:
 		return
 	inventory.add_item(item.item_id, item_quantity, item.display_name)
 	_is_opened = true  # Set AFTER successful add — never consume chest without giving item
+	WorldState.set_state(chest_id, {"is_opened": true})
 	chest_opened.emit(item)
 
 

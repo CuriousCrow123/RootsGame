@@ -5,6 +5,8 @@ extends GutTest
 var _player: PlayerController
 var _inventory: Inventory
 var _tracker: QuestTracker
+var _world_state: Node
+var _world_state_script: GDScript = preload("res://scripts/autoloads/world_state.gd")
 
 
 func before_each() -> void:
@@ -12,6 +14,8 @@ func before_each() -> void:
 	add_child_autofree(_player)
 	_inventory = _player.get_inventory()
 	_tracker = _player.get_quest_tracker()
+	_world_state = _world_state_script.new()
+	add_child_autofree(_world_state)
 
 
 func test_full_save_load_cycle() -> void:
@@ -82,6 +86,26 @@ func test_save_load_with_empty_state() -> void:
 	assert_false(_inventory.has_item("sword"), "Sword should not exist after loading empty save")
 
 
+func test_world_state_in_save_cycle() -> void:
+	# WorldState should be collected as "world_state" key
+	_world_state.call("set_state", "chest_room1", {"is_opened": true})
+
+	var save_data: Dictionary = {}
+	for node: Node in get_tree().get_nodes_in_group("saveable"):
+		if node.has_method("get_save_key") and node.has_method("get_save_data"):
+			save_data[node.get_save_key()] = node.get_save_data()
+
+	assert_has(save_data, "world_state", "Should have world_state save data")
+	var ws_data: Dictionary = save_data["world_state"]
+	assert_has(ws_data, "chest_room1", "world_state should contain chest_room1")
+
+	# Modify and restore
+	_world_state.call("set_state", "chest_room1", {"is_opened": false})
+	_world_state.call("load_save_data", ws_data)
+	var restored: Dictionary = _world_state.call("get_state", "chest_room1")
+	assert_eq(restored.get("is_opened"), true, "chest_room1 should be restored to opened")
+
+
 func test_save_data_is_json_serializable() -> void:
 	_player.global_position = Vector3(1.0, 2.0, 3.0)
 	_inventory.add_item("gem", 10)
@@ -104,6 +128,7 @@ func test_save_data_is_json_serializable() -> void:
 	assert_has(parsed, "player")
 	assert_has(parsed, "inventory")
 	assert_has(parsed, "quest_tracker")
+	assert_has(parsed, "world_state")
 
 
 # -- Helpers --

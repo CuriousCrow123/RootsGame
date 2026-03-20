@@ -9,9 +9,6 @@ signal scene_change_completed
 var _is_transitioning: bool = false
 var _player: PlayerController = null
 var _transition_overlay: ColorRect
-# Tracks interactable state between scene transitions (not save files).
-# Keyed by save_key, value is the save data dictionary.
-var _interactable_state: Dictionary = {}
 
 
 func is_transitioning() -> bool:
@@ -53,8 +50,8 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 	await tween.finished
 	if not _is_transitioning:
 		return  # Cancelled
-	# Snapshot saveable state before the old scene is freed
-	_save_interactable_state()
+	# Snapshot interactable state before the old scene is freed
+	WorldState.snapshot()
 	# Load scene — change_scene_to_file is deferred (runs at end of frame)
 	var err: Error = get_tree().change_scene_to_file(target_scene_path)
 	if err != OK:
@@ -66,8 +63,8 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 	# frame 2: new scene's _ready() has run, current_scene is set
 	await get_tree().process_frame
 	await get_tree().process_frame
-	# Restore saveable state in the new scene (e.g., opened chests)
-	_load_interactable_state()
+	# Restore interactable state in the new scene (e.g., opened chests)
+	WorldState.restore()
 	# Position player at spawn point
 	if spawn_point_id != "" and _player:
 		print(
@@ -124,18 +121,3 @@ func _get_child_names(node: Node) -> Array[String]:
 	for child: Node in node.get_children():
 		names.append(child.name)
 	return names
-
-
-func _save_interactable_state() -> void:
-	for node: Node in get_tree().get_nodes_in_group("saveable"):
-		if node.has_method("get_save_key") and node.has_method("get_save_data"):
-			var key: String = node.call("get_save_key")
-			_interactable_state[key] = node.call("get_save_data")
-
-
-func _load_interactable_state() -> void:
-	for node: Node in get_tree().get_nodes_in_group("saveable"):
-		if node.has_method("get_save_key") and node.has_method("load_save_data"):
-			var key: String = node.call("get_save_key")
-			if _interactable_state.has(key):
-				node.call("load_save_data", _interactable_state[key])
