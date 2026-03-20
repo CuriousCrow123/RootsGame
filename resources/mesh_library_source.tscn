@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://dr2ag2h58mvt"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_5jgmm"]
+size = Vector3(1, 3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7vnsx"]
+
+[node name="MeshLibrary" type="Node3D" unique_id=383538820]
+
+[node name="Wall" type="MeshInstance3D" parent="." unique_id=1136437533]
+mesh = SubResource("BoxMesh_5jgmm")
+
+[node name="Floor" type="MeshInstance3D" parent="." unique_id=2054914270]
+mesh = SubResource("BoxMesh_7vnsx")
