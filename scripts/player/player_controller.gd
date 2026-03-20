@@ -21,7 +21,9 @@ func _ready() -> void:
 	add_to_group("saveable")
 	_interaction_area.body_entered.connect(_on_interactable_entered)
 	_interaction_area.body_exited.connect(_on_interactable_exited)
-	# Reparent to root so player persists across scene changes
+	# Reparent to root so player persists across scene changes.
+	# SceneManager is a .tscn autoload — Godot sees it as Node, not the script type.
+	@warning_ignore("unsafe_method_access")
 	SceneManager.register_player(self)
 
 
