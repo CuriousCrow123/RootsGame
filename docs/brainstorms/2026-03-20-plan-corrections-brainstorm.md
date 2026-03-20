@@ -123,8 +123,43 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 11. **C6** — Delete editor group assignment instructions
 12. **A1** — Update SaveManager snippet to use `.call()`
 
-## Open Questions
+## Resolved Questions
 
-1. Should we refactor UI to a single HUD autoload before Phase 4, or do the minimal duplicate-guard fix?
-2. Should `WorldState` be a new autoload or merged into an existing one (GameState)?
-3. Should we update the plan's code snippets in-place, or freeze the plan and add an amendments section?
+1. **UI approach:** Refactor to a single HUD autoload before Phase 4. This eliminates reparenting, duplicates, and room coupling. Clean foundation for Phase 4 pause menu.
+
+2. **WorldState:** New dedicated autoload. Tradeoffs considered:
+   - *New autoload* (chosen): Single responsibility. Clean save target. 5th autoload is still well under the "Services pattern at 8+" threshold.
+   - *Merge into GameState*: Rejected — mode management + interactable state are unrelated. GameState becomes a catch-all.
+   - *Keep on SceneManager*: Rejected — conflates transition management with state tracking. SaveManager would need to reach into SceneManager internals.
+
+3. **Stale plan snippets:** Update in-place. Rewrite code snippets to match current implementation. Cleaner for future readers.
+
+## Refactoring Scope
+
+The following work should be planned and executed before Phase 4 begins:
+
+### Blocking Refactors (pre-Phase 4)
+
+1. **HUD autoload** — Create `scripts/autoloads/hud.gd` that builds InteractionPrompt, ItemToast, QuestIndicator programmatically in `_ready()`. Remove the three UI scenes from room `.tscn` files. Remove reparenting code from UI scripts. Register as autoload.
+
+2. **WorldState autoload** — Create `scripts/autoloads/world_state.gd` with interactable state dictionary. Move `_interactable_state` + `_save_interactable_state()` + `_load_interactable_state()` out of SceneManager. Interactables check WorldState in `_ready()` and update on interaction. Implement saveable contract.
+
+3. **`scene_changed` signal** — Replace all `process_frame` waits in SceneManager with `await get_tree().scene_changed`. Remove frame-counting comments. Add to CLAUDE.md conventions.
+
+4. **SceneManager.is_transitioning()** — Public accessor replacing direct `_is_transitioning` access from SaveManager.
+
+### Plan Document Updates
+
+5. **Update code snippets in-place** — Rewrite SceneManager and SaveManager code in the plan to match current patterns (`.gd` autoload, `.call()`, `scene_changed`, deferred reparenting, duplicate guard).
+
+6. **Delete contradictory instructions** — Remove "remove Player from test_room" (line 1400). Remove editor group assignment instructions (lines 1406-1409). Fix `GameState.current_mode = MENU` to use `set_mode()` (line 1050).
+
+7. **Add architecture notes** — Document HUD autoload pattern, WorldState autoload, `scene_changed` signal in plan's architecture section.
+
+### Workflow
+
+The user's planned approach:
+1. Review this brainstorm document
+2. Run `/gc:plan` on this brainstorm to create a detailed implementation plan
+3. Execute the plan: refactor code + update original plan document
+4. Then proceed to Phase 4
