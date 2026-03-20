@@ -17,8 +17,10 @@ func _ready() -> void:
 	_quit_button.pressed.connect(_on_quit_pressed)
 
 
-func open_menu() -> void:
+func open_menu(can_save_load: bool = true) -> void:
 	visible = true
+	_save_button.disabled = not can_save_load
+	_load_button.disabled = not can_save_load
 	_resume_button.grab_focus()
 
 

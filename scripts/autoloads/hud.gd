@@ -44,8 +44,9 @@ func open_pause_menu() -> void:
 		return
 	_is_pause_menu_open = true
 	_mode_before_pause = GameState.current_mode
+	var can_save_load: bool = _mode_before_pause == GameState.GameMode.OVERWORLD
 	GameState.set_mode(GameState.GameMode.MENU)
-	_pause_menu.call("open_menu")
+	_pause_menu.call("open_menu", can_save_load)
 
 
 func close_pause_menu() -> void:
