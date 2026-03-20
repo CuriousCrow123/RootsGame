@@ -7,9 +7,13 @@ signal item_removed(item_id: String, quantity: int)
 
 # Array of { "item_id": String, "quantity": int }
 var _items: Array[Dictionary] = []
+# Maps item_id -> display_name for UI lookups
+var _display_names: Dictionary = {}
 
 
-func add_item(item_id: String, quantity: int = 1) -> void:
+func add_item(item_id: String, quantity: int = 1, display_name: String = "") -> void:
+	if display_name != "":
+		_display_names[item_id] = display_name
 	for entry: Dictionary in _items:
 		if entry["item_id"] == item_id:
 			entry["quantity"] += quantity
@@ -17,6 +21,11 @@ func add_item(item_id: String, quantity: int = 1) -> void:
 			return
 	_items.append({"item_id": item_id, "quantity": quantity})
 	item_added.emit(item_id, quantity)
+
+
+func get_display_name(item_id: String) -> String:
+	@warning_ignore("unsafe_call_argument")
+	return _display_names.get(item_id, item_id)
 
 
 func remove_item(item_id: String, quantity: int = 1) -> bool:

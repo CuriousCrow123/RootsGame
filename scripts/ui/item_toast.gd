@@ -16,7 +16,8 @@ func _ready() -> void:
 
 
 func show_toast(item_id: String, quantity: int) -> void:
-	var text: String = "Acquired: %s" % item_id
+	var display_name: String = _get_item_display_name(item_id)
+	var text: String = "Acquired: %s" % display_name
 	if quantity > 1:
 		text += " x%d" % quantity
 	_label.text = text
@@ -26,6 +27,17 @@ func show_toast(item_id: String, quantity: int) -> void:
 	_tween.tween_property(_panel, "modulate:a", 1.0, 0.2)
 	_tween.tween_interval(2.0)
 	_tween.tween_property(_panel, "modulate:a", 0.0, 0.3)
+
+
+func _get_item_display_name(item_id: String) -> String:
+	var players: Array[Node] = get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		var player: PlayerController = players[0] as PlayerController
+		if player:
+			var inventory: Inventory = player.get_inventory()
+			if inventory:
+				return inventory.get_display_name(item_id)
+	return item_id
 
 
 func _connect_to_player() -> void:

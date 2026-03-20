@@ -23,7 +23,7 @@ func interact(player: PlayerController) -> void:
 	var inventory: Inventory = player.get_inventory()
 	if not inventory:
 		return
-	inventory.add_item(item.item_id, item_quantity)
+	inventory.add_item(item.item_id, item_quantity, item.display_name)
 	_is_opened = true  # Set AFTER successful add — never consume chest without giving item
 	chest_opened.emit(item)
 
