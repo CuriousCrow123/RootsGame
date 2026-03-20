@@ -97,7 +97,7 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 | C5 | Player creation | Contradictory | Low | Plan update |
 | C6 | Group setup | Confusing | Low | Plan update |
 | D7 | EventBus scope | Over-design | Low | Phase 4 Step 7 |
-| D8 | Session state | Architecture gap | Medium | Phase 4 cleanup |
+| D8 | Session state | Architecture gap | Medium | Before Phase 4 |
 | E9 | Pause menu | Will break | Medium | Phase 4 Step 8 |
 | E10 | Mode setting | Silent bug | Low | Phase 4 Step 8 |
 | F11 | Stale code | Misleading | Medium | Plan update |
@@ -109,10 +109,10 @@ During Phase 3 implementation, 7 bugs were found and fixed (documented in [scene
 1. **C4** — UI duplicate prevention (will cause visible bugs immediately)
 2. **B3** — Switch to `scene_changed` signal (eliminates fragile frame counting)
 3. **F12** — Add `scene_changed` to CLAUDE.md conventions
+4. **D8** — Extract WorldState autoload for interactable state tracking
 
 **Fix during Phase 4 (non-blocking):**
-4. **D8** — Extract WorldState autoload for interactable tracking
-5. **E9** — Pause menu as autoload, not room child
+4. **E9** — Pause menu as autoload, not room child
 6. **E10** — Use `set_mode()` not direct assignment
 7. **A2** — Public `is_transitioning()` accessor
 8. **D7** — Re-evaluate EventBus candidates with current architecture
@@ -140,9 +140,12 @@ The following work should be planned and executed before Phase 4 begins:
 
 ### Blocking Refactors (pre-Phase 4)
 
-1. **HUD autoload** — Create `scripts/autoloads/hud.gd` that builds InteractionPrompt, ItemToast, QuestIndicator programmatically in `_ready()`. Remove the three UI scenes from room `.tscn` files. Remove reparenting code from UI scripts. Register as autoload.
+1. **HUD autoload** — Create `scripts/autoloads/hud.gd` that instantiates the existing `.tscn` scenes (interaction_prompt, item_toast, quest_indicator) as children in `_ready()`. This preserves editor-tweakable layout while making the UI persistent. Remove reparenting code from UI scripts. Remove UI instances from room `.tscn` files (user does this in editor). Register as autoload.
+   - **Signal reconnection:** HUD `_ready()` runs once at game start, before any player exists. UI scripts currently connect to player signals via `_connect_to_player.call_deferred()`. This still works — the player is instanced from Room 1's scene before the first frame. But if the connection fails (player not yet reparented), add a fallback: reconnect on `SceneManager.scene_change_completed`.
+   - **Autoload order:** EventBus → GameState → WorldState → SceneManager → SaveManager → HUD. HUD last because it may need player (which is created by the scene, after autoloads).
 
-2. **WorldState autoload** — Create `scripts/autoloads/world_state.gd` with interactable state dictionary. Move `_interactable_state` + `_save_interactable_state()` + `_load_interactable_state()` out of SceneManager. Interactables check WorldState in `_ready()` and update on interaction. Implement saveable contract.
+2. **WorldState autoload** — Create `scripts/autoloads/world_state.gd` with interactable state dictionary. Move `_interactable_state` + `_save_interactable_state()` + `_load_interactable_state()` out of SceneManager. Interactables check WorldState in `_ready()` and update on interaction. Implement saveable contract (joins "saveable" group so SaveManager serializes it).
+   - **Autoload order:** Before SceneManager, since SceneManager calls save/load during transitions.
 
 3. **`scene_changed` signal** — Replace all `process_frame` waits in SceneManager with `await get_tree().scene_changed`. Remove frame-counting comments. Add to CLAUDE.md conventions.
 
