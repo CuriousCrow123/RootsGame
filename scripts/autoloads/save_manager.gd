@@ -93,7 +93,8 @@ func _restore_save_data(data: Dictionary) -> void:
 	# This must happen after change_scene's snapshot()/restore() cycle,
 	# otherwise snapshot() clobbers the loaded data.
 	if data.has("world_state"):
-		WorldState.load_save_data(data["world_state"])
+		var world_data: Dictionary = data["world_state"]
+		WorldState.load_save_data(world_data)
 		WorldState.restore()
 	# Restore remaining saveables (Player, Inventory, QuestTracker).
 	# Skip WorldState — already restored above.
