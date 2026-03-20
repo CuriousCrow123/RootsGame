@@ -23,6 +23,11 @@ func _ready() -> void:
 
 
 func register_player(player: PlayerController) -> void:
+	if _player and is_instance_valid(_player):
+		# A persistent player already exists — this is a scene-instanced duplicate
+		# (e.g., returning to Room 1 which has Player in the .tscn). Free the new one.
+		player.queue_free()
+		return
 	_player = player
 	# Reparent player to root so it persists across scene changes.
 	# Must be deferred — _ready() fires while the tree is still building children.

@@ -7,6 +7,9 @@ extends CanvasLayer
 
 func _ready() -> void:
 	visible = false
+	# Reparent to root so this UI persists across scene changes (like the player)
+	get_parent().call_deferred("remove_child", self)
+	get_tree().root.call_deferred("add_child", self)
 	# Deferred so player is ready first
 	_connect_to_player.call_deferred()
 
