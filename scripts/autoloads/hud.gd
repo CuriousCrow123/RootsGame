@@ -13,6 +13,7 @@ var _mode_before_pause: GameState.GameMode = GameState.GameMode.OVERWORLD
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_interaction_prompt = preload("res://scenes/ui/interaction_prompt.tscn").instantiate()
 	add_child(_interaction_prompt)
 	_item_toast = preload("res://scenes/ui/item_toast.tscn").instantiate()
@@ -46,6 +47,7 @@ func open_pause_menu() -> void:
 	_mode_before_pause = GameState.current_mode
 	var can_save_load: bool = _mode_before_pause == GameState.GameMode.OVERWORLD
 	GameState.set_mode(GameState.GameMode.MENU)
+	get_tree().paused = true
 	_pause_menu.call("open_menu", can_save_load)
 
 
@@ -53,6 +55,7 @@ func close_pause_menu() -> void:
 	if not _is_pause_menu_open:
 		return
 	_is_pause_menu_open = false
+	get_tree().paused = false
 	_pause_menu.call("close_menu")
 	GameState.set_mode(_mode_before_pause)
 
