@@ -5,6 +5,12 @@ extends State
 
 func enter(_previous_state_path: String, _data: Dictionary = {}) -> void:
 	GameState.game_state_changed.connect(_on_game_state_changed)
+	var player: PlayerController = get_parent().get_parent() as PlayerController
+	var raw_input: Vector2 = Input.get_vector(
+		"move_left", "move_right", "move_forward", "move_back"
+	)
+	player.update_facing(raw_input)
+	player.play_animation("walk")
 
 
 func exit() -> void:
@@ -21,12 +27,17 @@ func physics_update(_delta: float) -> void:
 	if direction.length_squared() < 0.01:
 		state_finished.emit("Idle", {})
 		return
+	var raw_input: Vector2 = Input.get_vector(
+		"move_left", "move_right", "move_forward", "move_back"
+	)
+	var previous_facing: String = player.get_facing_direction()
+	player.update_facing(raw_input)
+	if player.get_facing_direction() != previous_facing:
+		player.play_animation("walk")
 	player.velocity = direction * player.move_speed
 	if not player.is_on_floor():
 		player.velocity.y -= 9.8
 	player.move_and_slide()
-	# Face movement direction
-	player.rotation.y = atan2(-direction.x, -direction.z)
 
 
 func _on_game_state_changed(new_mode: GameState.GameMode) -> void:

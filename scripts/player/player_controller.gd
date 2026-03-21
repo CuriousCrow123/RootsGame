@@ -11,9 +11,11 @@ const ISO_ANGLE: float = -0.7854  # deg_to_rad(-45.0)
 @export var move_speed: float = 5.0
 
 var _nearest_interactable: Node3D = null
+var _facing_direction: String = "down"
 
 @onready var _interaction_area: Area3D = $InteractionArea
 @onready var _inventory: Inventory = $Inventory
+@onready var _sprite: AnimatedSprite3D = $AnimatedSprite3D as AnimatedSprite3D
 
 
 func _ready() -> void:
@@ -45,6 +47,10 @@ func get_movement_input() -> Vector3:
 	return Vector3(rotated.x, 0.0, rotated.y).normalized()
 
 
+func get_facing_direction() -> String:
+	return _facing_direction
+
+
 func get_nearest_interactable() -> Node3D:
 	return _nearest_interactable
 
@@ -52,6 +58,27 @@ func get_nearest_interactable() -> Node3D:
 func interact_with_nearest() -> void:
 	if _nearest_interactable and _nearest_interactable.has_method("interact"):
 		_nearest_interactable.call("interact", self)
+
+
+func update_facing(input_direction: Vector2) -> void:
+	if input_direction.is_zero_approx():
+		return
+	if absf(input_direction.x) >= absf(input_direction.y):
+		_facing_direction = "right" if input_direction.x > 0.0 else "left"
+	else:
+		_facing_direction = "down" if input_direction.y > 0.0 else "up"
+
+
+func play_animation(action: String) -> void:
+	if not _sprite:
+		return
+	var dir: String = _facing_direction
+	if dir == "left" or dir == "right":
+		_sprite.flip_h = (dir == "left")
+		dir = "side"
+	else:
+		_sprite.flip_h = false
+	_sprite.play(action + "_" + dir)
 
 
 func get_save_key() -> String:
@@ -66,7 +93,7 @@ func get_save_data() -> Dictionary:
 			"y": global_position.y,
 			"z": global_position.z,
 		},
-		"rotation_y": rotation.y,
+		"facing_direction": _facing_direction,
 	}
 
 
@@ -77,7 +104,8 @@ func load_save_data(data: Dictionary) -> void:
 	@warning_ignore("unsafe_call_argument")
 	global_position = Vector3(pos.get("x", 0.0), pos.get("y", 0.0), pos.get("z", 0.0))
 	@warning_ignore("unsafe_call_argument")
-	rotation.y = data.get("rotation_y", 0.0)
+	_facing_direction = data.get("facing_direction", "down")
+	play_animation("idle")
 
 
 # -- Private --

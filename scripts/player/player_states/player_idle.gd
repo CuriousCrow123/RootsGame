@@ -6,6 +6,7 @@ extends State
 func enter(_previous_state_path: String, _data: Dictionary = {}) -> void:
 	var player: PlayerController = get_parent().get_parent() as PlayerController
 	player.velocity = Vector3.ZERO
+	player.play_animation("idle")
 	GameState.game_state_changed.connect(_on_game_state_changed)
 
 
