@@ -7,12 +7,9 @@
 [ext_resource type="Script" uid="uid://d3hkn8a4oij1a" path="res://scripts/player/player_states/player_interact.gd" id="4_qek5x"]
 [ext_resource type="Script" uid="uid://djjyswywxy2fk" path="res://scripts/inventory/inventory.gd" id="5_5gtgg"]
 [ext_resource type="Script" uid="uid://y76apk641ftb" path="res://scripts/quest/quest_tracker.gd" id="7_0owmy"]
+[ext_resource type="SpriteFrames" uid="uid://c5skfiq0p0v2e" path="res://assets/sprites/characters/player/player_frames.tres" id="8_qek5x"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_h17s1"]
-radius = 0.3
-height = 1.8
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_je7p5"]
 radius = 0.3
 height = 1.8
 
@@ -27,10 +24,6 @@ script = ExtResource("1_75vfm")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2107004407]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_h17s1")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=532472856]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_je7p5")
 
 [node name="InteractionArea" type="Area3D" parent="." unique_id=1813350628]
 collision_layer = 0
@@ -57,3 +50,12 @@ script = ExtResource("5_5gtgg")
 
 [node name="QuestTracker" type="Node" parent="." unique_id=406267270]
 script = ExtResource("7_0owmy")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="." unique_id=1237390392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+pixel_size = 0.05
+billboard = 2
+alpha_cut = 1
+texture_filter = 0
+sprite_frames = ExtResource("8_qek5x")
+animation = &"idle_down"

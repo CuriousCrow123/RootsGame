@@ -7,6 +7,7 @@ extends StaticBody3D
 @export var quest_resource: QuestData = null
 @export var sprite_frames: SpriteFrames
 @export var default_facing: String = "down"
+@export var sprite_tint: Color = Color.WHITE
 
 @onready var _sprite: AnimatedSprite3D = $AnimatedSprite3D as AnimatedSprite3D
 
@@ -14,9 +15,10 @@ extends StaticBody3D
 func _ready() -> void:
 	if _sprite and sprite_frames:
 		_sprite.sprite_frames = sprite_frames
+		_sprite.modulate = sprite_tint
 		var dir: String = default_facing
 		if dir == "left" or dir == "right":
-			_sprite.flip_h = (dir == "left")
+			_sprite.flip_h = (dir == "right")
 			dir = "side"
 		else:
 			_sprite.flip_h = false

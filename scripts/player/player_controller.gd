@@ -74,7 +74,7 @@ func play_animation(action: String) -> void:
 		return
 	var dir: String = _facing_direction
 	if dir == "left" or dir == "right":
-		_sprite.flip_h = (dir == "left")
+		_sprite.flip_h = (dir == "right")
 		dir = "side"
 	else:
 		_sprite.flip_h = false

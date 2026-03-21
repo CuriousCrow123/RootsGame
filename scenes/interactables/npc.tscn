@@ -6,14 +6,6 @@
 radius = 0.3
 height = 1.8
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lugpi"]
-albedo_color = Color(0, 0.4862745, 1, 1)
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_22qrj"]
-material = SubResource("StandardMaterial3D_lugpi")
-radius = 0.3
-height = 1.8
-
 [node name="NPC" type="StaticBody3D" unique_id=1302808604]
 collision_layer = 4
 collision_mask = 0
@@ -24,6 +16,10 @@ npc_id = "nathan"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_dphfv")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=578114623]
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="." unique_id=1096844289]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_22qrj")
+pixel_size = 0.05
+billboard = 2
+alpha_cut = 1
+texture_filter = 0
+animation = &""
