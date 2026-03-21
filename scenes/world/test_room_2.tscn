@@ -43,6 +43,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -0.6
 target_scene_path = "uid://bkr2yvfgw6li"
 target_spawn_point = "spawn_from_room_2"
 door_id = "door_room2_to_room1"
+display_name = "Door"
 
 [node name="Chest" parent="." unique_id=1354572945 instance=ExtResource("4_7g7j3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6371155, 1, 0.31347656)
