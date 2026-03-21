@@ -1,7 +1,7 @@
 ---
 title: "feat: Asset Integration Pipeline"
 type: feat
-status: active
+status: completed
 date: 2026-03-20
 origin: docs/brainstorms/2026-03-20-asset-integration-brainstorm.md
 deepened: 2026-03-20
@@ -331,9 +331,18 @@ If everything works, I'll run linting and commit Phase 2.
 
 ---
 
-## Phase 3: Interactable Models
+## Phase 3: Interactable Models ✅
+
+**Status:** Complete (2026-03-21)
 
 **Goal:** Replace chest and door BoxMesh with 3D models. Add chest open animation.
+
+**Deviations from plan:**
+- Both chest FBX models (Chest, Chest_Gold) have separable meshes (Base/Top) but no baked animation. Open animation built programmatically via AnimationPlayer in `_ready()`.
+- Door models (Doors_RoundArch) also have separable L/R panels — door swing animation also built programmatically. Scene transition fires after animation completes via `animation_finished` signal.
+- `door_interactable.gd` received significant changes (animation support) contrary to original plan saying "no changes needed".
+- Arch props (Arch_Round, Arch_Round_RoundColumn) added as door frame environment pieces in `assets/models/props/`.
+- Visual state restore bug fixed: `_restore_visual_state()` handles both open and closed states, storing `_closed_rotation` from initial transform.
 
 **Before you start:** Pick chest and door models (.glb or .fbx). Ideally from the same pack as your tiles for visual consistency. If the chest model includes an open/close animation baked in, great. If not, we can create a simple one in the editor — or use a simple mesh swap between open/closed variants.
 
@@ -390,11 +399,11 @@ If everything works, I'll run tests, lint, and commit Phase 3.
 
 After all 3 phases are done, one final verification:
 
-- [ ] Full quest loop: talk to NPC > start quest > find chest > get item > return to NPC > complete quest
-- [ ] Save mid-quest, reload, continue quest
-- [ ] Scene transition: walk between both rooms via doors
-- [ ] All existing unit/integration tests pass
-- [ ] `gdformat --check .` and `gdlint .` pass
+- [x] Full quest loop: talk to NPC > start quest > find chest > get item > return to NPC > complete quest
+- [x] Save mid-quest, reload, continue quest
+- [x] Scene transition: walk between both rooms via doors
+- [ ] All existing unit/integration tests pass (pre-existing: GUT strict typing parse errors on duck-typed test code — not caused by Phase 3)
+- [x] `gdformat --check .` and `gdlint .` pass (project code; addons excluded)
 
 ---
 
