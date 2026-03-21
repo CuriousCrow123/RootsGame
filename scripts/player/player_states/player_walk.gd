@@ -22,6 +22,8 @@ func physics_update(_delta: float) -> void:
 		state_finished.emit("Idle", {})
 		return
 	player.velocity = direction * player.move_speed
+	if not player.is_on_floor():
+		player.velocity.y -= 9.8
 	player.move_and_slide()
 	# Face movement direction
 	player.rotation.y = atan2(-direction.x, -direction.z)
