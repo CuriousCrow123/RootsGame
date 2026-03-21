@@ -1,6 +1,11 @@
 extends StaticBody3D
 ## NPC that triggers dialogue on interaction. Stateless — not in "saveable" group.
 
+const PROMPT_LABEL_OFFSET: Vector3 = Vector3(0.0, 2.0, 0.0)
+const PROMPT_PIXEL_SIZE: float = 0.005
+const PROMPT_FONT_SIZE: int = 24
+const ACTION_VERB: String = "Talk to"
+
 @export var dialogue_resource: DialogueResource
 @export var dialogue_title: String = "start"
 @export var npc_id: String = ""
@@ -10,6 +15,9 @@ extends StaticBody3D
 @export var sprite_tint: Color = Color.WHITE
 ## If true, side sprite faces right (flip for left). If false, faces left.
 @export var side_faces_right: bool = false
+@export var display_name: String = ""
+
+var _prompt_label: Label3D = null
 
 @onready var _sprite: AnimatedSprite3D = $AnimatedSprite3D as AnimatedSprite3D
 
@@ -26,6 +34,7 @@ func _ready() -> void:
 		else:
 			_sprite.flip_h = false
 		_sprite.play("idle_" + dir)
+	_create_prompt_label()
 
 
 func interact(player: PlayerController) -> void:
@@ -45,3 +54,33 @@ func interact(player: PlayerController) -> void:
 	if not is_instance_valid(self):
 		return
 	GameState.set_mode(GameState.GameMode.OVERWORLD)
+
+
+func get_prompt_text() -> String:
+	var name: String = display_name if display_name != "" else npc_id
+	return "[E] %s %s" % [ACTION_VERB, name]
+
+
+func show_prompt() -> void:
+	if _prompt_label:
+		_prompt_label.visible = true
+
+
+func hide_prompt() -> void:
+	if _prompt_label:
+		_prompt_label.visible = false
+
+
+func _create_prompt_label() -> void:
+	_prompt_label = Label3D.new()
+	_prompt_label.text = get_prompt_text()
+	_prompt_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_prompt_label.set_draw_flag(Label3D.FLAG_DISABLE_DEPTH_TEST, true)
+	_prompt_label.render_priority = 10
+	_prompt_label.pixel_size = PROMPT_PIXEL_SIZE
+	_prompt_label.font_size = PROMPT_FONT_SIZE
+	_prompt_label.outline_size = 8
+	_prompt_label.outline_modulate = Color(0.0, 0.0, 0.0, 0.8)
+	_prompt_label.position = PROMPT_LABEL_OFFSET
+	_prompt_label.visible = false
+	add_child.call_deferred(_prompt_label)

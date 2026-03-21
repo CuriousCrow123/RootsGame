@@ -5,13 +5,19 @@ signal chest_opened(item: ItemData)
 
 const OPEN_DURATION: float = 0.3
 const LID_OPEN_ANGLE: float = -110.0
+const PROMPT_LABEL_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
+const PROMPT_PIXEL_SIZE: float = 0.005
+const PROMPT_FONT_SIZE: int = 24
+const ACTION_VERB: String = "Open"
 
 @export var item: ItemData = null
 @export var item_quantity: int = 1
 @export var chest_id: String = ""
+@export var display_name: String = "Chest"
 
 var _is_opened: bool = false
 var _closed_rotation: Vector3 = Vector3.ZERO
+var _prompt_label: Label3D = null
 
 @onready var _anim_player: AnimationPlayer = $AnimationPlayer as AnimationPlayer
 @onready var _chest_top: MeshInstance3D = $Chest_Top as MeshInstance3D
@@ -22,6 +28,7 @@ func _ready() -> void:
 	if _chest_top:
 		_closed_rotation = _chest_top.rotation_degrees
 	_build_open_animation()
+	_create_prompt_label()
 
 
 func interact(player: PlayerController) -> void:
@@ -52,6 +59,35 @@ func load_save_data(data: Dictionary) -> void:
 	@warning_ignore("unsafe_call_argument")
 	_is_opened = data.get("is_opened", false)
 	_restore_visual_state()
+
+
+func get_prompt_text() -> String:
+	return "[E] %s %s" % [ACTION_VERB, display_name]
+
+
+func show_prompt() -> void:
+	if _prompt_label and not _is_opened:
+		_prompt_label.visible = true
+
+
+func hide_prompt() -> void:
+	if _prompt_label:
+		_prompt_label.visible = false
+
+
+func _create_prompt_label() -> void:
+	_prompt_label = Label3D.new()
+	_prompt_label.text = get_prompt_text()
+	_prompt_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_prompt_label.set_draw_flag(Label3D.FLAG_DISABLE_DEPTH_TEST, true)
+	_prompt_label.render_priority = 10
+	_prompt_label.pixel_size = PROMPT_PIXEL_SIZE
+	_prompt_label.font_size = PROMPT_FONT_SIZE
+	_prompt_label.outline_size = 8
+	_prompt_label.outline_modulate = Color(0.0, 0.0, 0.0, 0.8)
+	_prompt_label.position = PROMPT_LABEL_OFFSET
+	_prompt_label.visible = false
+	add_child.call_deferred(_prompt_label)
 
 
 func _build_open_animation() -> void:
