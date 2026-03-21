@@ -8,6 +8,8 @@ extends StaticBody3D
 @export var sprite_frames: SpriteFrames
 @export var default_facing: String = "down"
 @export var sprite_tint: Color = Color.WHITE
+## If true, side sprite faces right (flip for left). If false, faces left.
+@export var side_faces_right: bool = false
 
 @onready var _sprite: AnimatedSprite3D = $AnimatedSprite3D as AnimatedSprite3D
 
@@ -18,7 +20,8 @@ func _ready() -> void:
 		_sprite.modulate = sprite_tint
 		var dir: String = default_facing
 		if dir == "left" or dir == "right":
-			_sprite.flip_h = (dir == "right")
+			var flip_dir: String = "right" if side_faces_right else "left"
+			_sprite.flip_h = (dir != flip_dir)
 			dir = "side"
 		else:
 			_sprite.flip_h = false

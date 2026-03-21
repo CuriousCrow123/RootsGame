@@ -7,7 +7,7 @@
 [ext_resource type="Resource" uid="uid://co1vma6jkc36c" path="res://resources/dialogue/npc_greeting.dialogue" id="5_fc6vu"]
 [ext_resource type="Resource" uid="uid://csvrwliskel7v" path="res://resources/quests/fetch_quest.tres" id="6_wb54u"]
 [ext_resource type="PackedScene" uid="uid://dbtvb4go86tcq" path="res://scenes/interactables/chest.tscn" id="7_u3u0o"]
-[ext_resource type="SpriteFrames" uid="uid://c5skfiq0p0v2e" path="res://assets/sprites/characters/player/player_frames.tres" id="7_vnu35"]
+[ext_resource type="SpriteFrames" uid="uid://djxk1ojpqucqx" path="res://assets/sprites/characters/npcs/villager_frames.tres" id="7_vnu35"]
 [ext_resource type="PackedScene" uid="uid://ch7u2u3rh8onc" path="res://scenes/interactables/door.tscn" id="11_knp17"]
 
 [sub_resource type="Environment" id="Environment_cy37o"]
@@ -51,7 +51,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 0)
 dialogue_resource = ExtResource("5_fc6vu")
 quest_resource = ExtResource("6_wb54u")
 sprite_frames = ExtResource("7_vnu35")
-sprite_tint = Color(0.4286861, 0.15736398, 1.4439226e-07, 1)
+sprite_tint = Color(0.86, 0.86, 0.86, 1)
 
 [node name="Chest" parent="." unique_id=1354572945 instance=ExtResource("7_u3u0o")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.75, 1, 4)

@@ -18,7 +18,7 @@ shape = SubResource("CapsuleShape3D_dphfv")
 
 [node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="." unique_id=1096844289]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-pixel_size = 0.05
+pixel_size = 0.035
 billboard = 2
 alpha_cut = 1
 texture_filter = 0

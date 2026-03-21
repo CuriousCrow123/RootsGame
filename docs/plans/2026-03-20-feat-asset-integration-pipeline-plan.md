@@ -184,9 +184,20 @@ Tell me what tile types you imported and what scale they are. I'll help troubles
 
 ---
 
-## Phase 2: Character Sprites (AnimatedSprite3D + Animation)
+## Phase 2: Character Sprites (AnimatedSprite3D + Animation) ✅
+
+**Status:** Complete (2026-03-21)
 
 **Goal:** Replace player and NPC CapsuleMesh with animated sprites. This is the most complex phase — it mixes editor work and code changes.
+
+**Deviations from plan:**
+- **Player sprite:** RPGMCharacter v1.0 (64x64, 3 directions). Side sprite faces left by default — flip_h applies when facing right.
+- **NPC sprite:** villager_npc_spritesheet (30x48, 4 directions with explicit left/right). Uses right-facing row as "side" with `side_faces_right` export. Other packs tried (Pixel Gnome — static idle only, Rogue Character — GIF-only/32x32, Steamheart — side-view only).
+- `side_faces_right` export added to `npc_interactable.gd` — controls flip_h direction per sprite pack convention.
+- `sprite_tint` export added to `npc_interactable.gd` — per-instance color modulation (kept but not needed after switching to distinct NPC sprite).
+- pixel_size set to 0.05 for player, tuned separately for NPC (30x48 frames need larger pixel_size to match).
+- Billboard front/back visual asymmetry accepted as inherent to billboard sprites in isometric 3D — no offset compensation applied.
+- SpriteFrames .tres files created by Claude as text resources with AtlasTexture sub_resources, not via editor GUI. Godot adds UIDs on first load.
 
 **Before you start:** Pick character sprite sheet packs. You need:
 - 1 player sprite sheet (4-directional idle + walk, PNG)
@@ -200,7 +211,7 @@ Each sheet should have these animations (or the equivalent frames to create them
 - **Pixel Gnome DEMO** — Limited (idle is 1 frame, different perspective than RPGMCharacter).
 - **Quaternius 3D Characters** — 50+ rigged 3D models (glTF). Would require pivoting from AnimatedSprite3D to 3D character rendering, but provides massive NPC variety.
 
-### Step 2.1 — Claude creates directories and writes code
+### Step 2.1 — Claude creates directories and writes code ✅
 
 **Claude (code):** When you're ready with your sprite sheets, I will:
 1. Create `assets/sprites/characters/player/` and `assets/sprites/characters/npcs/` directories
@@ -233,7 +244,7 @@ I'll show you the full diffs before applying anything.
 - **NPC face-toward deferred** — NPCs use a fixed `@export var default_facing` for now. Dynamic face-toward-player requires ISO rotation math that is easy to get wrong; not worth the complexity for test room NPCs.
 - **`as AnimatedSprite3D` cast** required on all `$NodePath` references per project strict typing settings.
 
-### Step 2.2 — You add sprite sheets to the project
+### Step 2.2 — You add sprite sheets to the project ✅
 
 **You (editor):**
 1. Copy your sprite sheet PNGs into `assets/sprites/characters/player/` and `assets/sprites/characters/npcs/`
@@ -244,7 +255,7 @@ I'll show you the full diffs before applying anything.
 3. Click "Reimport" after changing settings
 4. **Commit the `.import` files** alongside the PNGs — they store your import settings. Without them, a clean clone gets default (blurry) settings.
 
-### Step 2.3 — You create SpriteFrames resources
+### Step 2.3 — You create SpriteFrames resources ✅
 
 **You (editor):** For each character (player + each NPC archetype):
 1. In the FileSystem dock, right-click the character's folder > New Resource > SpriteFrames
@@ -258,7 +269,7 @@ I'll show you the full diffs before applying anything.
 
 Tell me when the SpriteFrames are ready — I need to know the sprite height in pixels so I can advise on `pixel_size` calibration.
 
-### Step 2.4 — You modify player.tscn in the editor
+### Step 2.4 — You modify player.tscn in the editor ✅
 
 **You (editor):**
 1. Open `scenes/player/player.tscn`
@@ -276,7 +287,7 @@ Tell me when the SpriteFrames are ready — I need to know the sprite height in 
 5. **Collision shape:** Keep the existing `CapsuleShape3D` (r=0.3, h=1.8) as-is. It's the gameplay hitbox, not the visual. Only adjust if the sprite is drastically different in size.
 6. Save the scene.
 
-### Step 2.5 — You modify npc.tscn in the editor
+### Step 2.5 — You modify npc.tscn in the editor ✅
 
 **You (editor):**
 1. Open `scenes/interactables/npc.tscn`
@@ -286,7 +297,7 @@ Tell me when the SpriteFrames are ready — I need to know the sprite height in 
 5. **Leave Sprite Frames empty** — this gets assigned per-instance via the `@export`. The NPC won't display a sprite until you complete Step 2.6.
 6. Save the scene
 
-### Step 2.6 — You assign NPC sprite frames per instance
+### Step 2.6 — You assign NPC sprite frames per instance ✅
 
 **You (editor):**
 1. Open `scenes/world/test_room.tscn`
@@ -295,7 +306,7 @@ Tell me when the SpriteFrames are ready — I need to know the sprite height in 
 4. Set the `Default Facing` export if you want the NPC facing a direction other than down
 5. Repeat for any NPCs in `test_room_2.tscn`
 
-### Step 2.7 — Together: playtest sprite integration
+### Step 2.7 — Together: playtest sprite integration ✅
 
 **Together (verify):** Run the game and check:
 1. **Player movement:** Walk in all 4 directions. Does the sprite face the correct direction? (pressing right should show the "right" sprite, etc.)
@@ -308,7 +319,7 @@ Tell me when the SpriteFrames are ready — I need to know the sprite height in 
 
 Tell me what looks right and what needs tweaking.
 
-### Step 2.8 — Together: test save/load
+### Step 2.8 — Together: test save/load ✅
 
 **Together (verify):**
 1. Walk to a specific spot facing a specific direction
