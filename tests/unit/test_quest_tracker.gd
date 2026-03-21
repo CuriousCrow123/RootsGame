@@ -2,13 +2,12 @@ extends GutTest
 ## Unit tests for QuestTracker node.
 
 var _tracker: QuestTracker
-var _quest_data: QuestData
+var _quest_data: QuestData = preload("res://resources/quests/fetch_quest.tres")
 
 
 func before_each() -> void:
 	_tracker = QuestTracker.new()
 	add_child_autofree(_tracker)
-	_quest_data = _create_test_quest()
 
 
 func test_initial_state_is_inactive() -> void:
@@ -114,10 +113,9 @@ func test_save_load_roundtrip() -> void:
 	_tracker.advance_quest("fetch_amulet")
 	var save_data: Dictionary = _tracker.get_save_data()
 
-	# Create fresh tracker with same quest data and load
+	# Create fresh tracker and load — resource_path in save data allows reconstruction
 	var new_tracker: QuestTracker = QuestTracker.new()
 	add_child_autofree(new_tracker)
-	new_tracker.start_quest(_quest_data)
 	new_tracker.load_save_data(save_data)
 
 	assert_true(
@@ -133,25 +131,3 @@ func test_save_load_roundtrip() -> void:
 
 func test_save_key() -> void:
 	assert_eq(_tracker.get_save_key(), "quest_tracker")
-
-
-# -- Helpers --
-
-
-func _create_test_quest() -> QuestData:
-	var step1: QuestStepData = QuestStepData.new()
-	step1.step_id = "get_amulet"
-	step1.description = "Find the amulet in the chest"
-	step1.next_step_id = "return_amulet"
-
-	var step2: QuestStepData = QuestStepData.new()
-	step2.step_id = "return_amulet"
-	step2.description = "Return the amulet to Nathan"
-	step2.next_step_id = ""
-
-	var quest: QuestData = QuestData.new()
-	quest.quest_id = "fetch_amulet"
-	quest.display_name = "The Old Amulet"
-	quest.description = "Retrieve the old amulet for Nathan."
-	quest.steps = [step1, step2]
-	return quest

@@ -8,7 +8,7 @@ var _player: PlayerController
 
 
 func before_each() -> void:
-	_player = PlayerController.new()
+	_player = TestHelpers.create_player()
 	add_child_autofree(_player)
 
 

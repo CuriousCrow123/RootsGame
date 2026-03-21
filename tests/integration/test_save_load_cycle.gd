@@ -7,10 +7,11 @@ var _inventory: Inventory
 var _tracker: QuestTracker
 var _world_state: Node
 var _world_state_script: GDScript = preload("res://scripts/autoloads/world_state.gd")
+var _quest: QuestData = preload("res://resources/quests/fetch_quest.tres")
 
 
 func before_each() -> void:
-	_player = PlayerController.new()
+	_player = TestHelpers.create_player()
 	add_child_autofree(_player)
 	_inventory = _player.get_inventory()
 	_tracker = _player.get_quest_tracker()
@@ -23,8 +24,7 @@ func test_full_save_load_cycle() -> void:
 	_player.global_position = Vector3(5.0, 0.0, 8.0)
 	_inventory.add_item("quest_amulet", 1)
 	_inventory.add_item("potion", 3)
-	var quest: QuestData = _create_test_quest()
-	_tracker.start_quest(quest)
+	_tracker.start_quest(_quest)
 	_tracker.advance_quest("fetch_amulet")
 
 	# 2. Collect save data from all saveables (simulating SaveManager._collect_save_data)
@@ -110,8 +110,7 @@ func test_world_state_in_save_cycle() -> void:
 func test_save_data_is_json_serializable() -> void:
 	_player.global_position = Vector3(1.0, 2.0, 3.0)
 	_inventory.add_item("gem", 10)
-	var quest: QuestData = _create_test_quest()
-	_tracker.start_quest(quest)
+	_tracker.start_quest(_quest)
 
 	var save_data: Dictionary = {}
 	for node: Node in get_tree().get_nodes_in_group("saveable"):
@@ -131,25 +130,3 @@ func test_save_data_is_json_serializable() -> void:
 	assert_has(parsed, "inventory")
 	assert_has(parsed, "quest_tracker")
 	assert_has(parsed, "world_state")
-
-
-# -- Helpers --
-
-
-func _create_test_quest() -> QuestData:
-	var step1: QuestStepData = QuestStepData.new()
-	step1.step_id = "get_amulet"
-	step1.description = "Find the amulet in the chest"
-	step1.next_step_id = "return_amulet"
-
-	var step2: QuestStepData = QuestStepData.new()
-	step2.step_id = "return_amulet"
-	step2.description = "Return the amulet to Nathan"
-	step2.next_step_id = ""
-
-	var quest: QuestData = QuestData.new()
-	quest.quest_id = "fetch_amulet"
-	quest.display_name = "The Old Amulet"
-	quest.description = "Retrieve the old amulet for Nathan."
-	quest.steps = [step1, step2]
-	return quest

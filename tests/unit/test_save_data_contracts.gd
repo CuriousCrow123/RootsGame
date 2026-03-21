@@ -6,6 +6,7 @@ var _inventory: Inventory
 var _tracker: QuestTracker
 var _chest_script: GDScript = preload("res://scripts/interactables/chest_interactable.gd")
 var _world_state_script: GDScript = preload("res://scripts/autoloads/world_state.gd")
+var _quest_data: QuestData = preload("res://resources/quests/fetch_quest.tres")
 
 
 func before_each() -> void:
@@ -52,32 +53,30 @@ func test_quest_tracker_save_key() -> void:
 
 
 func test_quest_tracker_roundtrip() -> void:
-	var quest: QuestData = preload("res://tests/fixtures/test_quest.tres")
-	_tracker.start_quest(quest)
-	_tracker.advance_quest("test_quest")
+	_tracker.start_quest(_quest_data)
+	_tracker.advance_quest("fetch_amulet")
 	var saved: Dictionary = _tracker.get_save_data()
 
 	var fresh: QuestTracker = QuestTracker.new()
 	add_child_autofree(fresh)
 	fresh.load_save_data(saved)
 
-	assert_true(fresh.is_quest_active("test_quest"))
-	assert_eq(fresh.get_current_step_description("test_quest"), "Step two")
+	assert_true(fresh.is_quest_active("fetch_amulet"))
+	assert_eq(fresh.get_current_step_description("fetch_amulet"), "Return the amulet to Nathan")
 
 
 func test_quest_tracker_complete_roundtrip() -> void:
-	var quest: QuestData = preload("res://tests/fixtures/test_quest.tres")
-	_tracker.start_quest(quest)
-	_tracker.advance_quest("test_quest")
-	_tracker.advance_quest("test_quest")
-	assert_true(_tracker.is_quest_complete("test_quest"))
+	_tracker.start_quest(_quest_data)
+	_tracker.advance_quest("fetch_amulet")
+	_tracker.advance_quest("fetch_amulet")
+	assert_true(_tracker.is_quest_complete("fetch_amulet"))
 
 	var saved: Dictionary = _tracker.get_save_data()
 	var fresh: QuestTracker = QuestTracker.new()
 	add_child_autofree(fresh)
 	fresh.load_save_data(saved)
 
-	assert_true(fresh.is_quest_complete("test_quest"))
+	assert_true(fresh.is_quest_complete("fetch_amulet"))
 
 
 # -- ChestInteractable contract --

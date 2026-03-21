@@ -4,7 +4,7 @@ extends GutTest
 
 var _tracker: QuestTracker
 var _inventory: Inventory
-var _quest_data: QuestData
+var _quest_data: QuestData = preload("res://resources/quests/fetch_quest.tres")
 
 
 func before_each() -> void:
@@ -12,7 +12,6 @@ func before_each() -> void:
 	_inventory = Inventory.new()
 	add_child_autofree(_tracker)
 	add_child_autofree(_inventory)
-	_quest_data = _create_test_quest()
 
 
 func test_full_quest_loop() -> void:
@@ -85,8 +84,6 @@ func test_save_load_mid_quest_preserves_state() -> void:
 	add_child_autofree(new_tracker)
 	add_child_autofree(new_inventory)
 
-	# Tracker needs quest data registered before loading save state
-	new_tracker.start_quest(_quest_data)
 	new_tracker.load_save_data(tracker_save)
 	new_inventory.load_save_data(inventory_save)
 
@@ -101,25 +98,3 @@ func test_save_load_mid_quest_preserves_state() -> void:
 	# Complete quest on loaded state
 	new_tracker.advance_quest("fetch_amulet")
 	assert_true(new_tracker.is_quest_complete("fetch_amulet"))
-
-
-# -- Helpers --
-
-
-func _create_test_quest() -> QuestData:
-	var step1: QuestStepData = QuestStepData.new()
-	step1.step_id = "get_amulet"
-	step1.description = "Find the amulet in the chest"
-	step1.next_step_id = "return_amulet"
-
-	var step2: QuestStepData = QuestStepData.new()
-	step2.step_id = "return_amulet"
-	step2.description = "Return the amulet to Nathan"
-	step2.next_step_id = ""
-
-	var quest: QuestData = QuestData.new()
-	quest.quest_id = "fetch_amulet"
-	quest.display_name = "The Old Amulet"
-	quest.description = "Retrieve the old amulet for Nathan."
-	quest.steps = [step1, step2]
-	return quest
