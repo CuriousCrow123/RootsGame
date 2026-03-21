@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" uid="uid://cdaptdcv4v3jf" path="res://resources/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://btm5ighlmx4tn" path="res://resources/quests/quest_step_data.gd" id="2"]
+
+[sub_resource type="Resource" id="step_one"]
+script = ExtResource("2")
+step_id = "step_one"
+description = "Step one"
+next_step_id = "step_two"
+
+[sub_resource type="Resource" id="step_two"]
+script = ExtResource("2")
+step_id = "step_two"
+description = "Step two"
+
+[resource]
+script = ExtResource("1")
+quest_id = "test_quest"
+display_name = "Test Quest"
+description = "A test quest."
+steps = Array[ExtResource("2")]([SubResource("step_one"), SubResource("step_two")])

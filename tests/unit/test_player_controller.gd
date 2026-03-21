@@ -3,7 +3,7 @@ extends GutTest
 
 
 func test_save_data_structure() -> void:
-	var player: PlayerController = PlayerController.new()
+	var player: PlayerController = TestHelpers.create_player()
 	add_child_autofree(player)
 	player.global_position = Vector3(1.0, 2.0, 3.0)
 
@@ -22,13 +22,13 @@ func test_save_data_structure() -> void:
 
 
 func test_load_save_data_roundtrip() -> void:
-	var player: PlayerController = PlayerController.new()
+	var player: PlayerController = TestHelpers.create_player()
 	add_child_autofree(player)
 	player.global_position = Vector3(5.0, 0.0, -3.0)
 
 	var save_data: Dictionary = player.get_save_data()
 
-	var player2: PlayerController = PlayerController.new()
+	var player2: PlayerController = TestHelpers.create_player()
 	add_child_autofree(player2)
 	player2.load_save_data(save_data)
 
@@ -37,6 +37,6 @@ func test_load_save_data_roundtrip() -> void:
 
 
 func test_save_key() -> void:
-	var player: PlayerController = PlayerController.new()
+	var player: PlayerController = TestHelpers.create_player()
 	add_child_autofree(player)
 	assert_eq(player.get_save_key(), "player")

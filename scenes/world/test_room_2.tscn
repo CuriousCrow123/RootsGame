@@ -36,7 +36,7 @@ far = 100.0
 script = ExtResource("2_5s6xx")
 
 [node name="spawn_from_room_1" type="Marker3D" parent="." unique_id=1179832274]
-transform = Transform3D(0.70710677, -0.5, 0.5, 0, 0.7071068, 0.70710677, -0.70710677, -0.5, 0.5, -0.6418965, 0.6955261, 5.310228)
+transform = Transform3D(0.70710677, -0.5, 0.5, 0, 0.7071068, 0.70710677, -0.70710677, -0.5, 0.5, -0.5134175, 0.6955261, 5.310228)
 
 [node name="Door" parent="." unique_id=1086833551 instance=ExtResource("3_2okp7")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -0.6, 0.5, 6.121106)

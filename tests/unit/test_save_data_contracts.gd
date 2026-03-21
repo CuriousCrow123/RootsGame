@@ -52,15 +52,13 @@ func test_quest_tracker_save_key() -> void:
 
 
 func test_quest_tracker_roundtrip() -> void:
-	var quest: QuestData = _create_test_quest()
+	var quest: QuestData = preload("res://tests/fixtures/test_quest.tres")
 	_tracker.start_quest(quest)
 	_tracker.advance_quest("test_quest")
 	var saved: Dictionary = _tracker.get_save_data()
 
 	var fresh: QuestTracker = QuestTracker.new()
 	add_child_autofree(fresh)
-	# Must register quest data before loading save state
-	fresh.start_quest(quest)
 	fresh.load_save_data(saved)
 
 	assert_true(fresh.is_quest_active("test_quest"))
@@ -68,7 +66,7 @@ func test_quest_tracker_roundtrip() -> void:
 
 
 func test_quest_tracker_complete_roundtrip() -> void:
-	var quest: QuestData = _create_test_quest()
+	var quest: QuestData = preload("res://tests/fixtures/test_quest.tres")
 	_tracker.start_quest(quest)
 	_tracker.advance_quest("test_quest")
 	_tracker.advance_quest("test_quest")
@@ -77,7 +75,6 @@ func test_quest_tracker_complete_roundtrip() -> void:
 	var saved: Dictionary = _tracker.get_save_data()
 	var fresh: QuestTracker = QuestTracker.new()
 	add_child_autofree(fresh)
-	fresh.start_quest(quest)
 	fresh.load_save_data(saved)
 
 	assert_true(fresh.is_quest_complete("test_quest"))
@@ -186,42 +183,20 @@ func test_world_state_defensive_copy() -> void:
 
 
 func test_player_save_key() -> void:
-	var player: PlayerController = PlayerController.new()
+	var player: PlayerController = TestHelpers.create_player()
 	add_child_autofree(player)
 	assert_eq(player.get_save_key(), "player")
 
 
 func test_player_position_roundtrip() -> void:
-	var player: PlayerController = PlayerController.new()
+	var player: PlayerController = TestHelpers.create_player()
 	add_child_autofree(player)
 	player.global_position = Vector3(10.0, 0.0, -5.0)
 	var saved: Dictionary = player.get_save_data()
 
-	var fresh: PlayerController = PlayerController.new()
+	var fresh: PlayerController = TestHelpers.create_player()
 	add_child_autofree(fresh)
 	fresh.load_save_data(saved)
 
 	assert_almost_eq(float(fresh.global_position.x), 10.0, 0.01)
 	assert_almost_eq(float(fresh.global_position.z), -5.0, 0.01)
-
-
-# -- Helpers --
-
-
-func _create_test_quest() -> QuestData:
-	var step1: QuestStepData = QuestStepData.new()
-	step1.step_id = "step_one"
-	step1.description = "Step one"
-	step1.next_step_id = "step_two"
-
-	var step2: QuestStepData = QuestStepData.new()
-	step2.step_id = "step_two"
-	step2.description = "Step two"
-	step2.next_step_id = ""
-
-	var quest: QuestData = QuestData.new()
-	quest.quest_id = "test_quest"
-	quest.display_name = "Test Quest"
-	quest.description = "A test quest."
-	quest.steps = [step1, step2]
-	return quest
