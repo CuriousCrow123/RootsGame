@@ -36,6 +36,10 @@ gdscript/warnings/unsafe_method_access=2
 gdscript/warnings/unsafe_cast=1
 gdscript/warnings/unsafe_call_argument=2
 
+[display]
+
+window/stretch/mode="canvas_items"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/gut/plugin.cfg")
@@ -88,11 +92,6 @@ locale/translations_pot_files=PackedStringArray("res://resources/dialogue/npc_gr
 3d_physics/layer_2="player"
 3d_physics/layer_3="npcs"
 3d_physics/layer_4="interactables"
-
-[display]
-
-window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [rendering]
 
