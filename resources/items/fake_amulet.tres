@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="ItemData" format=3]
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://2ld2fln1jsip"]
 
 [ext_resource type="Script" uid="uid://l3n8gqo5x6s4" path="res://resources/items/item_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
 item_id = "fake_amulet"
-display_name = "Fake Amulet"
+display_name = "Old Amulet"
 description = "A cheap imitation. It doesn't hum at all."
