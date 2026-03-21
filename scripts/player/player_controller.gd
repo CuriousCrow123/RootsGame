@@ -67,7 +67,8 @@ func get_movement_input() -> Vector3:
 	var cam_right: Vector3 = cam.global_transform.basis.x
 	cam_right.y = 0.0
 	cam_right = cam_right.normalized()
-	return (cam_right * input_dir.x + cam_forward * input_dir.y).normalized()
+	# input_dir.y is negative for "forward" (get_vector convention), negate to match cam_forward
+	return (cam_right * input_dir.x - cam_forward * input_dir.y).normalized()
 
 
 func get_facing_direction() -> String:
@@ -116,7 +117,7 @@ func update_facing(input_direction: Vector2) -> void:
 		cam_right.y = 0.0
 		cam_right = cam_right.normalized()
 		_facing_vector = (
-			(cam_right * input_direction.x + cam_forward * input_direction.y).normalized()
+			(cam_right * input_direction.x - cam_forward * input_direction.y).normalized()
 		)
 
 
