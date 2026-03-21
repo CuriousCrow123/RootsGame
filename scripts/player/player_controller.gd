@@ -4,14 +4,14 @@ extends CharacterBody3D
 
 signal nearest_interactable_changed(interactable: Node3D)
 
-# Fixed camera angle — hardcoded for consistent isometric feel.
-# Avoids reading camera basis each frame and floating-point drift.
-const ISO_ANGLE: float = -0.7854  # deg_to_rad(-45.0)
+const DEFAULT_CAMERA_ANGLE: float = -PI / 4.0  # Fallback when no camera exists
 
 @export var move_speed: float = 5.0
 
 var _nearest_interactable: Node3D = null
 var _facing_direction: String = "down"
+var _facing_vector: Vector3 = Vector3(0.0, 0.0, 1.0)
+var _camera: Camera3D = null
 
 @onready var _interaction_area: Area3D = $InteractionArea
 @onready var _inventory: Inventory = $Inventory
@@ -43,13 +43,28 @@ func get_movement_input() -> Vector3:
 	var input_dir: Vector2 = Input.get_vector(
 		"move_left", "move_right", "move_forward", "move_back"
 	)
-	# Rotate input by fixed camera angle for camera-relative movement
-	var rotated: Vector2 = input_dir.rotated(ISO_ANGLE)
-	return Vector3(rotated.x, 0.0, rotated.y).normalized()
+	if input_dir.is_zero_approx():
+		return Vector3.ZERO
+	var cam: Camera3D = _get_camera()
+	if cam == null:
+		var rotated: Vector2 = input_dir.rotated(DEFAULT_CAMERA_ANGLE)
+		return Vector3(rotated.x, 0.0, rotated.y).normalized()
+	# Basis vector decomposition — camera forward/right flattened to XZ plane
+	var cam_forward: Vector3 = -cam.global_transform.basis.z
+	cam_forward.y = 0.0
+	cam_forward = cam_forward.normalized()
+	var cam_right: Vector3 = cam.global_transform.basis.x
+	cam_right.y = 0.0
+	cam_right = cam_right.normalized()
+	return (cam_right * input_dir.x + cam_forward * input_dir.y).normalized()
 
 
 func get_facing_direction() -> String:
 	return _facing_direction
+
+
+func get_facing_vector() -> Vector3:
+	return _facing_vector
 
 
 func get_nearest_interactable() -> Node3D:
@@ -64,10 +79,26 @@ func interact_with_nearest() -> void:
 func update_facing(input_direction: Vector2) -> void:
 	if input_direction.is_zero_approx():
 		return
+	# Cardinal string for animations and save data
 	if absf(input_direction.x) >= absf(input_direction.y):
 		_facing_direction = "right" if input_direction.x > 0.0 else "left"
 	else:
 		_facing_direction = "down" if input_direction.y > 0.0 else "up"
+	# World-space vector for interaction scoring — rotate raw input by camera angle
+	var cam: Camera3D = _get_camera()
+	if cam == null:
+		var rotated: Vector2 = input_direction.rotated(DEFAULT_CAMERA_ANGLE)
+		_facing_vector = Vector3(rotated.x, 0.0, rotated.y).normalized()
+	else:
+		var cam_forward: Vector3 = -cam.global_transform.basis.z
+		cam_forward.y = 0.0
+		cam_forward = cam_forward.normalized()
+		var cam_right: Vector3 = cam.global_transform.basis.x
+		cam_right.y = 0.0
+		cam_right = cam_right.normalized()
+		_facing_vector = (
+			(cam_right * input_direction.x + cam_forward * input_direction.y).normalized()
+		)
 
 
 func play_animation(action: String) -> void:
@@ -106,10 +137,31 @@ func load_save_data(data: Dictionary) -> void:
 	global_position = Vector3(pos.get("x", 0.0), pos.get("y", 0.0), pos.get("z", 0.0))
 	@warning_ignore("unsafe_call_argument")
 	_facing_direction = data.get("facing_direction", "down")
+	_facing_vector = _facing_direction_to_vector(_facing_direction)
 	play_animation("idle")
 
 
 # -- Private --
+
+
+func _get_camera() -> Camera3D:
+	if not is_instance_valid(_camera):
+		_camera = get_viewport().get_camera_3d()
+	return _camera
+
+
+func _facing_direction_to_vector(direction: String) -> Vector3:
+	match direction:
+		"up":
+			return Vector3(0.0, 0.0, -1.0)
+		"down":
+			return Vector3(0.0, 0.0, 1.0)
+		"left":
+			return Vector3(-1.0, 0.0, 0.0)
+		"right":
+			return Vector3(1.0, 0.0, 0.0)
+		_:
+			return Vector3(0.0, 0.0, 1.0)
 
 
 func _on_interactable_entered(body: Node3D) -> void:
