@@ -14,12 +14,12 @@ elif is_quest_active("fetch_amulet")
 		do remove_item("fake_amulet")
 		Nathan: The real amulet should be in the other room. Try looking there.
 	else
-		Nathan: Have you found the amulet yet? Check the chests in both rooms.
+		Nathan: Have you found the amulet yet? I'm sure it's around here somewhere.
 else
 	Nathan: Welcome, traveler! I've been waiting for someone brave enough to help.
-	Nathan: There's an old amulet I lost somewhere. Could you bring it to me?
+	Nathan: I've lost an old amulet of mine. Could you help me find it?
 	- I'll help you.
 		do start_quest(quest_resource)
-		Nathan: Wonderful! Check the chests in both rooms.
+		Nathan: Wonderful! I think it might be in one of the chests around here.
 	- Not right now.
 		Nathan: Take your time. I'm not going anywhere.
