@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/tabs/inventory_tab.gd" id="1_inv"]
+
+[node name="InventoryTab" type="VBoxContainer"]
+script = ExtResource("1_inv")
+
+[node name="EmptyLabel" type="Label" parent="."]
+text = "No items yet."
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemList" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3

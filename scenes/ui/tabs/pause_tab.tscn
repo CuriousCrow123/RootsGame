@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/tabs/pause_tab.gd" id="1_pause"]
+
+[node name="PauseTab" type="VBoxContainer"]
+script = ExtResource("1_pause")
+alignment = 1
+
+[node name="ResumeButton" type="Button" parent="."]
+custom_minimum_size = Vector2(200, 40)
+text = "Resume"
+
+[node name="SaveButton" type="Button" parent="."]
+custom_minimum_size = Vector2(200, 40)
+text = "Save"
+
+[node name="LoadButton" type="Button" parent="."]
+custom_minimum_size = Vector2(200, 40)
+text = "Load"
+
+[node name="QuitButton" type="Button" parent="."]
+custom_minimum_size = Vector2(200, 40)
+text = "Quit"

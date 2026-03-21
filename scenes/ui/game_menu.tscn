@@ -1,0 +1,32 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/game_menu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tabs/quest_tab.tscn" id="2_quest"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tabs/inventory_tab.tscn" id="3_inv"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tabs/stats_tab.tscn" id="4_stats"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tabs/pause_tab.tscn" id="5_pause"]
+
+[node name="GameMenu" type="CanvasLayer"]
+script = ExtResource("1_menu")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="Quests" parent="PanelContainer/TabContainer" instance=ExtResource("2_quest")]
+layout_mode = 2
+
+[node name="Inventory" parent="PanelContainer/TabContainer" instance=ExtResource("3_inv")]
+layout_mode = 2
+
+[node name="Stats" parent="PanelContainer/TabContainer" instance=ExtResource("4_stats")]
+layout_mode = 2
+
+[node name="Pause" parent="PanelContainer/TabContainer" instance=ExtResource("5_pause")]
+layout_mode = 2

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/tabs/stats_tab.gd" id="1_stats"]
+
+[node name="StatsTab" type="CenterContainer"]
+script = ExtResource("1_stats")
+
+[node name="Label" type="Label" parent="."]
+text = "Character Stats — Coming Soon"
