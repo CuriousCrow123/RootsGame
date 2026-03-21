@@ -3,20 +3,25 @@ extends StaticBody3D
 
 signal chest_opened(item: ItemData)
 
+const OPEN_DURATION: float = 0.3
+const LID_OPEN_ANGLE: float = -110.0
+
 @export var item: ItemData = null
 @export var item_quantity: int = 1
 @export var chest_id: String = ""
 
 var _is_opened: bool = false
-var _closed_material: Material = null
+var _closed_rotation: Vector3 = Vector3.ZERO
 
-@onready var _mesh: MeshInstance3D = $MeshInstance3D as MeshInstance3D
+@onready var _anim_player: AnimationPlayer = $AnimationPlayer as AnimationPlayer
+@onready var _chest_top: MeshInstance3D = $Chest_Top as MeshInstance3D
 
 
 func _ready() -> void:
 	WorldState.register(self)
-	if _mesh:
-		_closed_material = _mesh.get_surface_override_material(0)
+	if _chest_top:
+		_closed_rotation = _chest_top.rotation_degrees
+	_build_open_animation()
 
 
 func interact(player: PlayerController) -> void:
@@ -29,9 +34,9 @@ func interact(player: PlayerController) -> void:
 	if not inventory:
 		return
 	inventory.add_item(item.item_id, item_quantity, item.display_name)
-	_is_opened = true  # Set AFTER successful add — never consume chest without giving item
+	_is_opened = true
 	WorldState.set_state(chest_id, {"is_opened": true})
-	_update_visual()
+	_play_open_animation()
 	chest_opened.emit(item)
 
 
@@ -46,15 +51,37 @@ func get_save_data() -> Dictionary:
 func load_save_data(data: Dictionary) -> void:
 	@warning_ignore("unsafe_call_argument")
 	_is_opened = data.get("is_opened", false)
-	_update_visual()
+	_restore_visual_state()
 
 
-func _update_visual() -> void:
-	if not _mesh:
+func _build_open_animation() -> void:
+	if not _anim_player or not _chest_top:
+		return
+	var anim: Animation = Animation.new()
+	anim.length = OPEN_DURATION
+	var track_idx: int = anim.add_track(Animation.TYPE_VALUE)
+	anim.track_set_path(track_idx, "Chest_Top:rotation_degrees")
+	var closed_rot: Vector3 = _chest_top.rotation_degrees
+	var open_rot: Vector3 = Vector3(closed_rot.x + LID_OPEN_ANGLE, closed_rot.y, closed_rot.z)
+	anim.track_insert_key(track_idx, 0.0, closed_rot)
+	anim.track_insert_key(track_idx, OPEN_DURATION, open_rot)
+	anim.track_set_interpolation_type(track_idx, Animation.INTERPOLATION_CUBIC)
+	var lib: AnimationLibrary = AnimationLibrary.new()
+	lib.add_animation(&"open", anim)
+	_anim_player.add_animation_library(&"", lib)
+
+
+func _play_open_animation() -> void:
+	if not _anim_player:
+		return
+	_anim_player.play(&"open")
+
+
+func _restore_visual_state() -> void:
+	if not _anim_player:
 		return
 	if _is_opened:
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = Color(0.35, 0.3, 0.2)
-		_mesh.set_surface_override_material(0, mat)
-	else:
-		_mesh.set_surface_override_material(0, _closed_material)
+		_anim_player.play(&"open")
+		_anim_player.seek(OPEN_DURATION, true)
+	elif _chest_top:
+		_chest_top.rotation_degrees = _closed_rotation
