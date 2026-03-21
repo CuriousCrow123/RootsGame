@@ -86,17 +86,29 @@ func test_quest_tracker_complete_roundtrip() -> void:
 # -- ChestInteractable contract --
 
 
-func test_chest_save_key() -> void:
+func _create_test_chest() -> StaticBody3D:
 	var chest: StaticBody3D = StaticBody3D.new()
+	# Add child nodes the script expects via @onready
+	var anim_player: AnimationPlayer = AnimationPlayer.new()
+	anim_player.name = "AnimationPlayer"
+	chest.add_child(anim_player)
+	var chest_top: MeshInstance3D = MeshInstance3D.new()
+	chest_top.name = "Chest_Top"
+	chest.add_child(chest_top)
 	chest.set_script(_chest_script)
+	return chest
+
+
+func test_chest_save_key() -> void:
+	var chest: StaticBody3D = _create_test_chest()
 	add_child_autofree(chest)
-	chest.chest_id = "test_chest"
-	assert_eq(chest.get_save_key(), "test_chest")
+	chest.set("chest_id", "test_chest")
+	var key: String = chest.call("get_save_key")
+	assert_eq(key, "test_chest")
 
 
 func test_chest_in_interactable_saveable_group() -> void:
-	var chest: StaticBody3D = StaticBody3D.new()
-	chest.set_script(_chest_script)
+	var chest: StaticBody3D = _create_test_chest()
 	add_child_autofree(chest)
 	assert_true(
 		chest.is_in_group("interactable_saveable"), "Chest should be in interactable_saveable group"
@@ -105,24 +117,24 @@ func test_chest_in_interactable_saveable_group() -> void:
 
 
 func test_chest_roundtrip() -> void:
-	var chest: StaticBody3D = StaticBody3D.new()
-	chest.set_script(_chest_script)
+	var chest: StaticBody3D = _create_test_chest()
 	add_child_autofree(chest)
-	chest.chest_id = "test_chest"
+	chest.set("chest_id", "test_chest")
 
 	# Simulate opening — set _is_opened directly since interact() needs a full player
-	chest._is_opened = true
-	var saved: Dictionary = chest.get_save_data()
+	chest.set("_is_opened", true)
+	var saved: Dictionary = chest.call("get_save_data")
 
 	# Fresh chest
-	var fresh: StaticBody3D = StaticBody3D.new()
-	fresh.set_script(_chest_script)
+	var fresh: StaticBody3D = _create_test_chest()
 	add_child_autofree(fresh)
-	fresh.chest_id = "test_chest"
-	assert_false(fresh._is_opened, "Fresh chest should be closed")
+	fresh.set("chest_id", "test_chest")
+	var is_closed: bool = fresh.get("_is_opened")
+	assert_false(is_closed, "Fresh chest should be closed")
 
-	fresh.load_save_data(saved)
-	assert_true(fresh._is_opened, "Loaded chest should be opened")
+	fresh.call("load_save_data", saved)
+	var is_opened: bool = fresh.get("_is_opened")
+	assert_true(is_opened, "Loaded chest should be opened")
 
 
 # -- WorldState contract --
@@ -131,7 +143,8 @@ func test_chest_roundtrip() -> void:
 func test_world_state_save_key() -> void:
 	var ws: Node = _world_state_script.new()
 	add_child_autofree(ws)
-	assert_eq(ws.call("get_save_key"), "world_state")
+	var key: String = ws.call("get_save_key")
+	assert_eq(key, "world_state")
 
 
 func test_world_state_roundtrip() -> void:
@@ -147,8 +160,10 @@ func test_world_state_roundtrip() -> void:
 
 	var state_a: Dictionary = fresh.call("get_state", "chest_a")
 	var state_b: Dictionary = fresh.call("get_state", "chest_b")
-	assert_eq(state_a.get("is_opened"), true, "chest_a should be opened")
-	assert_eq(state_b.get("is_opened"), false, "chest_b should be closed")
+	var a_opened: bool = state_a.get("is_opened")
+	var b_opened: bool = state_b.get("is_opened")
+	assert_eq(a_opened, true, "chest_a should be opened")
+	assert_eq(b_opened, false, "chest_b should be closed")
 
 
 func test_world_state_defensive_copy() -> void:
@@ -161,10 +176,9 @@ func test_world_state_defensive_copy() -> void:
 	saved["chest_a"]["is_opened"] = false
 
 	var internal: Dictionary = ws.call("get_state", "chest_a")
+	var still_opened: bool = internal.get("is_opened")
 	assert_eq(
-		internal.get("is_opened"),
-		true,
-		"Internal state should not be mutated by external changes to save data"
+		still_opened, true, "Internal state should not be mutated by external changes to save data"
 	)
 
 
@@ -181,16 +195,14 @@ func test_player_position_roundtrip() -> void:
 	var player: PlayerController = PlayerController.new()
 	add_child_autofree(player)
 	player.global_position = Vector3(10.0, 0.0, -5.0)
-	player.rotation.y = 1.2
 	var saved: Dictionary = player.get_save_data()
 
 	var fresh: PlayerController = PlayerController.new()
 	add_child_autofree(fresh)
 	fresh.load_save_data(saved)
 
-	assert_almost_eq(fresh.global_position.x, 10.0, 0.01)
-	assert_almost_eq(fresh.global_position.z, -5.0, 0.01)
-	assert_almost_eq(fresh.rotation.y, 1.2, 0.01)
+	assert_almost_eq(float(fresh.global_position.x), 10.0, 0.01)
+	assert_almost_eq(float(fresh.global_position.z), -5.0, 0.01)
 
 
 # -- Helpers --

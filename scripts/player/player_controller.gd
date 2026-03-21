@@ -21,8 +21,9 @@ var _facing_direction: String = "down"
 func _ready() -> void:
 	add_to_group("player")
 	SaveManager.register(self)
-	_interaction_area.body_entered.connect(_on_interactable_entered)
-	_interaction_area.body_exited.connect(_on_interactable_exited)
+	if _interaction_area:
+		_interaction_area.body_entered.connect(_on_interactable_entered)
+		_interaction_area.body_exited.connect(_on_interactable_exited)
 	# Reparent to root so player persists across scene changes
 	SceneManager.register_player(self)
 

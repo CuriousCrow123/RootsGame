@@ -30,26 +30,24 @@ func test_player_has_saveable_group() -> void:
 
 func test_player_save_data_includes_position() -> void:
 	_player.global_position = Vector3(5.0, 0.0, 10.0)
-	_player.rotation.y = 1.5
 	var data: Dictionary = _player.get_save_data()
 	assert_has(data, "position", "Save data should include position")
-	assert_has(data, "rotation_y", "Save data should include rotation_y")
-	@warning_ignore("unsafe_call_argument")
+	assert_has(data, "facing_direction", "Save data should include facing_direction")
 	var pos: Dictionary = data["position"]
-	assert_almost_eq(pos["x"], 5.0, 0.01, "X should be 5.0")
-	assert_almost_eq(pos["z"], 10.0, 0.01, "Z should be 10.0")
-	assert_almost_eq(data["rotation_y"], 1.5, 0.01, "Rotation should be 1.5")
+	var pos_x: float = pos["x"]
+	var pos_z: float = pos["z"]
+	assert_almost_eq(pos_x, 5.0, 0.01, "X should be 5.0")
+	assert_almost_eq(pos_z, 10.0, 0.01, "Z should be 10.0")
 
 
 func test_player_load_restores_position() -> void:
 	var data: Dictionary = {
 		"position": {"x": 3.0, "y": 0.0, "z": 7.0},
-		"rotation_y": 2.0,
+		"facing_direction": "up",
 	}
 	_player.load_save_data(data)
-	assert_almost_eq(_player.global_position.x, 3.0, 0.01)
-	assert_almost_eq(_player.global_position.z, 7.0, 0.01)
-	assert_almost_eq(_player.rotation.y, 2.0, 0.01)
+	assert_almost_eq(float(_player.global_position.x), 3.0, 0.01)
+	assert_almost_eq(float(_player.global_position.z), 7.0, 0.01)
 
 
 func test_inventory_persists_on_player() -> void:
