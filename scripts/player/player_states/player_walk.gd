@@ -31,9 +31,14 @@ func physics_update(_delta: float) -> void:
 		"move_left", "move_right", "move_forward", "move_back"
 	)
 	var previous_facing: String = player.get_facing_direction()
+	var old_facing_vec: Vector3 = player.get_facing_vector()
 	player.update_facing(raw_input)
+	player.set_last_movement_vector(direction)
 	if player.get_facing_direction() != previous_facing:
 		player.play_animation("walk")
+	# Re-evaluate interactable selection on significant facing change
+	if old_facing_vec.dot(player.get_facing_vector()) < PlayerController.FACING_CHANGE_THRESHOLD:
+		player.reevaluate_nearest_interactable()
 	player.velocity = direction * player.move_speed
 	if not player.is_on_floor():
 		player.velocity.y -= 9.8

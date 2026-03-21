@@ -4,13 +4,23 @@ extends CharacterBody3D
 
 signal nearest_interactable_changed(interactable: Node3D)
 
+enum InteractionStrategy { FACING_BIAS, FACING_REQUIRED, LAST_MOVEMENT }
+
 const DEFAULT_CAMERA_ANGLE: float = -PI / 4.0  # Fallback when no camera exists
+const FACING_WEIGHT: float = 0.5
+const HYSTERESIS_BONUS: float = 0.2
+const MIN_DISTANCE: float = 0.1
+const MOVEMENT_THRESHOLD: float = 0.01
+const FACING_CHANGE_THRESHOLD: float = 0.7
 
 @export var move_speed: float = 5.0
+@export var _interaction_strategy: InteractionStrategy = InteractionStrategy.FACING_BIAS
 
 var _nearest_interactable: Node3D = null
+var _prompted_interactable: Node3D = null
 var _facing_direction: String = "down"
 var _facing_vector: Vector3 = Vector3(0.0, 0.0, 1.0)
+var _last_movement_vector: Vector3 = Vector3.ZERO
 var _camera: Camera3D = null
 
 @onready var _interaction_area: Area3D = $InteractionArea
@@ -24,6 +34,7 @@ func _ready() -> void:
 	if _interaction_area:
 		_interaction_area.body_entered.connect(_on_interactable_entered)
 		_interaction_area.body_exited.connect(_on_interactable_exited)
+	GameState.game_state_changed.connect(_on_game_state_changed)
 	# Reparent to root so player persists across scene changes
 	SceneManager.register_player(self)
 
@@ -67,12 +78,20 @@ func get_facing_vector() -> Vector3:
 	return _facing_vector
 
 
+func set_last_movement_vector(direction: Vector3) -> void:
+	_last_movement_vector = direction
+
+
+func reevaluate_nearest_interactable() -> void:
+	_update_nearest_interactable()
+
+
 func get_nearest_interactable() -> Node3D:
 	return _nearest_interactable
 
 
 func interact_with_nearest() -> void:
-	if _nearest_interactable and _nearest_interactable.has_method("interact"):
+	if is_instance_valid(_nearest_interactable) and _nearest_interactable.has_method("interact"):
 		_nearest_interactable.call("interact", self)
 
 
@@ -164,6 +183,19 @@ func _facing_direction_to_vector(direction: String) -> Vector3:
 			return Vector3(0.0, 0.0, 1.0)
 
 
+func _on_game_state_changed(new_mode: GameState.GameMode) -> void:
+	if new_mode != GameState.GameMode.OVERWORLD:
+		# Hide prompt when leaving overworld (dialogue, menu, etc.)
+		if (
+			is_instance_valid(_prompted_interactable)
+			and _prompted_interactable.has_method("hide_prompt")
+		):
+			_prompted_interactable.call("hide_prompt")
+	elif new_mode == GameState.GameMode.OVERWORLD:
+		# Re-evaluate and show prompt when returning to overworld
+		_update_nearest_interactable()
+
+
 func _on_interactable_entered(body: Node3D) -> void:
 	if not body.has_method("interact"):
 		return
@@ -177,17 +209,64 @@ func _on_interactable_exited(body: Node3D) -> void:
 
 
 func _update_nearest_interactable() -> void:
+	# Clear stale references from freed nodes (scene teardown)
+	if _nearest_interactable and not is_instance_valid(_nearest_interactable):
+		_nearest_interactable = null
 	var bodies: Array[Node3D] = _interaction_area.get_overlapping_bodies()
-	var closest: Node3D = null
-	var closest_dist: float = INF
+	var best: Node3D = null
+	var best_score: float = -INF
 	for body: Node3D in bodies:
 		if not body.has_method("interact"):
 			continue
-		var dist: float = global_position.distance_squared_to(body.global_position)
-		if dist < closest_dist:
-			closest_dist = dist
-			closest = body
-	var changed: bool = closest != _nearest_interactable
-	_nearest_interactable = closest
+		if not is_instance_valid(body):
+			continue
+		var score: float = _score_interactable(body)
+		if score > best_score:
+			best_score = score
+			best = body
+	var changed: bool = best != _nearest_interactable
+	_nearest_interactable = best
 	if changed:
+		# Update prompts: hide old, show new
+		if (
+			is_instance_valid(_prompted_interactable)
+			and _prompted_interactable.has_method("hide_prompt")
+		):
+			_prompted_interactable.call("hide_prompt")
+		_prompted_interactable = _nearest_interactable
+		if (
+			is_instance_valid(_prompted_interactable)
+			and _prompted_interactable.has_method("show_prompt")
+		):
+			_prompted_interactable.call("show_prompt")
 		nearest_interactable_changed.emit(_nearest_interactable)
+
+
+func _score_interactable(body: Node3D) -> float:
+	var to_body: Vector3 = body.global_position - global_position
+	to_body.y = 0.0  # Flatten to XZ plane
+	var distance: float = to_body.length()
+	to_body = to_body.normalized()
+	var distance_score: float = 1.0 / maxf(distance, MIN_DISTANCE)
+
+	var direction: Vector3 = _facing_vector
+	match _interaction_strategy:
+		InteractionStrategy.FACING_BIAS, InteractionStrategy.FACING_REQUIRED:
+			direction = _facing_vector
+		InteractionStrategy.LAST_MOVEMENT:
+			if _last_movement_vector.length_squared() > MOVEMENT_THRESHOLD:
+				direction = _last_movement_vector
+		_:
+			direction = _facing_vector
+
+	var dot: float = direction.dot(to_body)
+
+	if _interaction_strategy == InteractionStrategy.FACING_REQUIRED and dot <= 0.0:
+		return -1.0
+
+	var score: float = distance_score * (1.0 + FACING_WEIGHT * dot)
+
+	if body == _nearest_interactable:
+		score += HYSTERESIS_BONUS
+
+	return score
