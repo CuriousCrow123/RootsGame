@@ -176,12 +176,11 @@ Tell me what tile types you imported and what scale they are. I'll help troubles
 
 **Deviations from plan:**
 - Scale: `root_scale` in .import files did not work reliably. Instead, scale is applied via MeshInstance3D Transform in `mesh_library_source.tscn` with "Apply MeshInstance Transforms" enabled on MeshLibrary export.
-- FBX mesh extraction: FBX imports as PackedScene (Node3D root), not a direct Mesh resource. To get meshes into MeshLibrary, each FBX must be dragged into the source scene, then right-click > Make Local > reparent MeshInstance3D to root.
-- Wall orientation: Quaternius FBX walls import laying flat (Blender Z-up vs Godot Y-up). Fixed with -90° X rotation on the MeshInstance3D in the source scene.
 - Tree (Tree_1) uses textures (Bark_Texture.jpg, Leaf_Texture.png), not vertex colors. Placed as standalone prop scene (`resources/tree_1.tscn`) via inherited scene, not in GridMap.
 - Chest moved to `assets/models/interactables/` for Phase 3.
 - Gravity fix required: trimesh wall collision nudges the player upward. Added `is_on_floor()` gravity check to both walk and idle states.
 - 6 tiles imported instead of planned 4: Floor_Standard, Floor_Standard_Half, Floor_Squares, Floor_SquareLarge, Wall, Stairs.
+- Lighting: vertex-colored tiles had extreme shadow contrast under DirectionalLight3D. Fixed with custom half-lambert shader (`resources/shaders/vertex_color_half_lambert.gdshader`) using wrap=0.7 and albedo_tint uniform matching original material colors. Applied to all tile materials in mesh_library_source.tscn.
 
 ---
 
