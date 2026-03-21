@@ -145,8 +145,10 @@ gltf/embedded_image_handling=1
 
 ```ini
 fbx/importer=0
-nodes/root_scale=0.5              # Quaternius FBX tiles are 2x at meter scale
+nodes/root_scale=1.0              # Leave at 1.0; scale via MeshInstance3D Transform in mesh_library_source.tscn instead
 ```
+
+**Note:** `root_scale` in .import files is unreliable for MeshLibrary workflows. FBX imports as a PackedScene (Node3D root), not a direct Mesh — extracting meshes at different scales requires re-doing Make Local each reimport. Instead, keep `root_scale=1.0` and apply scale via the MeshInstance3D Transform property in the MeshLibrary source scene, with "Apply MeshInstance Transforms" enabled on export.
 
 ### Texture settings for 3D model albedo PNGs
 

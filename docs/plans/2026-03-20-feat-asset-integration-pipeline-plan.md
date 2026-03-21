@@ -89,9 +89,11 @@ assets/
 
 ---
 
-## Phase 1: Environment Tiles (GridMap MeshLibrary)
+## Phase 1: Environment Tiles (GridMap MeshLibrary) ✅
 
-**Goal:** Replace the 2 primitive BoxMesh tiles (Wall, Floor) with low-poly 3D tile models. No code changes — entirely editor work.
+**Status:** Complete (2026-03-21)
+
+**Goal:** Replace the 2 primitive BoxMesh tiles (Wall, Floor) with low-poly 3D tile models.
 
 **Before you start:** Pick a tile asset pack (.glb or .fbx — both import natively in Godot 4.6). You'll need at minimum: floor, wall, wall-corner, wall-end. More tile types (door frame, stairs, pillar, window) are optional but make rooms more interesting. Prefer packs that use a shared texture atlas across tile types — this maximizes GridMap draw call batching.
 
@@ -170,7 +172,16 @@ Tell me what tile types you imported and what scale they are. I'll help troubles
 3. If everything works, tell me and I'll commit Phase 1.
 4. **Delete any old save files** in `user://saves/` — Phase 2 changes the save format and we're not preserving backward compatibility.
 
-**Phase 1 is done.** No scripts were modified — purely a visual swap.
+**Phase 1 is done.**
+
+**Deviations from plan:**
+- Scale: `root_scale` in .import files did not work reliably. Instead, scale is applied via MeshInstance3D Transform in `mesh_library_source.tscn` with "Apply MeshInstance Transforms" enabled on MeshLibrary export.
+- FBX mesh extraction: FBX imports as PackedScene (Node3D root), not a direct Mesh resource. To get meshes into MeshLibrary, each FBX must be dragged into the source scene, then right-click > Make Local > reparent MeshInstance3D to root.
+- Wall orientation: Quaternius FBX walls import laying flat (Blender Z-up vs Godot Y-up). Fixed with -90° X rotation on the MeshInstance3D in the source scene.
+- Tree (Tree_1) uses textures (Bark_Texture.jpg, Leaf_Texture.png), not vertex colors. Placed as standalone prop scene (`resources/tree_1.tscn`) via inherited scene, not in GridMap.
+- Chest moved to `assets/models/interactables/` for Phase 3.
+- Gravity fix required: trimesh wall collision nudges the player upward. Added `is_on_floor()` gravity check to both walk and idle states.
+- 6 tiles imported instead of planned 4: Floor_Standard, Floor_Standard_Half, Floor_Squares, Floor_SquareLarge, Wall, Stairs.
 
 ---
 
