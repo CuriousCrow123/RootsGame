@@ -29,7 +29,7 @@ func physics_update(_delta: float) -> void:
 		return
 	var player: PlayerController = get_parent().get_parent() as PlayerController
 	if not player.is_on_floor():
-		player.velocity.y -= 9.8
+		player.velocity.y -= 9.8 * _delta
 		player.move_and_slide()
 	var direction: Vector3 = player.get_movement_input()
 	if direction.length_squared() > 0.01:

@@ -41,7 +41,7 @@ func physics_update(_delta: float) -> void:
 		player.reevaluate_nearest_interactable()
 	player.velocity = direction * player.move_speed
 	if not player.is_on_floor():
-		player.velocity.y -= 9.8
+		player.velocity.y -= 9.8 * _delta
 	player.move_and_slide()
 
 
