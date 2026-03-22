@@ -1,0 +1,14 @@
+StaticBody3D
+AnimationPlayer
+AnimatedSprite3D
+Sprite3D
+Node3D
+MeshInstance3D
+CollisionShape3D
+Button
+VBoxContainer
+PanelContainer
+CanvasLayer
+ColorRect
+Node
+Label
