@@ -2,8 +2,11 @@ extends CanvasLayer
 ## Tabbed in-game menu with Quest, Inventory, Stats, and Pause tabs.
 ## Opened/closed by HUD. Tab switching handled explicitly via _input().
 
+const THEME_RES: Theme = preload("res://resources/themes/main_theme.tres")
+
 var _last_tab_index: int = 0
 
+@onready var _panel: PanelContainer = $PanelContainer
 @onready var _tab_container: TabContainer = $PanelContainer/TabContainer
 
 
@@ -11,6 +14,7 @@ func _ready() -> void:
 	visible = false
 	layer = 110
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_panel.theme = THEME_RES
 	_tab_container.get_tab_bar().focus_mode = Control.FOCUS_NONE
 	_tab_container.tab_changed.connect(_on_tab_container_tab_changed)
 

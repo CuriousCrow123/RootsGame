@@ -20,12 +20,8 @@ layout_mode = 2
 
 [node name="QuestNameLabel" type="Label" parent="PanelContainer/VBoxContainer" unique_id=484667667]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0.8627451, 0.9764706, 1)
-theme_override_font_sizes/font_size = 18
 text = "Quest Name"
 
 [node name="StepLabel" type="Label" parent="PanelContainer/VBoxContainer" unique_id=655536944]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
-theme_override_font_sizes/font_size = 14
 text = "Current Step..."

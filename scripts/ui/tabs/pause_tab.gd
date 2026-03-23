@@ -9,6 +9,8 @@ extends VBoxContainer
 
 
 func _ready() -> void:
+	_resume_button.theme_type_variation = &"AccentButton"
+	_quit_button.theme_type_variation = &"DangerButton"
 	_resume_button.pressed.connect(_on_resume_pressed)
 	_save_button.pressed.connect(_on_save_pressed)
 	_load_button.pressed.connect(_on_load_pressed)

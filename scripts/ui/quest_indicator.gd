@@ -11,6 +11,9 @@ var _quest_tracker: QuestTracker = null
 
 func _ready() -> void:
 	_panel.visible = false
+	_panel.theme = preload("res://resources/themes/main_theme.tres")
+	_quest_name_label.theme_type_variation = &"HeaderLabel"
+	_step_label.theme_type_variation = &"DimLabel"
 
 
 func connect_to_player(player: PlayerController) -> void:
