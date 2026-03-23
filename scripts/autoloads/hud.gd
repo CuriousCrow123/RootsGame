@@ -7,6 +7,7 @@ extends Node
 var _notification_manager: CanvasLayer = null
 var _quest_indicator: CanvasLayer = null
 var _game_menu: CanvasLayer = null
+var _confirm_dialog: CanvasLayer = null
 var _is_menu_open: bool = false
 var _mode_before_pause: GameState.GameMode = GameState.GameMode.OVERWORLD
 
@@ -19,6 +20,8 @@ func _ready() -> void:
 	add_child(_quest_indicator)
 	_game_menu = preload("res://scenes/ui/game_menu.tscn").instantiate()
 	add_child(_game_menu)
+	_confirm_dialog = preload("res://scenes/ui/game_confirm_dialog.tscn").instantiate()
+	add_child(_confirm_dialog)
 	# Wire notification anchor to sit below quest indicator panel
 	var qi_panel: Control = _quest_indicator.get_node("PanelContainer")
 	_notification_manager.call("set_offset_node", qi_panel)
@@ -33,6 +36,10 @@ func _input(event: InputEvent) -> void:
 	# Use _input (not _unhandled_input) because Tab is consumed by
 	# UI focus navigation before _unhandled_input sees it.
 	if event.is_action_pressed("pause"):
+		if _confirm_dialog.visible:
+			# Block pause while confirmation is open
+			get_viewport().set_input_as_handled()
+			return
 		if _is_menu_open:
 			close_game_menu()
 		elif GameState.current_mode == GameState.GameMode.OVERWORLD:
@@ -54,6 +61,7 @@ func open_game_menu() -> void:
 func close_game_menu() -> void:
 	if not _is_menu_open:
 		return
+	_confirm_dialog.call("dismiss")
 	_is_menu_open = false
 	get_tree().paused = false
 	_game_menu.call("close_menu")
@@ -63,6 +71,13 @@ func close_game_menu() -> void:
 ## Show a notification via the notification manager.
 func show_notification(text: String, type: StringName = &"info") -> void:
 	_notification_manager.call("show_notification", text, type)
+
+
+## Show a confirmation dialog. Returns the dialog so callers can connect
+## to confirmed/cancelled signals with CONNECT_ONE_SHOT.
+func show_confirmation(title: String, message: String) -> CanvasLayer:
+	_confirm_dialog.call("show_dialog", title, message)
+	return _confirm_dialog
 
 
 func _on_player_registered(player: PlayerController) -> void:
