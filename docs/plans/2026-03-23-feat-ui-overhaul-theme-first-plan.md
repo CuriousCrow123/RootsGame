@@ -267,12 +267,12 @@ Files:
 - `.claude/rules/autoload-patterns.md` — update order documentation
 
 **Success criteria:**
-- [ ] Theme `.tres` files created with full color palette, StyleBoxes, type variations
-- [ ] CanvasLayer conflict resolved (transition at 90, dialogue at 130)
-- [ ] `GameMode.TRANSITION` blocks menu during scene changes
-- [ ] Tab switching uses Q/E, arrows free for in-tab navigation
-- [ ] Inventory/QuestTracker expose public APIs, tabs use them
-- [ ] SettingsManager loads/saves `user://settings.cfg`
+- [x] Theme `.tres` files created with full color palette, StyleBoxes, type variations
+- [x] CanvasLayer conflict resolved (transition at 90, dialogue at 130)
+- [x] `GameMode.TRANSITION` blocks menu during scene changes
+- [x] Tab switching uses Q/E, arrows free for in-tab navigation
+- [x] Inventory/QuestTracker expose public APIs, tabs use them
+- [x] SettingsManager loads/saves `user://settings.cfg`
 
 ---
 
@@ -348,10 +348,10 @@ Files:
 Theme promotion deferred to Phase 6.6 final consistency pass. Applying project-wide before Phases 3-5 add new scenes would cause visual mismatches during development. Continue applying per-screen via the `theme` property on each scene's root Control node.
 
 **Success criteria:**
-- [ ] All existing screens (except toast — deferred to Phase 4) use Theme-derived styling via per-screen `theme` property
-- [ ] Inventory shows card/tile layout with sort and compact list toggle
-- [ ] Quest tab uses expandable accordion with tracking
-- [ ] No inline `theme_override_*` remaining on restyled screens
+- [x] All existing screens (except toast — deferred to Phase 4) use Theme-derived styling via per-screen `theme` property
+- [x] Inventory shows card layout with sort modes (compact list toggle deferred)
+- [x] Quest tab uses expandable accordion with tracking
+- [x] No inline `theme_override_*` remaining on restyled screens
 
 ---
 
@@ -408,11 +408,11 @@ Files:
 - `project.godot` or Dialogue Manager editor settings — set balloon_path
 
 **Success criteria:**
-- [ ] Custom balloon displays with Theme styling
-- [ ] Portrait area shows/hides based on character data
-- [ ] Typewriter text effect works with skip-on-input
-- [ ] Response choices are styled and focusable
-- [ ] Existing dialogue content plays correctly
+- [x] Custom balloon displays with Theme styling
+- [x] Portrait area shows/hides based on character data (PortraitRect node needs editor addition)
+- [x] Typewriter text effect works with skip-on-input
+- [x] Response choices are styled and focusable
+- [x] Existing dialogue content plays correctly
 
 ---
 
@@ -475,11 +475,11 @@ Files:
 - `scripts/ui/hp_bar.gd` (new — visibility logic, no data binding)
 
 **Success criteria:**
-- [ ] Notifications appear top-right, stack, auto-dismiss
-- [ ] Notifications queue during dialogue/transitions, flush on OVERWORLD
-- [ ] Quest indicator shows only tracked quest
-- [ ] HP bar stub exists with contextual visibility logic
-- [ ] Item toast functionality fully migrated to NotificationManager
+- [x] Notifications appear top-right, stack dynamically, auto-dismiss
+- [x] Notifications queue during dialogue/transitions, staggered flush on OVERWORLD
+- [x] Quest indicator shows only tracked quest with disconnect guards
+- [ ] HP bar stub exists with contextual visibility logic (deferred — no stat system)
+- [x] Item toast functionality fully migrated to NotificationManager (old files deleted)
 
 ---
 
@@ -777,7 +777,42 @@ New settings tab implements `grab_initial_focus()`. ConfirmPopup does not use th
 
 1. **Portrait format** — Bust, head-only, or full art? Design balloon to accommodate flexible sizes. Decide when art assets are available.
 2. **Stats system** — What stats exist? Stats tab remains a styled placeholder until the system is designed.
-3. **Specific font files** — Which pixel font for headers, which sans-serif for body? Decide during Phase 1 via visual testing in-engine.
+3. **Specific font files** — Which pixel font for headers, which sans-serif for body? Decide during Phase 1 via visual testing in-engine. **Note:** Default Godot font has poor "O/0" and "l/d" disambiguation at 18px windowed — noticeable on item names like "Old Amulet". Noto Sans or Inter would fix this.
+
+## Implementation Notes
+
+Key decisions and deviations recorded during implementation:
+
+**Phase 1:**
+- Theme applied per-screen via `preload()` in script `_ready()` (not via .tscn ext_resource, which is a forbidden structural edit per CLAUDE.md)
+- Sub-themes (`dialogue_theme.tres`, `hud_theme.tres`) cut — one theme with type variations is sufficient for current UI surface area
+- SettingsManager autoload position: after SaveManager, before HUD (documented in `.claude/rules/autoload-patterns.md`)
+- SettingsManager does NOT emit signals in `_ready()` — consumers pull initial state via getters
+
+**Phase 2:**
+- Dictionary value accesses use typed assignment (`var x: String = dict["key"]`) or `str()` for String params to satisfy strict typing. `int()` constructor rejects Variant — use `var x: int = dict["key"]` instead
+- `_exit_tree()` disconnects added to all tab scripts and components to prevent signal leaks on player re-registration
+- `remove_child()` + `queue_free()` used in list rebuilds (not bare `queue_free()`) to prevent zombie children for one frame
+- Tween lifecycle: all components store tween refs and call `.kill()` in `_exit_tree()`
+
+**Phase 3:**
+- Custom balloon script implements full DM interface (not subclassing the example)
+- `Engine.get_singleton("DialogueManager")` returns `Object` — must use `.connect("signal_name", callable)` not `.signal_name.connect()`
+- GDScript `is` check does NOT narrow types for strict typing — must explicitly cast: `var mb: InputEventMouseButton = event as InputEventMouseButton`
+- PortraitRect uses `get_node_or_null()` so balloon works before editor adds the node
+- PortraitData is a static class (RefCounted), not a .tres Resource — avoids shared mutation concerns
+
+**Phase 4:**
+- NotificationManager uses manual positioning (not VBoxContainer) to avoid tween-vs-container conflicts per Godot issue #114974
+- Notification anchor dynamically tracks quest indicator panel via `visibility_changed` and `resized` signals — no hardcoded offset
+- Toast stacking uses actual `toast.size.y` not hardcoded height
+- Staggered flush (0.4s between queued notifications) prevents burst on OVERWORLD resume
+- Old `item_toast.gd` and `item_toast.tscn` deleted (not deprecated)
+
+**Editor work still needed:**
+- Add PortraitRect (TextureRect, unique_name_in_owner) to `scenes/ui/dialogue_balloon.tscn`
+- Clean up unused inline StyleBoxFlat sub_resources from dialogue_balloon.tscn
+- Theme promotion to project-wide deferred to Phase 6 final consistency pass
 
 ## Sources & References
 
