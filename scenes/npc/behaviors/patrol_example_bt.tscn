@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://shared/behavior_tree/composites/bt_selector.gd" id="1_sel"]
+[ext_resource type="Script" path="res://shared/behavior_tree/decorators/bt_repeater.gd" id="2_rep"]
+[ext_resource type="Script" path="res://shared/behavior_tree/composites/bt_sequence.gd" id="3_seq"]
+[ext_resource type="Script" path="res://shared/behavior_tree/actions/bt_patrol_route.gd" id="4_pat"]
+[ext_resource type="Script" path="res://shared/behavior_tree/actions/bt_wait.gd" id="5_wait"]
+
+[node name="BTSelector" type="Node"]
+script = ExtResource("1_sel")
+
+[node name="PatrolLoop" type="Node" parent="."]
+script = ExtResource("2_rep")
+repeat_count = 0
+
+[node name="BTSequence" type="Node" parent="PatrolLoop"]
+script = ExtResource("3_seq")
+
+[node name="PatrolRoute" type="Node" parent="PatrolLoop/BTSequence"]
+script = ExtResource("4_pat")
+waypoints = Array[Vector3]([Vector3(2, 0, 0), Vector3(2, 0, 2), Vector3(0, 0, 2), Vector3(0, 0, 0)])
+speed_multiplier = 1.0
+is_loop = false
+
+[node name="PauseAtWaypoint" type="Node" parent="PatrolLoop/BTSequence"]
+script = ExtResource("5_wait")
+min_duration = 1.0
+max_duration = 2.0
