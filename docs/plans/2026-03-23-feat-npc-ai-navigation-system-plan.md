@@ -568,6 +568,8 @@ func _tick(delta: float, blackboard: Dictionary) -> Status:
 
 Before Phase 2, extract the duplicated `_create_prompt_label()` method from `npc_interactable.gd` and `chest_interactable.gd` into a shared utility (e.g., `shared/prompt_label_factory.gd`). Both existing interactables and the new `npc_controller.gd` will use this. Prevents tripling the existing duplication.
 
+**Status: Skipped** — accepted the duplication for now. `npc_controller.gd` has its own copy matching the existing pattern. Can extract later.
+
 ### Phase 1: BT Framework Foundation
 
 **Goal:** Standalone, testable behavior tree framework with no NPC dependencies.
@@ -623,28 +625,40 @@ Before Phase 2, extract the duplicated `_create_prompt_label()` method from `npc
 - Room scenes updated: add `NavigationRegion3D`, bake nav mesh from GridMap
 
 **Acceptance criteria:**
-- [ ] `npc_controller.gd` extends CharacterBody3D with exports: npc_id, base_speed, behavior_tree_scene, dialogue_resource, dialogue_title, quest_resource (QuestData), sprite_frames, default_facing, display_name, sprite_tint (Color), side_faces_right (bool)
-- [ ] NPC moves smoothly via NavigationAgent3D.get_next_path_position() + move_and_slide()
-- [ ] AnimationController picks correct cardinal animation from velocity, supports facing lock
-- [ ] Post-dialogue facing hold (0.3-0.5s) works
-- [ ] BT actions use NavigationAgent3D: PatrolRoute follows waypoints, WanderRadius picks random nav-mesh-snapped points, FollowTarget tracks a node
-- [ ] BTIdle plays idle animation via AnimationController, waits configurable duration
-- [ ] BTTalkToPlayer: calls `npc.start_dialogue(player)` and returns RUNNING. The NPC controller handles the await and calls `_bt_runner.resume()` when done. BTTalkToPlayer returns SUCCESS on next tick when BT is resumed. **No await inside the BT node.**
-- [ ] Player can interact with moving NPCs (stop-talk-resume pattern works)
-- [ ] Two-zone awareness: AwarenessArea (5u) sets blackboard `"player"`, InteractionArea (2u) shows prompt
-- [ ] Path update throttling: `set_target_position()` recalculated every 300ms (staggered). `get_next_path_position()` called every physics frame for steering (this is cheap — just reads cached path).
-- [ ] `NavigationRegion3D` baked in test_room.tscn and test_room_2.tscn
-- [ ] **Pre-bake verification:** confirm GridMap tile import settings (`apply_root_scale=true`, Apply MeshInstance Transforms enabled) — incorrect settings produce nav mesh that doesn't match visible geometry (from GridMap learnings)
-- [ ] **Post-bake verification:** enable NavigationServer debug display, confirm nav mesh covers floor tiles and avoids wall tile volumes
-- [ ] All BT movement actions guard `map_get_iteration_id() != 0` before first path query
-- [ ] NPC collision: layer 3 (npcs), mask includes layer 1 (environment)
-- [ ] RVO avoidance enabled, uses `velocity_computed` signal pattern. Set `avoidance_layers` to group NPCs (prevents unnecessary cross-zone avoidance checks).
-- [ ] NPC implements interaction protocol: interact(), get_prompt_text(), show_prompt(), hide_prompt()
-- [ ] Extra_game_states passed to dialogue balloon: `[quest_tracker, inventory, self]` (matching npc_interactable pattern)
-- [ ] Per-behavior speed multipliers work (@export on BT action nodes)
-- [ ] All distance checks use `distance_squared_to()` with squared thresholds (hot-path optimization)
-- [ ] AnimationController called via `update_animation(velocity)` from npc_controller._physics_process(), NOT polling
+- [x] `npc_controller.gd` extends CharacterBody3D with exports: npc_id, base_speed, behavior_tree_scene, dialogue_resource, dialogue_title, quest_resource (QuestData), sprite_frames, default_facing, display_name, sprite_tint (Color), side_faces_right (bool)
+- [x] NPC moves smoothly via NavigationAgent3D.get_next_path_position() + move_and_slide()
+- [x] AnimationController picks correct cardinal animation from velocity, supports facing lock
+- [x] Post-dialogue facing hold (0.3-0.5s) works
+- [x] BT actions use NavigationAgent3D: PatrolRoute follows waypoints, WanderRadius picks random nav-mesh-snapped points, FollowTarget tracks a node
+- [x] BTIdle plays idle animation via AnimationController, waits configurable duration
+- [x] BTTalkToPlayer: returns RUNNING, NPC controller handles dialogue await and calls `_bt_runner.resume()`. **No await inside the BT node.**
+- [x] Player can interact with moving NPCs (stop-talk-resume pattern works)
+- [x] Two-zone awareness: AwarenessArea (5u) sets blackboard `"player"`, InteractionArea (2u) shows prompt
+- [x] Path update throttling: `set_target_position()` recalculated every 300ms (staggered). `get_next_path_position()` called every physics frame for steering.
+- [x] `NavigationRegion3D` baked in test_room.tscn
+- [ ] `NavigationRegion3D` baked in test_room_2.tscn
+- [x] **Pre-bake verification:** NavigationRegion3D must be a parent of GridMap (not sibling), `parsed_geometry_type` = Mesh Instances. Discovered: default `source_geometry_mode` only parses children, not siblings.
+- [x] **Post-bake verification:** Debug > Visible Navigation shows nav mesh covering floor, avoiding walls
+- [x] All BT movement actions guard `map_get_iteration_id() != 0` before first path query
+- [x] NPC collision: layer 3 (npcs), mask includes layer 1 (environment)
+- [x] RVO avoidance enabled, uses `velocity_computed` signal pattern
+- [ ] Set `avoidance_layers` to group NPCs (not yet configured per-group)
+- [x] NPC implements interaction protocol: interact(), get_prompt_text(), show_prompt(), hide_prompt()
+- [x] Extra_game_states passed to dialogue balloon: `[quest_tracker, inventory, self]` (matching npc_interactable pattern)
+- [x] Per-behavior speed multipliers work (@export on BT action nodes)
+- [x] All distance checks use `distance_squared_to()` with squared thresholds (hot-path optimization)
+- [x] AnimationController called via `update_animation(velocity)` from npc_controller._physics_process(), NOT polling
 - [ ] GUT tests for: patrol completes loop, wander stays in radius, follow tracks target, interaction interrupts and resumes
+
+### Implementation Lessons Discovered (Phase 2)
+
+**Bugs found and fixed during implementation:**
+
+1. **BT delta timing** — `BehaviorTreeRunner` was passing physics frame delta (~0.016s) to BT nodes, but ticking at 0.15s intervals. Actions accumulating time (BTWait, BTIdle) perceived time ~10x slower. Fix: pass actual elapsed time since last tick (`bt_delta = _tick_timer`).
+2. **Nav arrival false positive** — `NavigationAgent3D.is_navigation_finished()` returns `true` before a newly set target is processed. PatrolRoute skipped all waypoints instantly. Fix: skip `is_nav_finished()` check for 1 tick after setting a new target (`_ticks_since_target > 1`).
+3. **Isometric facing** — `_cardinal_from_direction()` used raw world-space XZ to pick cardinal directions, but the isometric camera means screen-right is a mix of +X and -Z in world space. Fix: project world direction onto screen space via `Camera3D.unproject_position()`.
+4. **%UniqueNodeName lookup failure** — `%BehaviorTreeRunner` returned null in instanced sub-scenes despite `unique_name_in_owner = true` being set. Root cause unclear. Fix: use direct path `get_node("BehaviorTreeRunner")` instead.
+5. **NavigationRegion3D baking empty** — NavigationRegion3D as sibling to GridMap produces empty bake. The default `source_geometry_mode = ROOT_NODE_CHILDREN` only parses children, not siblings. Fix: make GridMap a child of NavigationRegion3D, or use group-based parsing.
 
 ### Phase 3: NPCWorldManager + Persistence
 
