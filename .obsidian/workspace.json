@@ -179,8 +179,8 @@
   },
   "active": "3e31b09208010117",
   "lastOpenFiles": [
-    "temp_resources/villager_npc_spritesheet/npc01_spritesheet.png",
     "temp_resources/villager_npc_spritesheet/Licence_and_Info.txt",
+    "temp_resources/villager_npc_spritesheet/npc01_spritesheet.png",
     "temp_resources/villager_npc_spritesheet",
     "temp_resources/temp-resources-asset-catalog.md",
     "temp_resources/td_char_freepack_spritesheet.png",
@@ -195,19 +195,19 @@
     "temp_resources/kenney_retro-urban-kit/Previews/window-small-type-b.png",
     "temp_resources/kenney_retro-urban-kit/Previews/window-small-type-a.png",
     "temp_resources/kenney_retro-urban-kit/Previews/wall-type-b.png",
-    "temp_resources/kenney_retro-urban-kit/Previews/wall-type-a.png",
     "temp_resources/kenney_retro-urban-kit/Previews",
     "temp_resources/kenney_retro-urban-kit/Overview.html",
     "temp_resources/kenney_retro-urban-kit/Models/OBJ format/window-wide-type-d.obj",
     "temp_resources/kenney_retro-urban-kit/Models/OBJ format/window-wide-type-d.mtl",
     "temp_resources/kenney_retro-urban-kit/Models/OBJ format/window-wide-type-c.obj",
+    "temp_resources/kenney_retro-urban-kit/Models/OBJ format/window-wide-type-c.mtl",
     "docs/archive/research/prompt-engineering-context-agents/phase2_findings.md",
-    "docs/archive/research/claude-agents-on-godot/phase1_facets.md",
     "docs/archive/research/prompt-engineering-context-agents/phase1_facets.md",
     "docs/archive/research/compound-engineering-github-plugin/phase2_findings.md",
     "docs/archive/research/compound-engineering-github-plugin/phase1_facets.md",
     "docs/archive/research/claude-research-planning-skills/phase2_findings.md",
     "docs/archive/research/claude-research-planning-skills/phase1_facets.md",
+    "docs/archive/research/claude-agents-on-godot/phase1_facets.md",
     "docs/research/godot-vscode-configuration/phase1_facets.md",
     "docs/research/godot-rpg-fundamentals/phase2_findings.md",
     "docs/research/godot-rpg-fundamentals/phase1_facets.md",
@@ -222,8 +222,8 @@
     "docs/archive/research/claude-research-planning-skills.md",
     "docs/archive/research/claude-agents-on-godot.md",
     "docs/archive/reference/claude-agent-tooling-reference.md",
-    "docs/archive/handoffs/2026-03-19-godot-compound-plugin-install.md",
     "docs/archive/plans/2026-03-19-feat-godot-project-setup-and-architecture-plan.md",
-    "docs/archive/plans/2026-03-19-feat-godot-compound-plugin-plan.md"
+    "docs/archive/plans/2026-03-19-feat-godot-compound-plugin-plan.md",
+    "docs/archive/plans/2026-03-19-feat-godot-ce-customization-plan.md"
   ]
 }
