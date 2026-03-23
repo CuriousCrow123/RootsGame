@@ -43,6 +43,14 @@ func remove_item(item_id: String, quantity: int = 1) -> bool:
 	return false
 
 
+func get_items() -> Array[Dictionary]:
+	return _items.duplicate(true)
+
+
+func get_item_count() -> int:
+	return _items.size()
+
+
 func has_item(item_id: String, quantity: int = 1) -> bool:
 	for entry: Dictionary in _items:
 		if entry["item_id"] == item_id and entry["quantity"] >= quantity:

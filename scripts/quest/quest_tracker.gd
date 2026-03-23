@@ -50,6 +50,22 @@ func advance_quest(quest_id: String) -> void:
 		quest_info["current_step_id"] = step.next_step_id
 
 
+func get_active_quests() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for qid: String in _quests:
+		if _quests[qid]["state"] == QuestState.ACTIVE:
+			result.append(_make_quest_summary(qid))
+	return result
+
+
+func get_completed_quests() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for qid: String in _quests:
+		if _quests[qid]["state"] == QuestState.COMPLETE:
+			result.append(_make_quest_summary(qid))
+	return result
+
+
 func get_quest_state(quest_id: String) -> QuestState:
 	if not _quests.has(quest_id):
 		return QuestState.INACTIVE
@@ -124,6 +140,18 @@ func load_save_data(data: Dictionary) -> void:
 
 
 # -- Private --
+
+
+func _make_quest_summary(quest_id: String) -> Dictionary:
+	var quest_info: Dictionary = _quests[quest_id]
+	@warning_ignore("unsafe_cast")
+	var quest_data: QuestData = quest_info["data"] as QuestData
+	return {
+		"quest_id": quest_id,
+		"display_name": quest_data.display_name if quest_data else quest_id,
+		"state": quest_info["state"],
+		"step_description": get_current_step_description(quest_id),
+	}
 
 
 func _get_current_step(quest_id: String) -> QuestStepData:

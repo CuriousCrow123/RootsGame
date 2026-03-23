@@ -22,7 +22,7 @@ func get_player() -> PlayerController:
 
 func _ready() -> void:
 	var canvas: CanvasLayer = CanvasLayer.new()
-	canvas.layer = 100  # Above all game UI
+	canvas.layer = 90  # Below HUD (100) so HUD stays visible during transitions
 	add_child(canvas)
 	_transition_overlay = ColorRect.new()
 	_transition_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
@@ -49,6 +49,7 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 	if _is_transitioning:
 		return
 	_is_transitioning = true
+	GameState.set_mode(GameState.GameMode.TRANSITION)
 	scene_change_started.emit()
 	# Fade out (0.3s)
 	var tween: Tween = create_tween()
@@ -63,6 +64,7 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 	if err != OK:
 		push_error("Failed to change scene: %s" % error_string(err))
 		_is_transitioning = false
+		GameState.set_mode(GameState.GameMode.OVERWORLD)
 		return
 	# scene_changed fires after the new scene's _ready() completes (Godot 4.5+)
 	await get_tree().scene_changed
@@ -82,6 +84,7 @@ func change_scene(target_scene_path: String, spawn_point_id: String = "") -> voi
 	tween.tween_property(_transition_overlay, "color:a", 0.0, 0.3)
 	await tween.finished
 	_is_transitioning = false
+	GameState.set_mode(GameState.GameMode.OVERWORLD)
 	scene_change_completed.emit()
 
 

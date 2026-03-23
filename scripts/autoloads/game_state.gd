@@ -9,6 +9,7 @@ enum GameMode {
 	MENU,
 	DIALOGUE,
 	CUTSCENE,
+	TRANSITION,
 }
 
 var current_mode: GameMode = GameMode.OVERWORLD

@@ -18,12 +18,12 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event.is_action_pressed("ui_left"):
+	if event.is_action_pressed("ui_prev_tab"):
 		_tab_container.current_tab = wrapi(
 			_tab_container.current_tab - 1, 0, _tab_container.get_tab_count()
 		)
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_right"):
+	elif event.is_action_pressed("ui_next_tab"):
 		_tab_container.current_tab = wrapi(
 			_tab_container.current_tab + 1, 0, _tab_container.get_tab_count()
 		)

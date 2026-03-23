@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://uuoic4xubm85" path="res://scripts/ui/quest_indicator.gd" id="1_7pysi"]
 
 [node name="QuestIndicator" type="CanvasLayer" unique_id=1221383650]
-layer = 10
+layer = 100
 script = ExtResource("1_7pysi")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1956468493]

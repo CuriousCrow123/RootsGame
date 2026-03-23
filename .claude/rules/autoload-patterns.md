@@ -5,7 +5,7 @@ paths:
 
 # Autoload Patterns
 
-- Autoload order matters: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, HUD. Wrong order causes null references at startup.
+- Autoload order matters: EventBus, GameState, DialogueManager, WorldState, SceneManager, SaveManager, SettingsManager, HUD. Wrong order causes null references at startup. SettingsManager must load before HUD so HUD children can read settings in _ready().
 - WorldState restore must happen AFTER `scene_change_completed` in `_restore_save_data()`. `SceneManager.change_scene()` calls `WorldState.snapshot()` before freeing the old scene — loading WorldState before the scene change means `snapshot()` clobbers the loaded data.
 - Use identity checks (`node == WorldState`) over string comparison (`key == "world_state"`) when skipping nodes in saveable iteration.
 - `player_registered` signal lives on SceneManager (owns player lifecycle), not EventBus. EventBus is reserved for genuinely cross-system events.
