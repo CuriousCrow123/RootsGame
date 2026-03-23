@@ -119,6 +119,7 @@ func update_facing(input_direction: Vector2) -> void:
 		_facing_vector = (
 			(cam_right * input_direction.x - cam_forward * input_direction.y).normalized()
 		)
+	_update_nearest_interactable()
 
 
 func play_animation(action: String) -> void:
