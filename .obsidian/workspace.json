@@ -201,8 +201,8 @@
     "temp_resources/kenney_retro-urban-kit/Models/OBJ format/window-wide-type-d.obj",
     "temp_resources/kenney_retro-urban-kit/Models/OBJ format/window-wide-type-d.mtl",
     "temp_resources/kenney_retro-urban-kit/Models/OBJ format/window-wide-type-c.obj",
-    "docs/archive/research/claude-agents-on-godot/phase1_facets.md",
     "docs/archive/research/prompt-engineering-context-agents/phase2_findings.md",
+    "docs/archive/research/claude-agents-on-godot/phase1_facets.md",
     "docs/archive/research/prompt-engineering-context-agents/phase1_facets.md",
     "docs/archive/research/compound-engineering-github-plugin/phase2_findings.md",
     "docs/archive/research/compound-engineering-github-plugin/phase1_facets.md",
@@ -213,7 +213,6 @@
     "docs/research/godot-rpg-fundamentals/phase1_facets.md",
     "docs/research/godot-rpg-fundamentals/extend_gaps.md",
     "docs/research/godot-rpg-fundamentals/extend_findings.md",
-    "docs/archive/brainstorms/2026-03-19-godot-ce-plugin-fork-brainstorm.md",
     "docs/research/godot-no-artist-vscode-workflow/phase2_findings.md",
     "docs/research/godot-no-artist-vscode-workflow/phase1_facets.md",
     "docs/research/3d-pixel-art-godot/phase1_facets.md",
@@ -223,6 +222,7 @@
     "docs/archive/research/claude-research-planning-skills.md",
     "docs/archive/research/claude-agents-on-godot.md",
     "docs/archive/reference/claude-agent-tooling-reference.md",
+    "docs/archive/handoffs/2026-03-19-godot-compound-plugin-install.md",
     "docs/archive/plans/2026-03-19-feat-godot-project-setup-and-architecture-plan.md",
     "docs/archive/plans/2026-03-19-feat-godot-compound-plugin-plan.md"
   ]
