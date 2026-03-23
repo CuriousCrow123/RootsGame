@@ -27,6 +27,7 @@ func _process(delta: float) -> void:
 	if _facing_locked and _lock_timer > 0.0:
 		_lock_timer -= delta
 		if _lock_timer <= 0.0:
+			_facing = _locked_facing
 			_facing_locked = false
 			_lock_timer = 0.0
 

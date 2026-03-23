@@ -242,7 +242,7 @@ All internal child nodes use `%UniqueNodeName` for robust references (no string 
 
 **Collision configuration for MovingNPC:**
 - `collision_layer = 4` (npcs, layer 3)
-- `collision_mask = 5` (environment layer 1 + npcs layer 3 for NPC-NPC collision)
+- `collision_mask = 7` (environment layer 1 + player layer 2 + npcs layer 3)
 - AwarenessArea: `collision_layer = 0`, `collision_mask = 2` (detect player only)
 - InteractionArea: `collision_layer = 0`, `collision_mask = 2` (detect player only)
 
@@ -488,7 +488,7 @@ Picks cardinal direction (down/up/side) based on largest XZ velocity component. 
    - Shows dialogue balloon with extra_game_states: `[quest_tracker, inventory, self]` (matching existing npc_interactable pattern)
    - Awaits `dialogue_ended`
    - Guards `if not is_instance_valid(self): return`
-   - Calls `_animation_controller.lock_facing(current_facing, 0.4)` (post-dialogue hold)
+   - Calls `_animation_controller.unlock_facing()` (immediate release — 0.4s hold felt laggy)
    - Sets `GameState.set_mode(GameState.GameMode.OVERWORLD)`
    - Guards `if not is_instance_valid(self): return` ← **CRITICAL: GameState signal can trigger quest handlers that queue_free the NPC**
    - Calls `_bt_runner.resume()` — BT re-evaluates from root next tick
@@ -568,7 +568,7 @@ func _tick(delta: float, blackboard: Dictionary) -> Status:
 
 Before Phase 2, extract the duplicated `_create_prompt_label()` method from `npc_interactable.gd` and `chest_interactable.gd` into a shared utility (e.g., `shared/prompt_label_factory.gd`). Both existing interactables and the new `npc_controller.gd` will use this. Prevents tripling the existing duplication.
 
-**Status: Skipped** — accepted the duplication for now. `npc_controller.gd` has its own copy matching the existing pattern. Can extract later.
+**Status: Complete** — extracted `shared/prompt_label_factory.gd`, used by `chest_interactable.gd`, `npc_interactable.gd`, and `npc_controller.gd`.
 
 ### Phase 1: BT Framework Foundation
 
@@ -622,13 +622,15 @@ Before Phase 2, extract the duplicated `_create_prompt_label()` method from `npc
 - `shared/behavior_tree/actions/bt_face_target.gd`
 - `shared/behavior_tree/actions/bt_wait.gd`
 - `shared/behavior_tree/actions/bt_talk_to_player.gd`
+- `shared/prompt_label_factory.gd` — extracted shared prompt label creation
+- `scenes/npc/behaviors/wander_example_bt.tscn` — example wander BT scene
 - Room scenes updated: add `NavigationRegion3D`, bake nav mesh from GridMap
 
 **Acceptance criteria:**
 - [x] `npc_controller.gd` extends CharacterBody3D with exports: npc_id, base_speed, behavior_tree_scene, dialogue_resource, dialogue_title, quest_resource (QuestData), sprite_frames, default_facing, display_name, sprite_tint (Color), side_faces_right (bool)
 - [x] NPC moves smoothly via NavigationAgent3D.get_next_path_position() + move_and_slide()
 - [x] AnimationController picks correct cardinal animation from velocity, supports facing lock
-- [x] Post-dialogue facing hold (0.3-0.5s) works
+- [x] Post-dialogue facing: unlock immediately on dialogue end (0.4s hold removed — felt laggy)
 - [x] BT actions use NavigationAgent3D: PatrolRoute follows waypoints, WanderRadius picks random nav-mesh-snapped points, FollowTarget tracks a node
 - [x] BTIdle plays idle animation via AnimationController, waits configurable duration
 - [x] BTTalkToPlayer: returns RUNNING, NPC controller handles dialogue await and calls `_bt_runner.resume()`. **No await inside the BT node.**
@@ -640,9 +642,9 @@ Before Phase 2, extract the duplicated `_create_prompt_label()` method from `npc
 - [x] **Pre-bake verification:** NavigationRegion3D must be a parent of GridMap (not sibling), `parsed_geometry_type` = Mesh Instances. Discovered: default `source_geometry_mode` only parses children, not siblings.
 - [x] **Post-bake verification:** Debug > Visible Navigation shows nav mesh covering floor, avoiding walls
 - [x] All BT movement actions guard `map_get_iteration_id() != 0` before first path query
-- [x] NPC collision: layer 3 (npcs), mask includes layer 1 (environment)
+- [x] NPC collision: layer 3 (npcs), mask includes layers 1 (environment) + 2 (player) + 3 (npcs)
 - [x] RVO avoidance enabled, uses `velocity_computed` signal pattern
-- [ ] Set `avoidance_layers` to group NPCs (not yet configured per-group)
+- [ ] ~~Set `avoidance_layers` to group NPCs~~ — deferred, only matters with 20+ NPCs
 - [x] NPC implements interaction protocol: interact(), get_prompt_text(), show_prompt(), hide_prompt()
 - [x] Extra_game_states passed to dialogue balloon: `[quest_tracker, inventory, self]` (matching npc_interactable pattern)
 - [x] Per-behavior speed multipliers work (@export on BT action nodes)
@@ -659,6 +661,11 @@ Before Phase 2, extract the duplicated `_create_prompt_label()` method from `npc
 3. **Isometric facing** — `_cardinal_from_direction()` used raw world-space XZ to pick cardinal directions, but the isometric camera means screen-right is a mix of +X and -Z in world space. Fix: project world direction onto screen space via `Camera3D.unproject_position()`.
 4. **%UniqueNodeName lookup failure** — `%BehaviorTreeRunner` returned null in instanced sub-scenes despite `unique_name_in_owner = true` being set. Root cause unclear. Fix: use direct path `get_node("BehaviorTreeRunner")` instead.
 5. **NavigationRegion3D baking empty** — NavigationRegion3D as sibling to GridMap produces empty bake. The default `source_geometry_mode = ROOT_NODE_CHILDREN` only parses children, not siblings. Fix: make GridMap a child of NavigationRegion3D, or use group-based parsing.
+6. **Post-dialogue facing lock stale** — `lock_facing(dir, 0.4)` after dialogue caused NPC to appear frozen facing the wrong direction when it resumed movement. The lock timer was long enough to feel laggy. Fix: `unlock_facing()` immediately on dialogue end; velocity-based facing takes over on next tick.
+7. **Facing direction preserved on lock expiry** — When timed lock expired, `_facing` still held the pre-dialogue direction. NPC would snap to stale facing if idle. Fix: set `_facing = _locked_facing` when lock timer expires.
+8. **NPCs walk through obstacles** — NavigationObstacle3D needed on obstacles (chests, etc.) that aren't part of the baked NavigationRegion3D geometry. Use `vertices` polygon (not `radius`) for rectangular obstacles.
+9. **Wander gets stuck near obstacles** — `map_get_closest_point()` snaps random targets to the edge of NavigationObstacle3D carved holes, producing targets too close to NPC. Fix: retry up to 5 times, rejecting targets within 0.5 units of current position.
+10. **NPCs walk through player** — NPC collision_mask didn't include player layer (2). Fix: add layer 2 to MovingNPC collision_mask (now `collision_mask = 7`, layers 1+2+3).
 
 ### Phase 3: NPCWorldManager + Persistence
 

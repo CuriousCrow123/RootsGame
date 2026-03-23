@@ -133,9 +133,9 @@ func interact(player: PlayerController) -> void:
 	await Signal(DialogueManager, "dialogue_ended")
 	if not is_instance_valid(self):
 		return
-	# Post-dialogue facing hold.
+	# Release dialogue facing lock so movement takes over immediately.
 	if _animation_controller:
-		_animation_controller.lock_facing(_animation_controller.get_current_facing(), 0.4)
+		_animation_controller.unlock_facing()
 	GameState.set_mode(GameState.GameMode.OVERWORLD)
 	if not is_instance_valid(self):
 		return
