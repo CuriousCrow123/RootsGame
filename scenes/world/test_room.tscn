@@ -3,14 +3,22 @@
 [ext_resource type="MeshLibrary" uid="uid://d0g6x31i1noj" path="res://resources/mesh_library.tres" id="1_hgl0x"]
 [ext_resource type="Script" uid="uid://qglbj0t4ylga" path="res://scripts/camera/camera_follow.gd" id="2_3gt1g"]
 [ext_resource type="PackedScene" uid="uid://cq51xcvtuigw0" path="res://scenes/player/player.tscn" id="3_cy37o"]
-[ext_resource type="PackedScene" uid="uid://b500akmpl73q6" path="res://scenes/interactables/npc.tscn" id="4_ytumw"]
 [ext_resource type="Resource" uid="uid://co1vma6jkc36c" path="res://resources/dialogue/npc_greeting.dialogue" id="5_fc6vu"]
 [ext_resource type="Resource" uid="uid://csvrwliskel7v" path="res://resources/quests/fetch_quest.tres" id="6_wb54u"]
 [ext_resource type="PackedScene" uid="uid://dbtvb4go86tcq" path="res://scenes/interactables/chest.tscn" id="7_u3u0o"]
 [ext_resource type="SpriteFrames" uid="uid://djxk1ojpqucqx" path="res://assets/sprites/characters/npcs/villager_frames.tres" id="7_vnu35"]
+[ext_resource type="PackedScene" uid="uid://b6lnhoag1u5pl" path="res://scenes/npc/moving_npc.tscn" id="8_kkuu3"]
 [ext_resource type="Resource" uid="uid://2ld2fln1jsip" path="res://resources/items/fake_amulet.tres" id="9_knp17"]
 [ext_resource type="PackedScene" uid="uid://c0mok80xk78hk" path="res://scenes/props/Arch_Round.tscn" id="10_wb54u"]
 [ext_resource type="PackedScene" uid="uid://ch7u2u3rh8onc" path="res://scenes/interactables/door.tscn" id="11_knp17"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_knp17"]
+vertices = PackedVector3Array(-100.98926, 0.99705005, -116.9875, -101.98926, 0.99705005, -116.9875, -101.98926, 0.99705005, -115.9875, -101.23926, 0.99705005, -115.9875, -100.98926, 0.99705005, -116.2375, -95.98926, 0.99705005, -110.9875, -96.98926, 0.99705005, -111.2375, -97.23926, 0.99705005, -110.9875, -96.98926, 0.99705005, -109.9875, -96.23926, 0.99705005, -109.9875, -95.98926, 0.99705005, -110.2375, -94.98926, 0.99705005, -109.9875, -95.98926, 0.99705005, -108.9875, -95.23926, 0.99705005, -108.9875, -94.98926, 0.99705005, -109.2375, -93.98926, 0.99705005, -107.7375, -93.98926, 0.99705005, -106.9875, -92.98926, 0.99705005, -106.9875, -92.98926, 0.99705005, -107.9875, -93.73926, 0.99705005, -107.9875, -97.73926, 0.99705005, -112.9875, -97.98926, 0.99705005, -113.9875, -98.98926, 0.99705005, -114.2375, -99.23926, 0.99705005, -113.9875, -98.98926, 0.99705005, -112.9875, -97.98926, 0.99705005, -112.7375, -96.98926, 0.99705005, -112.9875, -97.98926, 0.99705005, -110.9875, -94.98926, 0.99705005, -107.9875, -93.98926, 0.99705005, -108.9875, -99.98926, 0.99705005, -115.9875, -100.98926, 0.99705005, -114.9875, -100.23926, 0.99705005, -114.9875, -99.98926, 0.99705005, -115.2375, -98.98926, 0.99705005, -114.9875, -99.98926, 0.99705005, -113.9875, -6.739258, 0.99705005, -2.737503, -6.739258, 0.99705005, 3.762497, 9.510742, 0.99705005, 3.762497, 9.510742, 0.99705005, -2.737503)
+polygons = [PackedInt32Array(4, 3, 0), PackedInt32Array(0, 3, 2), PackedInt32Array(0, 2, 1), PackedInt32Array(10, 9, 5), PackedInt32Array(5, 9, 8), PackedInt32Array(5, 8, 7), PackedInt32Array(5, 7, 6), PackedInt32Array(14, 13, 11), PackedInt32Array(11, 13, 12), PackedInt32Array(11, 12, 9), PackedInt32Array(11, 9, 10), PackedInt32Array(19, 18, 15), PackedInt32Array(15, 18, 16), PackedInt32Array(16, 18, 17), PackedInt32Array(25, 24, 20), PackedInt32Array(20, 24, 21), PackedInt32Array(21, 24, 23), PackedInt32Array(21, 23, 22), PackedInt32Array(7, 27, 6), PackedInt32Array(6, 27, 25), PackedInt32Array(6, 25, 20), PackedInt32Array(6, 20, 26), PackedInt32Array(14, 29, 13), PackedInt32Array(13, 29, 28), PackedInt32Array(28, 29, 19), PackedInt32Array(28, 19, 15), PackedInt32Array(33, 32, 30), PackedInt32Array(30, 32, 31), PackedInt32Array(30, 31, 3), PackedInt32Array(30, 3, 4), PackedInt32Array(23, 35, 22), PackedInt32Array(22, 35, 34), PackedInt32Array(34, 35, 32), PackedInt32Array(34, 32, 33), PackedInt32Array(39, 38, 36), PackedInt32Array(36, 38, 37)]
+geometry_parsed_geometry_type = 0
+agent_height = 1.8
+agent_radius = 0.3
+region_min_size = 1.0
 
 [sub_resource type="Environment" id="Environment_cy37o"]
 ambient_light_source = 2
@@ -19,7 +27,10 @@ ambient_light_energy = 0.5
 
 [node name="TestRoom" type="Node3D" unique_id=655208921]
 
-[node name="GridMap" type="GridMap" parent="." unique_id=1383003989]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=816476495]
+navigation_mesh = SubResource("NavigationMesh_knp17")
+
+[node name="GridMap" type="GridMap" parent="NavigationRegion3D" unique_id=1383003989]
 mesh_library = ExtResource("1_hgl0x")
 cell_size = Vector3(1, 1, 1)
 data = {
@@ -48,24 +59,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 [node name="Player" parent="." unique_id=515478349 instance=ExtResource("3_cy37o")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 move_speed = null
-_interaction_strategy = null
+_interaction_strategy = 2
 
-[node name="NPC" parent="." unique_id=1302808604 instance=ExtResource("4_ytumw")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 0)
+[node name="John" parent="." unique_id=394811895 instance=ExtResource("8_kkuu3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 2)
+collision_mask = 13
+npc_id = "john"
 dialogue_resource = ExtResource("5_fc6vu")
-dialogue_title = null
 quest_resource = ExtResource("6_wb54u")
 sprite_frames = ExtResource("7_vnu35")
-default_facing = null
-sprite_tint = Color(0.86, 0.86, 0.86, 1)
-side_faces_right = null
-display_name = "Nathan"
+display_name = "John"
+side_faces_right = true
 
 [node name="Chest" parent="." unique_id=1354572945 instance=ExtResource("7_u3u0o")]
 transform = Transform3D(-0.99992085, 0, -0.012583552, 0, 1, 0, 0.012583552, 0, -0.99992085, 0.013305664, 0.5376587, 2.510769)
 item = ExtResource("9_knp17")
-item_quantity = null
-display_name = null
 
 [node name="spawn_from_room_2" type="Marker3D" parent="." unique_id=87716876]
 transform = Transform3D(0.70710677, -0.5, 0.5, 0, 0.7071068, 0.70710677, -0.70710677, -0.5, 0.5, -0.56188965, 1, -2.5133972)

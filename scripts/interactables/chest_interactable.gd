@@ -6,8 +6,6 @@ signal chest_opened(item: ItemData)
 const OPEN_DURATION: float = 0.3
 const LID_OPEN_ANGLE: float = -110.0
 const PROMPT_LABEL_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
-const PROMPT_PIXEL_SIZE: float = 0.005
-const PROMPT_FONT_SIZE: int = 24
 const ACTION_VERB: String = "Open"
 
 @export var item: ItemData = null
@@ -76,17 +74,7 @@ func hide_prompt() -> void:
 
 
 func _create_prompt_label() -> void:
-	_prompt_label = Label3D.new()
-	_prompt_label.text = get_prompt_text()
-	_prompt_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_prompt_label.set_draw_flag(Label3D.FLAG_DISABLE_DEPTH_TEST, true)
-	_prompt_label.render_priority = 10
-	_prompt_label.pixel_size = PROMPT_PIXEL_SIZE
-	_prompt_label.font_size = PROMPT_FONT_SIZE
-	_prompt_label.outline_size = 8
-	_prompt_label.outline_modulate = Color(0.0, 0.0, 0.0, 0.8)
-	_prompt_label.position = PROMPT_LABEL_OFFSET
-	_prompt_label.visible = false
+	_prompt_label = PromptLabelFactory.create(get_prompt_text(), PROMPT_LABEL_OFFSET)
 	add_child.call_deferred(_prompt_label)
 
 
