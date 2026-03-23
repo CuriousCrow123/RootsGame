@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://c7tu5ban0bguc"]
+
+[ext_resource type="Script" uid="uid://dlt1hghbbogti" path="res://shared/behavior_tree/composites/bt_selector.gd" id="1_sel"]
+[ext_resource type="Script" uid="uid://cjp8oulluvugm" path="res://shared/behavior_tree/decorators/bt_repeater.gd" id="2_rep"]
+[ext_resource type="Script" uid="uid://bygi74epr7taj" path="res://shared/behavior_tree/composites/bt_sequence.gd" id="3_seq"]
+[ext_resource type="Script" uid="uid://dtvb22u3fe8v3" path="res://shared/behavior_tree/actions/bt_wander_radius.gd" id="4_wand"]
+[ext_resource type="Script" uid="uid://cfhcbbx1d48xd" path="res://shared/behavior_tree/actions/bt_wait.gd" id="5_wait"]
+
+[node name="BTSelector" type="Node" unique_id=1626731319]
+script = ExtResource("1_sel")
+
+[node name="WanderLoop" type="Node" parent="." unique_id=1125111742]
+script = ExtResource("2_rep")
+
+[node name="BTSequence" type="Node" parent="WanderLoop" unique_id=746734080]
+script = ExtResource("3_seq")
+
+[node name="WanderRadius" type="Node" parent="WanderLoop/BTSequence" unique_id=1550636644]
+script = ExtResource("4_wand")
+wander_radius = 5.0
+speed_multiplier = 1.0
+
+[node name="IdlePause" type="Node" parent="WanderLoop/BTSequence" unique_id=59026683]
+script = ExtResource("5_wait")
+max_duration = 2.0

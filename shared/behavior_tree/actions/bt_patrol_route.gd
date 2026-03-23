@@ -11,6 +11,7 @@ extends BTLeaf
 
 var _current_index: int = 0
 var _has_set_target: bool = false
+var _ticks_since_target: int = 0
 
 
 func bt_enter(_blackboard: Dictionary) -> void:
@@ -18,16 +19,9 @@ func bt_enter(_blackboard: Dictionary) -> void:
 
 
 func _tick(delta: float, blackboard: Dictionary) -> Status:
-	if waypoints.is_empty():
-		return Status.FAILURE
-
 	var npc: NPCController = blackboard.get(BTKeys.NPC) as NPCController
-	if not is_instance_valid(npc):
-		return Status.FAILURE
-
-	# Guard: nav map not synced yet.
 	var nav: NavigationAgent3D = blackboard.get(BTKeys.NAV_AGENT) as NavigationAgent3D
-	if not nav:
+	if waypoints.is_empty() or not is_instance_valid(npc) or not nav:
 		return Status.FAILURE
 	if NavigationServer3D.map_get_iteration_id(nav.get_navigation_map()) == 0:
 		return Status.RUNNING
@@ -36,10 +30,15 @@ func _tick(delta: float, blackboard: Dictionary) -> Status:
 		var home: Vector3 = blackboard.get(BTKeys.HOME_POSITION, Vector3.ZERO) as Vector3
 		npc.set_nav_target(home + waypoints[_current_index])
 		_has_set_target = true
+		_ticks_since_target = 0
+		return Status.RUNNING
 
+	_ticks_since_target += 1
 	npc.move_toward_nav_target(delta, speed_multiplier)
 
-	if npc.is_nav_finished():
+	# Skip arrival check for 1 tick after setting target — nav agent needs
+	# one physics sync to compute the path; is_navigation_finished() is stale until then.
+	if _ticks_since_target > 1 and npc.is_nav_finished():
 		_current_index += 1
 		_has_set_target = false
 		if _current_index >= waypoints.size():

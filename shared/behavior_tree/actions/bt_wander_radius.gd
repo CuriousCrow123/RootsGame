@@ -6,10 +6,12 @@ extends BTLeaf
 @export var speed_multiplier: float = 0.7
 
 var _has_target: bool = false
+var _ticks_since_target: int = 0
 
 
 func bt_enter(_blackboard: Dictionary) -> void:
 	_has_target = false
+	_ticks_since_target = 0
 
 
 func _tick(delta: float, blackboard: Dictionary) -> Status:
@@ -29,15 +31,17 @@ func _tick(delta: float, blackboard: Dictionary) -> Status:
 		var dist: float = randf_range(0.5, wander_radius)
 		var offset: Vector3 = Vector3(cos(angle), 0.0, sin(angle)) * dist
 		var raw_target: Vector3 = home + offset
-		# Snap to nearest walkable point.
 		var map_rid: RID = npc.get_world_3d().get_navigation_map()
 		var snapped: Vector3 = NavigationServer3D.map_get_closest_point(map_rid, raw_target)
 		npc.set_nav_target(snapped)
 		_has_target = true
+		_ticks_since_target = 0
+		return Status.RUNNING
 
+	_ticks_since_target += 1
 	npc.move_toward_nav_target(delta, speed_multiplier)
 
-	if npc.is_nav_finished():
+	if _ticks_since_target > 1 and npc.is_nav_finished():
 		return Status.SUCCESS
 
 	return Status.RUNNING

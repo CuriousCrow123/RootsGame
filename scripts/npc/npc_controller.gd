@@ -31,7 +31,7 @@ var _is_dialogue_active: bool = false
 @onready var _nav_agent: NavigationAgent3D = %NavigationAgent3D
 @onready var _awareness_area: Area3D = %AwarenessArea
 @onready var _interaction_area: Area3D = %InteractionArea
-@onready var _bt_runner: BehaviorTreeRunner = %BehaviorTreeRunner
+@onready var _bt_runner: BehaviorTreeRunner = get_node("BehaviorTreeRunner") as BehaviorTreeRunner
 
 
 func _ready() -> void:
@@ -80,8 +80,10 @@ func set_nav_target(target_pos: Vector3) -> void:
 func move_toward_nav_target(_delta: float, speed_multiplier: float = 1.0) -> void:
 	if not _nav_agent:
 		return
-	# Guard: nav map not yet synced.
-	if NavigationServer3D.map_get_iteration_id(_nav_agent.get_navigation_map()) == 0:
+	var map_rid: RID = _nav_agent.get_navigation_map()
+	if not map_rid.is_valid():
+		return
+	if NavigationServer3D.map_get_iteration_id(map_rid) == 0:
 		return
 	if _nav_agent.is_navigation_finished():
 		velocity = Vector3.ZERO
@@ -191,10 +193,22 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 # -- Internal helpers --
 
 
-func _cardinal_from_direction(dir: Vector3) -> String:
-	if absf(dir.x) > absf(dir.z):
-		return "right" if dir.x > 0.0 else "left"
-	return "down" if dir.z > 0.0 else "up"
+func _cardinal_from_direction(world_dir: Vector3) -> String:
+	# Project world-space direction onto screen-space to match the isometric camera.
+	# The player uses raw 2D input for facing; the NPC must do the inverse projection.
+	var cam: Camera3D = get_viewport().get_camera_3d()
+	if cam:
+		# Unproject two points to get screen-space direction.
+		var screen_origin: Vector2 = cam.unproject_position(global_position)
+		var screen_target: Vector2 = cam.unproject_position(global_position + world_dir)
+		var screen_dir: Vector2 = (screen_target - screen_origin).normalized()
+		if absf(screen_dir.x) >= absf(screen_dir.y):
+			return "right" if screen_dir.x > 0.0 else "left"
+		return "down" if screen_dir.y > 0.0 else "up"
+	# Fallback if no camera.
+	if absf(world_dir.x) > absf(world_dir.z):
+		return "right" if world_dir.x > 0.0 else "left"
+	return "down" if world_dir.z > 0.0 else "up"
 
 
 func _create_prompt_label() -> void:

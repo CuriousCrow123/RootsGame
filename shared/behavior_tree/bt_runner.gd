@@ -32,13 +32,17 @@ func _physics_process(delta: float) -> void:
 	if not _is_active or _bt_root == null:
 		return
 
+	# Pass the actual elapsed time since last tick, not the physics frame delta.
+	# BT actions that accumulate time (BTWait, BTIdle) need real elapsed time.
+	var bt_delta: float = delta
 	if tick_interval > 0.0:
 		_tick_timer += delta
 		if _tick_timer < tick_interval:
 			return
+		bt_delta = _tick_timer
 		_tick_timer -= tick_interval
 
-	var result: BTNode.Status = _bt_root.execute(delta, blackboard)
+	var result: BTNode.Status = _bt_root.execute(bt_delta, blackboard)
 
 	# Stuck detection (debug builds only).
 	if OS.is_debug_build():

@@ -42,11 +42,8 @@ func update_animation(current_velocity: Vector3) -> void:
 	if xz_speed_sq < VELOCITY_THRESHOLD_SQ:
 		_apply_facing(_facing, false)
 		return
-	# Determine cardinal direction from velocity.
-	if absf(current_velocity.x) > absf(current_velocity.z):
-		_facing = "right" if current_velocity.x > 0.0 else "left"
-	else:
-		_facing = "down" if current_velocity.z > 0.0 else "up"
+	# Project velocity onto screen-space for correct isometric cardinal direction.
+	_facing = _world_dir_to_cardinal(current_velocity)
 	_apply_facing(_facing, true)
 
 
@@ -71,6 +68,24 @@ func unlock_facing() -> void:
 
 func get_current_facing() -> String:
 	return _locked_facing if _facing_locked else _facing
+
+
+func _world_dir_to_cardinal(world_dir: Vector3) -> String:
+	var owner_3d: Node3D = owner as Node3D
+	if not owner_3d:
+		return "down"
+	var cam: Camera3D = owner_3d.get_viewport().get_camera_3d()
+	if cam:
+		var pos: Vector3 = owner_3d.global_position
+		var origin: Vector2 = cam.unproject_position(pos)
+		var target: Vector2 = cam.unproject_position(pos + world_dir)
+		var screen_dir: Vector2 = (target - origin).normalized()
+		if absf(screen_dir.x) >= absf(screen_dir.y):
+			return "right" if screen_dir.x > 0.0 else "left"
+		return "down" if screen_dir.y > 0.0 else "up"
+	if absf(world_dir.x) > absf(world_dir.z):
+		return "right" if world_dir.x > 0.0 else "left"
+	return "down" if world_dir.z > 0.0 else "up"
 
 
 func _apply_facing(direction: String, is_moving: bool) -> void:
