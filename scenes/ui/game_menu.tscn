@@ -1,32 +1,46 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://1p4powpemrs1"]
 
-[ext_resource type="Script" path="res://scripts/ui/game_menu.gd" id="1_menu"]
+[ext_resource type="Script" uid="uid://bchwan7obn5y7" path="res://scripts/ui/game_menu.gd" id="1_menu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tabs/quest_tab.tscn" id="2_quest"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tabs/inventory_tab.tscn" id="3_inv"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tabs/stats_tab.tscn" id="4_stats"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tabs/pause_tab.tscn" id="5_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tabs/settings_tab.tscn" id="6_3rbob"]
 
-[node name="GameMenu" type="CanvasLayer"]
+[node name="GameMenu" type="CanvasLayer" unique_id=1796611477]
 script = ExtResource("1_menu")
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1410436187]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TabContainer" type="TabContainer" parent="PanelContainer"]
+[node name="TabContainer" type="TabContainer" parent="PanelContainer" unique_id=2084291822]
 layout_mode = 2
+current_tab = 1
 
-[node name="Quests" parent="PanelContainer/TabContainer" instance=ExtResource("2_quest")]
+[node name="Pause" parent="PanelContainer/TabContainer" unique_id=1345125412 instance=ExtResource("5_pause")]
+visible = false
 layout_mode = 2
+metadata/_tab_index = 0
 
-[node name="Inventory" parent="PanelContainer/TabContainer" instance=ExtResource("3_inv")]
+[node name="Quests" parent="PanelContainer/TabContainer" unique_id=1660928936 instance=ExtResource("2_quest")]
 layout_mode = 2
+metadata/_tab_index = 1
 
-[node name="Stats" parent="PanelContainer/TabContainer" instance=ExtResource("4_stats")]
+[node name="Inventory" parent="PanelContainer/TabContainer" unique_id=329510675 instance=ExtResource("3_inv")]
+visible = false
 layout_mode = 2
+metadata/_tab_index = 2
 
-[node name="Pause" parent="PanelContainer/TabContainer" instance=ExtResource("5_pause")]
+[node name="Stats" parent="PanelContainer/TabContainer" unique_id=1197211675 instance=ExtResource("4_stats")]
+visible = false
 layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="Settings" parent="PanelContainer/TabContainer" unique_id=1674385387 instance=ExtResource("6_3rbob")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 4

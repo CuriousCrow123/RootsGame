@@ -1,0 +1,100 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/tabs/settings_tab.gd" id="1_settings"]
+
+[node name="Settings" type="VBoxContainer"]
+script = ExtResource("1_settings")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Content" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AudioHeader" type="Label" parent="ScrollContainer/Content"]
+layout_mode = 2
+text = "Audio"
+
+[node name="MasterRow" type="HBoxContainer" parent="ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="MasterLabel" type="Label" parent="ScrollContainer/Content/MasterRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+text = "Master Volume"
+
+[node name="MasterSlider" type="HSlider" parent="ScrollContainer/Content/MasterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="MusicRow" type="HBoxContainer" parent="ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="MusicLabel" type="Label" parent="ScrollContainer/Content/MusicRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="ScrollContainer/Content/MusicRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 0.8
+
+[node name="SfxRow" type="HBoxContainer" parent="ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="SfxLabel" type="Label" parent="ScrollContainer/Content/SfxRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+text = "SFX Volume"
+
+[node name="SfxSlider" type="HSlider" parent="ScrollContainer/Content/SfxRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="HSeparator" type="HSeparator" parent="ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="DisplayHeader" type="Label" parent="ScrollContainer/Content"]
+layout_mode = 2
+text = "Display"
+
+[node name="FullscreenRow" type="HBoxContainer" parent="ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="FullscreenLabel" type="Label" parent="ScrollContainer/Content/FullscreenRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+text = "Fullscreen"
+
+[node name="FullscreenCheck" type="CheckButton" parent="ScrollContainer/Content/FullscreenRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="VsyncRow" type="HBoxContainer" parent="ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="VsyncLabel" type="Label" parent="ScrollContainer/Content/VsyncRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+text = "VSync"
+
+[node name="VsyncCheck" type="CheckButton" parent="ScrollContainer/Content/VsyncRow"]
+unique_name_in_owner = true
+layout_mode = 2
