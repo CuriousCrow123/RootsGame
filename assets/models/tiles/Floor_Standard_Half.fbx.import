@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cylcjdiyhjnwy"
-path="res://.godot/imported/Floor_Standard_Half.fbx-731af8ac4b422b04f2827fe103d5716f.scn"
+valid=false
 
 [deps]
 
 source_file="res://assets/models/tiles/Floor_Standard_Half.fbx"
-dest_files=["res://.godot/imported/Floor_Standard_Half.fbx-731af8ac4b422b04f2827fe103d5716f.scn"]
 
 [params]
 

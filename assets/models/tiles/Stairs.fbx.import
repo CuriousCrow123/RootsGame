@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dtg6njcpr26cx"
-path="res://.godot/imported/Stairs.fbx-b3c0316e29ce7c6fad56322d79e09ceb.scn"
+valid=false
 
 [deps]
 
 source_file="res://assets/models/tiles/Stairs.fbx"
-dest_files=["res://.godot/imported/Stairs.fbx-b3c0316e29ce7c6fad56322d79e09ceb.scn"]
 
 [params]
 

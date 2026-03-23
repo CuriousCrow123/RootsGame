@@ -4,12 +4,11 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dm8npf54238ur"
-path="res://.godot/imported/Floor_Squares.fbx-ace5ef3fc237970322e9daf495b1f934.scn"
+valid=false
 
 [deps]
 
 source_file="res://assets/models/tiles/Floor_Squares.fbx"
-dest_files=["res://.godot/imported/Floor_Squares.fbx-ace5ef3fc237970322e9daf495b1f934.scn"]
 
 [params]
 
