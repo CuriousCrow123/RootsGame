@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1774288797|279420768';
+const CACHE_VERSION = '1774291138|23603770';
 /** @type {string} */
 const CACHE_PREFIX = 'RootsGame-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
