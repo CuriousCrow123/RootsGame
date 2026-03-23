@@ -4,11 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bee8m73wdi7pe"
-valid=false
+path="res://.godot/imported/Doors_GothicArch_Covered.fbx-4b51d01c28f4491a393e12bd198de47f.scn"
 
 [deps]
 
 source_file="res://assets/models/interactables/Doors_GothicArch_Covered.fbx"
+dest_files=["res://.godot/imported/Doors_GothicArch_Covered.fbx-4b51d01c28f4491a393e12bd198de47f.scn"]
 
 [params]
 

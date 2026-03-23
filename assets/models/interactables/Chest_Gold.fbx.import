@@ -4,11 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cn1grjrbhbn3a"
-valid=false
+path="res://.godot/imported/Chest_Gold.fbx-7c829e6c321f827879143bf36de39cbf.scn"
 
 [deps]
 
 source_file="res://assets/models/interactables/Chest_Gold.fbx"
+dest_files=["res://.godot/imported/Chest_Gold.fbx-7c829e6c321f827879143bf36de39cbf.scn"]
 
 [params]
 

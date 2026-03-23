@@ -4,11 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cmcfursmc2jtg"
-valid=false
+path="res://.godot/imported/Floor_SquareLarge.fbx-c56d46ee0a07dcda7ddba1a1daf5d889.scn"
 
 [deps]
 
 source_file="res://assets/models/tiles/Floor_SquareLarge.fbx"
+dest_files=["res://.godot/imported/Floor_SquareLarge.fbx-c56d46ee0a07dcda7ddba1a1daf5d889.scn"]
 
 [params]
 
