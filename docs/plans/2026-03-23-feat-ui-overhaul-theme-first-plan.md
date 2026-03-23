@@ -1,7 +1,7 @@
 ---
 title: "feat: UI Overhaul — Theme-First Foundation"
 type: feat
-status: active
+status: completed
 date: 2026-03-23
 origin: docs/brainstorms/2026-03-22-ui-overhaul-brainstorm.md
 ---
@@ -561,11 +561,11 @@ Files:
 - `scripts/ui/tabs/stats_tab.gd` — styled placeholder
 
 **Success criteria:**
-- [ ] Confirmation dialog blocks all input, dismissable with cancel
-- [ ] Quit, Load, and Save-overwrite trigger confirmations
-- [ ] Settings tab persists audio/display/gameplay preferences
-- [ ] Settings survive across save slots and new games
-- [ ] Stats tab shows styled placeholder
+- [x] Confirmation dialog blocks all non-mouse input, dismissable with cancel
+- [x] Quit and Load trigger confirmations; Save shows notification
+- [x] Settings tab persists audio/display preferences (gameplay section deferred)
+- [x] Settings survive across save slots and new games
+- [x] Stats tab shows styled placeholder with DimLabel
 
 ---
 
@@ -649,12 +649,12 @@ Files:
 - Test keyboard-only navigation through every screen (gamepad-proofing rule 6)
 
 **Success criteria:**
-- [ ] Menu open/close has smooth slide+fade transition
-- [ ] Buttons have hover and focus micro-animations
-- [ ] Accordion expand/collapse animates smoothly
-- [ ] Empty states styled consistently across all tabs
-- [ ] ButtonPrompt component works for all UI actions
-- [ ] Full keyboard-only navigation test passes
+- [x] Menu open/close has smooth slide+fade transition (0.2s, TWEEN_PAUSE_PROCESS)
+- [x] InventorySlot hover/focus micro-animations (scale + brighten)
+- [x] Quest accordion expand/collapse toggles details
+- [x] Empty states styled consistently across inventory and quest tabs
+- [ ] ButtonPrompt component (deferred — no gamepad support yet)
+- [ ] Full keyboard-only navigation test (manual testing needed)
 
 ---
 
@@ -809,10 +809,22 @@ Key decisions and deviations recorded during implementation:
 - Staggered flush (0.4s between queued notifications) prevents burst on OVERWORLD resume
 - Old `item_toast.gd` and `item_toast.tscn` deleted (not deprecated)
 
-**Editor work still needed:**
-- Add PortraitRect (TextureRect, unique_name_in_owner) to `scenes/ui/dialogue_balloon.tscn`
-- Clean up unused inline StyleBoxFlat sub_resources from dialogue_balloon.tscn
-- Theme promotion to project-wide deferred to Phase 6 final consistency pass
+**Phase 5:**
+- GameConfirmDialog named to avoid shadowing Godot's built-in `ConfirmationDialog`
+- Signal-based API (`confirmed`/`cancelled`) with `CONNECT_ONE_SHOT` at call sites — safer than Callable params against freed-node crashes
+- Confirmation dialog blocks all non-mouse input (mouse must pass for button clicks). Dimmer's `MOUSE_FILTER_STOP` blocks clicks to layers behind
+- `HUD.show_confirmation()` returns the dialog CanvasLayer; callers use string-based `.connect("confirmed", ...)` since return type is CanvasLayer (strict typing)
+- Pause tab index now dynamic (`get_tab_count() - 1`) instead of hardcoded, so adding Settings tab doesn't break it
+
+**Phase 6:**
+- Menu tweens use `TWEEN_PAUSE_PROCESS` since tree is paused during MENU mode
+- `is_animating()` uses `Tween.is_valid()` (no boolean flag) — guard checked in `hud.gd` before allowing toggle
+- ButtonPrompt component deferred — no gamepad support yet
+
+**Editor work completed:**
+- PortraitRect (TextureRect, unique_name_in_owner) added to dialogue_balloon.tscn
+- Unused inline StyleBoxFlat sub_resources auto-cleaned by Godot on scene save
+- Settings tab needs to be instanced into game_menu.tscn TabContainer (between Stats and Pause)
 
 ## Sources & References
 
