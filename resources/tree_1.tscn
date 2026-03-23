@@ -1,8 +1,8 @@
 [gd_scene format=4 uid="uid://e4ek1chksa03"]
 
-[ext_resource type="PackedScene" uid="uid://cld7h17b8u58l" path="res://assets/models/props/Tree_1.fbx" id="1_qcoo8"]
-[ext_resource type="Texture2D" uid="uid://c5dokw0ty0clq" path="res://assets/models/props/Bark_Texture.jpg" id="2_adamv"]
-[ext_resource type="Texture2D" uid="uid://dhjkn4aasn48w" path="res://assets/models/props/Leaf_Texture.png" id="3_ckegv"]
+[ext_resource type="PackedScene" uid="uid://c02v8apsivfie" path="res://assets/models/props/Tree_1.fbx" id="1_qcoo8"]
+[ext_resource type="Texture2D" uid="uid://chq6x2n2ugd1m" path="res://assets/models/props/Bark_Texture.jpg" id="2_adamv"]
+[ext_resource type="Texture2D" uid="uid://74c1yk5h4th" path="res://assets/models/props/Leaf_Texture.png" id="3_ckegv"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a38w7"]
 albedo_texture = ExtResource("2_adamv")

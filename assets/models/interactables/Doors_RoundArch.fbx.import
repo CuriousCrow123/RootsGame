@@ -3,13 +3,12 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cvwu6qnq38csl"
-path="res://.godot/imported/Doors_RoundArch.fbx-fde57d8c16c18aee2091b9c77d22fc63.scn"
+uid="uid://c07pwoomtyh3g"
+valid=false
 
 [deps]
 
 source_file="res://assets/models/interactables/Doors_RoundArch.fbx"
-dest_files=["res://.godot/imported/Doors_RoundArch.fbx-fde57d8c16c18aee2091b9c77d22fc63.scn"]
 
 [params]
 

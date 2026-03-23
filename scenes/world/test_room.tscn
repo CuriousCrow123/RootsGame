@@ -3,7 +3,6 @@
 [ext_resource type="MeshLibrary" uid="uid://d0g6x31i1noj" path="res://resources/mesh_library.tres" id="1_hgl0x"]
 [ext_resource type="Script" uid="uid://qglbj0t4ylga" path="res://scripts/camera/camera_follow.gd" id="2_3gt1g"]
 [ext_resource type="PackedScene" uid="uid://cq51xcvtuigw0" path="res://scenes/player/player.tscn" id="3_cy37o"]
-[ext_resource type="Resource" uid="uid://co1vma6jkc36c" path="res://resources/dialogue/npc_greeting.dialogue" id="5_fc6vu"]
 [ext_resource type="Resource" uid="uid://csvrwliskel7v" path="res://resources/quests/fetch_quest.tres" id="6_wb54u"]
 [ext_resource type="PackedScene" uid="uid://dbtvb4go86tcq" path="res://scenes/interactables/chest.tscn" id="7_u3u0o"]
 [ext_resource type="SpriteFrames" uid="uid://djxk1ojpqucqx" path="res://assets/sprites/characters/npcs/villager_frames.tres" id="7_vnu35"]
@@ -24,6 +23,9 @@ region_min_size = 1.0
 ambient_light_source = 2
 ambient_light_color = Color(0.2509804, 0.2509804, 0.2509804, 1)
 ambient_light_energy = 0.5
+
+[sub_resource type="Resource" id="Resource_wb54u"]
+metadata/__load_path__ = "res://resources/dialogue/npc_greeting.dialogue"
 
 [node name="TestRoom" type="Node3D" unique_id=655208921]
 
@@ -58,14 +60,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Player" parent="." unique_id=515478349 instance=ExtResource("3_cy37o")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-move_speed = null
 _interaction_strategy = 2
 
 [node name="John" parent="." unique_id=394811895 instance=ExtResource("8_kkuu3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 2)
 collision_mask = 13
 npc_id = "john"
-dialogue_resource = ExtResource("5_fc6vu")
+dialogue_resource = SubResource("Resource_wb54u")
 quest_resource = ExtResource("6_wb54u")
 sprite_frames = ExtResource("7_vnu35")
 display_name = "John"

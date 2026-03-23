@@ -3,13 +3,12 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://0wiitgjjwvnd"
-path="res://.godot/imported/Arch_Round_RoundColumn.fbx-088ba3a3bd25e1bf86580822f8189f57.scn"
+uid="uid://da4h2b2nyyuvc"
+valid=false
 
 [deps]
 
 source_file="res://assets/models/props/Arch_Round_RoundColumn.fbx"
-dest_files=["res://.godot/imported/Arch_Round_RoundColumn.fbx-088ba3a3bd25e1bf86580822f8189f57.scn"]
 
 [params]
 

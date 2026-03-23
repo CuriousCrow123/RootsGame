@@ -1,6 +1,5 @@
 # Godot
 .godot/
-.import/
 export.cfg
 export_presets.cfg
 export_credentials.cfg
@@ -33,6 +32,9 @@ Thumbs.db
 # Editor
 .obsidian/
 *.tmp
+
+# Claude Code worktrees
+.claude/worktrees/
 
 # Mono (future-proofing)
 .mono/

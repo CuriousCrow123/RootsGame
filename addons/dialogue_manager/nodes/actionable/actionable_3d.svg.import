@@ -2,10 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dppsuhlvbcbjc"
+uid="uid://0i50h346mq3d"
 path="res://.godot/imported/actionable_3d.svg-85d0e9dfc13a1adaf60f5d47256da010.ctex"
 metadata={
-"has_editor_variant": true,
 "vram_texture": false
 }
 
@@ -38,7 +37,7 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1
 svg/scale=1.0
-editor/scale_with_editor_scale=true
-editor/convert_colors_with_editor_theme=true
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

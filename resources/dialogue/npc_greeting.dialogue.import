@@ -3,13 +3,12 @@
 importer="dialogue_manager"
 importer_version=17
 type="Resource"
-uid="uid://co1vma6jkc36c"
-path="res://.godot/imported/npc_greeting.dialogue-d56ebe0c96bc2c014c47c1b7ee2bf1ec.tres"
+uid="uid://be1v1q3j0aist"
+valid=false
 
 [deps]
 
 source_file="res://resources/dialogue/npc_greeting.dialogue"
-dest_files=["res://.godot/imported/npc_greeting.dialogue-d56ebe0c96bc2c014c47c1b7ee2bf1ec.tres"]
 
 [params]
 

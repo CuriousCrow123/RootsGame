@@ -1,11 +1,11 @@
 [gd_resource type="SpriteFrames" format=3 uid="uid://c5skfiq0p0v2e"]
 
-[ext_resource type="Texture2D" uid="uid://lli51rxm1k8h" path="res://assets/sprites/characters/player/down_idle.png" id="1"]
-[ext_resource type="Texture2D" uid="uid://cnhea7qi6nmoy" path="res://assets/sprites/characters/player/down_walk.png" id="2"]
-[ext_resource type="Texture2D" uid="uid://c65sf3ka2ycfx" path="res://assets/sprites/characters/player/side_idle.png" id="3"]
-[ext_resource type="Texture2D" uid="uid://cdhr3ipem0s3m" path="res://assets/sprites/characters/player/side_walk.png" id="4"]
-[ext_resource type="Texture2D" uid="uid://c4sfl1ps84wvw" path="res://assets/sprites/characters/player/up_idle.png" id="5"]
-[ext_resource type="Texture2D" uid="uid://bkaojivbqngd5" path="res://assets/sprites/characters/player/up_walk.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://cvovbpc8uv37k" path="res://assets/sprites/characters/player/down_idle.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://5naj5hfmfhx0" path="res://assets/sprites/characters/player/down_walk.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://b04digev58qru" path="res://assets/sprites/characters/player/side_idle.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://ptk0pk14b5yb" path="res://assets/sprites/characters/player/side_walk.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://duam50os3c606" path="res://assets/sprites/characters/player/up_idle.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://48vtq8jayme6" path="res://assets/sprites/characters/player/up_walk.png" id="6"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_di0"]
 atlas = ExtResource("1")
