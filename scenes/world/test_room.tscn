@@ -3,6 +3,7 @@
 [ext_resource type="MeshLibrary" uid="uid://d0g6x31i1noj" path="res://resources/mesh_library.tres" id="1_hgl0x"]
 [ext_resource type="Script" uid="uid://qglbj0t4ylga" path="res://scripts/camera/camera_follow.gd" id="2_3gt1g"]
 [ext_resource type="PackedScene" uid="uid://cq51xcvtuigw0" path="res://scenes/player/player.tscn" id="3_cy37o"]
+[ext_resource type="Resource" uid="uid://be1v1q3j0aist" path="res://resources/dialogue/npc_greeting.dialogue" id="5_knp17"]
 [ext_resource type="Resource" uid="uid://csvrwliskel7v" path="res://resources/quests/fetch_quest.tres" id="6_wb54u"]
 [ext_resource type="PackedScene" uid="uid://dbtvb4go86tcq" path="res://scenes/interactables/chest.tscn" id="7_u3u0o"]
 [ext_resource type="SpriteFrames" uid="uid://djxk1ojpqucqx" path="res://assets/sprites/characters/npcs/villager_frames.tres" id="7_vnu35"]
@@ -23,9 +24,6 @@ region_min_size = 1.0
 ambient_light_source = 2
 ambient_light_color = Color(0.2509804, 0.2509804, 0.2509804, 1)
 ambient_light_energy = 0.5
-
-[sub_resource type="Resource" id="Resource_wb54u"]
-metadata/__load_path__ = "res://resources/dialogue/npc_greeting.dialogue"
 
 [node name="TestRoom" type="Node3D" unique_id=655208921]
 
@@ -66,15 +64,21 @@ _interaction_strategy = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 2)
 collision_mask = 13
 npc_id = "john"
-dialogue_resource = SubResource("Resource_wb54u")
+base_speed = null
+dialogue_resource = ExtResource("5_knp17")
+dialogue_title = null
 quest_resource = ExtResource("6_wb54u")
 sprite_frames = ExtResource("7_vnu35")
+default_facing = null
 display_name = "John"
+sprite_tint = null
 side_faces_right = true
 
 [node name="Chest" parent="." unique_id=1354572945 instance=ExtResource("7_u3u0o")]
 transform = Transform3D(-0.99992085, 0, -0.012583552, 0, 1, 0, 0.012583552, 0, -0.99992085, 0.013305664, 0.5376587, 2.510769)
 item = ExtResource("9_knp17")
+item_quantity = null
+display_name = null
 
 [node name="spawn_from_room_2" type="Marker3D" parent="." unique_id=87716876]
 transform = Transform3D(0.70710677, -0.5, 0.5, 0, 0.7071068, 0.70710677, -0.70710677, -0.5, 0.5, -0.56188965, 1, -2.5133972)

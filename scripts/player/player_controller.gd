@@ -51,6 +51,8 @@ func get_quest_tracker() -> QuestTracker:
 
 
 func get_movement_input() -> Vector3:
+	if not is_inside_tree():
+		return Vector3.ZERO
 	var input_dir: Vector2 = Input.get_vector(
 		"move_left", "move_right", "move_forward", "move_back"
 	)
@@ -97,7 +99,7 @@ func interact_with_nearest() -> void:
 
 
 func update_facing(input_direction: Vector2) -> void:
-	if input_direction.is_zero_approx():
+	if input_direction.is_zero_approx() or not is_inside_tree():
 		return
 	# Cardinal string for animations and save data
 	if absf(input_direction.x) >= absf(input_direction.y):
