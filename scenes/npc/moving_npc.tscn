@@ -1,0 +1,66 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/npc_controller.gd" id="1_npc"]
+[ext_resource type="Script" path="res://scripts/npc/animation_controller.gd" id="2_anim"]
+[ext_resource type="Script" path="res://shared/behavior_tree/bt_runner.gd" id="3_btrun"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_npc"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_aware"]
+radius = 5.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 2.0
+
+[node name="MovingNPC" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 5
+script = ExtResource("1_npc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_npc")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+pixel_size = 0.035
+billboard = 2
+alpha_cut = 1
+texture_filter = 0
+
+[node name="AnimationController" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_anim")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+unique_name_in_owner = true
+path_desired_distance = 0.5
+target_desired_distance = 0.5
+radius = 0.3
+height = 1.8
+neighbor_distance = 10.0
+max_speed = 4.0
+avoidance_enabled = true
+
+[node name="AwarenessArea" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 2
+
+[node name="AwarenessShape" type="CollisionShape3D" parent="AwarenessArea"]
+shape = SubResource("SphereShape3D_aware")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 2
+
+[node name="InteractionShape" type="CollisionShape3D" parent="InteractionArea"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="BehaviorTreeRunner" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_btrun")
