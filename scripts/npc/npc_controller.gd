@@ -3,9 +3,6 @@ extends CharacterBody3D
 ## Moving NPC with behavior-tree-driven AI, NavigationAgent3D pathfinding,
 ## two-zone player awareness, and dialogue interaction support.
 
-const PROMPT_LABEL_OFFSET: Vector3 = Vector3(0.0, 2.0, 0.0)
-const PROMPT_PIXEL_SIZE: float = 0.005
-const PROMPT_FONT_SIZE: int = 24
 const ACTION_VERB: String = "Talk to"
 const PATH_UPDATE_INTERVAL: float = 0.3
 
@@ -115,6 +112,7 @@ func interact(player: PlayerController) -> void:
 	if _bt_runner:
 		_bt_runner.interrupt()
 	velocity = Vector3.ZERO
+	move_and_slide()
 	# Face the player.
 	if _animation_controller:
 		var dir_to_player: Vector3 = global_position.direction_to(player.global_position)
@@ -186,6 +184,8 @@ func _on_interaction_body_exited(_body: Node3D) -> void:
 
 
 func _on_velocity_computed(safe_velocity: Vector3) -> void:
+	if _is_dialogue_active:
+		return
 	velocity = safe_velocity
 	move_and_slide()
 
@@ -212,15 +212,5 @@ func _cardinal_from_direction(world_dir: Vector3) -> String:
 
 
 func _create_prompt_label() -> void:
-	_prompt_label = Label3D.new()
-	_prompt_label.text = get_prompt_text()
-	_prompt_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_prompt_label.set_draw_flag(Label3D.FLAG_DISABLE_DEPTH_TEST, true)
-	_prompt_label.render_priority = 10
-	_prompt_label.pixel_size = PROMPT_PIXEL_SIZE
-	_prompt_label.font_size = PROMPT_FONT_SIZE
-	_prompt_label.outline_size = 8
-	_prompt_label.outline_modulate = Color(0.0, 0.0, 0.0, 0.8)
-	_prompt_label.position = PROMPT_LABEL_OFFSET
-	_prompt_label.visible = false
+	_prompt_label = PromptLabelFactory.create(get_prompt_text())
 	add_child.call_deferred(_prompt_label)
