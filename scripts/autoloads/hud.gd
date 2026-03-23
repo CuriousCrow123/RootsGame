@@ -37,7 +37,9 @@ func _input(event: InputEvent) -> void:
 	# UI focus navigation before _unhandled_input sees it.
 	if event.is_action_pressed("pause"):
 		if _confirm_dialog.visible:
-			# Block pause while confirmation is open
+			get_viewport().set_input_as_handled()
+			return
+		if _game_menu.call("is_animating"):
 			get_viewport().set_input_as_handled()
 			return
 		if _is_menu_open:

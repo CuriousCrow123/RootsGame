@@ -17,6 +17,9 @@ var _tracked_quest_id: String = ""
 
 func _ready() -> void:
 	_scroll.follow_focus = true
+	_empty_label.text = "No active quests — talk to NPCs"
+	_empty_label.theme_type_variation = &"DimLabel"
+	_empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 
 func connect_to_player(player: PlayerController) -> void:
